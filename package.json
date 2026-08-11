@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify": "esbuild scripts/verify.tsx --bundle --platform=node --format=cjs --outfile=node_modules/.cache/verify.cjs --log-level=error --jsx=automatic && node node_modules/.cache/verify.cjs",
+    "check": "npm run build && npm run verify"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.2",

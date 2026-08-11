@@ -25,7 +25,16 @@ hash router in `App.tsx` (`#/admin` = backoffice). No backend yet.
 
 - `npm run dev` - dev server
 - `npm run build` - type-check (`tsc --noEmit`) + production build
+- `npm run verify` - every check: quiz engine, screen rendering, content
+  integrity, and the unpublished-changes logic (`scripts/verify.tsx`)
+- `npm run check` - build + verify, i.e. what to run before deploying
 - `npm run preview` - serve the production build locally
+
+## Docs
+
+- `docs/admin-guide.md` - the admin interface spec, in Hebrew, written for
+  Lotem rather than for a developer
+- `supabase/README.md` - what each migration did, and how to write the next
 
 ## Structure
 
