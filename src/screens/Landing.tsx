@@ -34,7 +34,7 @@ export default function Landing({ onStart, busy = false }: { onStart: () => void
         disabled={busy}
         className="mt-8 rounded-lg bg-navy px-12 py-3.5 text-lg font-bold text-white transition-colors hover:bg-navy-dark disabled:opacity-70"
       >
-        {busy ? 'רק רגע...' : g(p('מתחילים', 'מתחיל/ה'))}
+        {busy ? 'רק רגע...' : g(p('בואו נגלה', 'בוא/י נגלה'))}
       </button>
       <p className="mt-3 text-sm text-muted">
         {quizLength} היגדים · כ-{estimateMinutes(quizLength)} דקות

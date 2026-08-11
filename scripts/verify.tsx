@@ -138,7 +138,7 @@ console.log('screens render')
 
 // Landing (via App with empty hash)
 const landing = renderToString(createElement(App))
-expectContains('Landing', landing, ['מתחילים', 'כמה קרובים אתם', 'אל הדגל', 'היגדים · כ-'])
+expectContains('Landing', landing, ['בואו נגלה', 'כמה קרובים אתם', 'אל הדגל', 'היגדים · כ-'])
 // the source links belong on the results screen now, not on the doorstep
 check('landing carries no outbound links', !landing.includes('elhadegel.co.il/about-us'))
 
@@ -235,7 +235,7 @@ console.log('gendered address')
       'מקומכם איתנו על המפה.', 'מקומך איתנו על המפה.', 'מקומך איתנו על המפה.'],
     [p('רוצים לקרוא את המקור המלא?', 'רוצה לקרוא את המקור המלא?'),
       'רוצים לקרוא את המקור המלא?', 'רוצה לקרוא את המקור המלא?', 'רוצה לקרוא את המקור המלא?'],
-    [p('מתחילים', 'מתחיל/ה'), 'מתחילים', 'מתחיל', 'מתחילה'],
+    [p('בואו נגלה', 'בוא/י נגלה'), 'בואו נגלה', 'בוא נגלה', 'בואי נגלה'],
     [p('נועצים את הדגל', 'נועץ/ת את הדגל'), 'נועצים את הדגל', 'נועץ את הדגל', 'נועצת את הדגל'],
   ]
   for (const [phrase, neutral, male, female] of cases) {
