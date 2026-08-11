@@ -1,10 +1,10 @@
 // MixChart.tsx - the quiz composition, at a glance.
 //
-// Form: a horizontal stacked bar, not a pie. Part-to-whole with 7 long
-// Hebrew category names reads better as a stacked bar - the segments share
-// one baseline so "3 questions vs 1" is directly comparable, the long names
-// live in a legend instead of being crammed around a circle, and the shape
-// fits the top of the page instead of eating vertical space.
+// Form: a donut. Part-to-whole is its one legitimate job, and the hole
+// carries the number that matters most - the quiz length. The seven pillar
+// names are long, so they live in a legend beside the ring rather than
+// around it; the legend also names and counts every slice, so identity
+// never rests on colour alone.
 //
 // Colour: the categorical hues are assigned by pillar ORDER (identity),
 // never by size, so a pillar keeps its colour when the mix changes. The
@@ -12,8 +12,7 @@
 // lightness band, above the chroma floor, worst adjacent CVD separation
 // 9.1 (target >= 8) and worst normal-vision separation 19.6 (floor 15).
 // Three hues fall under 3:1 contrast against white, which obliges visible
-// labels - hence the legend carries every name and number in text colours,
-// so identity is never colour-alone.
+// labels - the legend provides them.
 import type { Pillar } from '../content/types'
 
 /** Validated categorical palette, in fixed slot order */
@@ -27,6 +26,14 @@ const SERIES_COLORS = [
   '#4a3aa7', // violet
 ]
 
+// Ring geometry. The stroke is drawn along the circle's path, so gaps and
+// segment lengths are expressed in path units (~pixels of arc).
+const SIZE = 148
+const STROKE = 26
+const RADIUS = (SIZE - STROKE) / 2
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS
+const GAP = 3
+
 export interface MixSlice {
   id: string
   label: string
@@ -39,65 +46,96 @@ export function pillarSlices(pillars: Array<Pillar & { quota: number }>): MixSli
 
 export default function MixChart({ slices }: { slices: MixSlice[] }) {
   const total = slices.reduce((sum, slice) => sum + slice.quota, 0)
-  const shown = slices.filter((slice) => slice.quota > 0)
+
+  // Walk the slices once, remembering where each one starts on the ring.
+  let cumulative = 0
+  const arcs = slices.map((slice, index) => {
+    const length = total > 0 ? (slice.quota / total) * CIRCUMFERENCE : 0
+    const start = cumulative
+    cumulative += length
+    return {
+      ...slice,
+      color: SERIES_COLORS[index % SERIES_COLORS.length],
+      length,
+      start,
+      percent: total > 0 ? Math.round((slice.quota / total) * 100) : 0,
+    }
+  })
+  // A single slice covering the whole ring has no neighbour to separate
+  // from, so it keeps its full length instead of losing a gap to nothing.
+  const drawn = arcs.filter((arc) => arc.quota > 0)
+  const gapFor = (arc: (typeof arcs)[number]) => (drawn.length > 1 ? Math.min(GAP, arc.length) : 0)
 
   return (
     <section className="rounded-xl border border-line bg-white p-5 shadow-sm">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-sm font-bold text-navy">תמהיל השאלון</h2>
-        <p className="text-xs text-muted">
-          <span className="text-base font-bold tabular-nums text-navy">{total}</span> שאלות בכל
-          שאלון
-        </p>
-      </div>
+      <h2 className="text-sm font-bold text-navy">תמהיל השאלון</h2>
 
       {total === 0 ? (
-        <p className="mt-4 text-xs text-muted">
-          כל הפילרים על 0 - כרגע אין שאלות בשאלון.
-        </p>
+        <p className="mt-3 text-xs text-muted">כל הפילרים על 0 - כרגע אין שאלות בשאלון.</p>
       ) : (
-        <>
-          {/* The bar: one baseline, 2px surface gaps, rounded outer ends */}
-          <div className="mt-4 flex h-7 w-full gap-0.5 overflow-hidden rounded-md">
-            {shown.map((slice) => {
-              const percent = Math.round((slice.quota / total) * 100)
-              const color = SERIES_COLORS[slices.findIndex((s) => s.id === slice.id) % SERIES_COLORS.length]
-              return (
-                <div
-                  key={slice.id}
-                  style={{ flexGrow: slice.quota, flexBasis: 0, backgroundColor: color }}
-                  title={`${slice.label}: ${slice.quota} מתוך ${total} ( ${percent}% )`}
-                />
-              )
-            })}
+        <div className="mt-4 flex flex-col items-center gap-6 sm:flex-row sm:items-center">
+          {/* The ring. Mirrored so it fills counter-clockwise, matching the
+              right-to-left reading order of the legend beside it. */}
+          <div className="relative shrink-0" style={{ width: SIZE, height: SIZE }}>
+            <svg
+              width={SIZE}
+              height={SIZE}
+              viewBox={`0 0 ${SIZE} ${SIZE}`}
+              style={{ transform: 'scaleX(-1)' }}
+              role="img"
+              aria-label={`תמהיל השאלון: ${total} שאלות`}
+            >
+              <g transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}>
+                {drawn.map((arc) => {
+                  const gap = gapFor(arc)
+                  return (
+                    <circle
+                      key={arc.id}
+                      cx={SIZE / 2}
+                      cy={SIZE / 2}
+                      r={RADIUS}
+                      fill="none"
+                      stroke={arc.color}
+                      strokeWidth={STROKE}
+                      strokeDasharray={`${Math.max(0, arc.length - gap)} ${CIRCUMFERENCE - Math.max(0, arc.length - gap)}`}
+                      strokeDashoffset={-arc.start}
+                    >
+                      <title>{`${arc.label}: ${arc.quota} מתוך ${total} ( ${arc.percent}% )`}</title>
+                    </circle>
+                  )
+                })}
+              </g>
+            </svg>
+            {/* The hole carries the headline number */}
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-extrabold leading-none tabular-nums text-navy">
+                {total}
+              </span>
+              <span className="mt-1 text-[10px] leading-none text-muted">שאלות בשאלון</span>
+            </div>
           </div>
 
-          {/* Legend: identity is never colour-alone - every slice is named and counted */}
-          <ul className="mt-3 grid grid-cols-1 gap-x-5 gap-y-1.5 sm:grid-cols-2">
-            {slices.map((slice, index) => {
-              const percent = total > 0 ? Math.round((slice.quota / total) * 100) : 0
-              return (
-                <li
-                  key={slice.id}
-                  className={
-                    'flex items-center gap-2 text-xs ' + (slice.quota === 0 ? 'opacity-45' : '')
-                  }
-                >
-                  <span
-                    aria-hidden="true"
-                    className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                    style={{ backgroundColor: SERIES_COLORS[index % SERIES_COLORS.length] }}
-                  />
-                  <span className="truncate">{slice.label}</span>
-                  <span className="grow" />
-                  <span className="shrink-0 tabular-nums text-muted">
-                    {slice.quota} · {percent}%
-                  </span>
-                </li>
-              )
-            })}
+          {/* Legend: identity is never colour-alone */}
+          <ul className="grid w-full grid-cols-1 gap-x-6 gap-y-1.5 sm:grid-cols-2">
+            {arcs.map((arc) => (
+              <li
+                key={arc.id}
+                className={'flex items-center gap-2 text-xs ' + (arc.quota === 0 ? 'opacity-45' : '')}
+              >
+                <span
+                  aria-hidden="true"
+                  className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                  style={{ backgroundColor: arc.color }}
+                />
+                <span className="truncate">{arc.label}</span>
+                <span className="grow" />
+                <span className="shrink-0 tabular-nums text-muted">
+                  {arc.quota} · {arc.percent}%
+                </span>
+              </li>
+            ))}
           </ul>
-        </>
+        </div>
       )}
     </section>
   )
