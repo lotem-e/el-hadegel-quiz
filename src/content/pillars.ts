@@ -17,7 +17,7 @@ export const PILLARS: Pillar[] = [
     id: 'vision-victory',
     title: 'צו השעה - חזון והנהגה',
     short: 'צו השעה - חזון והנהגה',
-    description: 'שתי ההבנות של ה-7 באוקטובר: חובת העוצמה, והנהגה מהדור שנלחם.',
+    description: 'בקטגוריה זו ישנן שאלות העוסקות בשתי ההבנות של ה-7 באוקטובר: חובת העוצמה, והנהגה מהדור שנלחם.',
     sourceUrl: VISION_URL,
     sources: [
       VISION_SOURCE,
@@ -28,7 +28,7 @@ export const PILLARS: Pillar[] = [
     id: 'zionist-unity',
     title: 'שבירת הגושים וכפיית ממשלה רחבה וציונית',
     short: 'שבירת הגושים וכפיית ממשלה רחבה וציונית',
-    description: 'ציונות שמעל מחנות: מה נכון לפני מי צודק, אחדות שאינה אחידות, וגוש ציוני רחב.',
+    description: 'בקטגוריה זו ישנן שאלות העוסקות בציונות שמעל מחנות: מה נכון לפני מי צודק, אחדות שאינה אחידות, וגוש ציוני רחב.',
     sourceUrl: VISION_URL,
     sources: [VISION_SOURCE],
   },
@@ -36,7 +36,7 @@ export const PILLARS: Pillar[] = [
     id: 'winning-iron-wall',
     title: 'דגל הביטחון',
     short: 'דגל הביטחון',
-    description: 'תפיסת הביטחון: הכרעה במקום סבבים, הסברה כחזית, יוזמה, ותנאי השלום.',
+    description: 'בקטגוריה זו ישנן שאלות העוסקות בתפיסת הביטחון: הכרעה במקום סבבים, הסברה כחזית, יוזמה, ותנאי השלום.',
     sourceUrl: VISION_URL,
     sources: [
       VISION_SOURCE,
@@ -47,7 +47,7 @@ export const PILLARS: Pillar[] = [
     id: 'service-integration',
     title: 'חוק יסוד השירות',
     short: 'חוק יסוד השירות',
-    description: 'שוויון בנטל ושילוב: שירות לכל אזרח, שירות תמורת זכויות, ושותפות כלל החברה.',
+    description: 'בקטגוריה זו ישנן שאלות העוסקות בשוויון בנטל ובשילוב: שירות לכל אזרח, שירות תמורת זכויות, ושותפות כלל החברה.',
     sourceUrl: VISION_URL,
     sources: [
       VISION_SOURCE,
@@ -58,7 +58,7 @@ export const PILLARS: Pillar[] = [
     id: 'zionist-economy',
     title: 'דגל הכלכלה',
     short: 'דגל הכלכלה',
-    description: 'כלכלה שמתגמלת תרומה: המעמד המשרת במרכז, יוקר המחיה, ועבודה שמשתלמת.',
+    description: 'בקטגוריה זו ישנן שאלות העוסקות בכלכלה שמתגמלת תרומה: המעמד המשרת במרכז, יוקר המחיה, ועבודה שמשתלמת.',
     sourceUrl: VISION_URL,
     sources: [
       VISION_SOURCE,
@@ -69,7 +69,7 @@ export const PILLARS: Pillar[] = [
     id: 'education-revolution',
     title: 'דגל החינוך והלכידות',
     short: 'דגל החינוך והלכידות',
-    description: 'חינוך ציוני משותף: ליבה אחת לכל הזרמים, מצוינות מורים, ודור גאה בציונותו.',
+    description: 'בקטגוריה זו ישנן שאלות העוסקות בחינוך ציוני משותף: ליבה אחת לכל הזרמים, מצוינות מורים, ודור גאה בציונותו.',
     sourceUrl: VISION_URL,
     sources: [
       VISION_SOURCE,
@@ -80,7 +80,7 @@ export const PILLARS: Pillar[] = [
     id: 'legal-reform',
     title: 'דגל הממשל',
     short: 'דגל הממשל',
-    description: 'תיקון מאוזן של המשפט והממשל: חוקה מוסכמת, איזון רשויות, וממשלה מצומצמת.',
+    description: 'בקטגוריה זו ישנן שאלות העוסקות בתיקון מאוזן של המשפט והממשל: חוקה מוסכמת, איזון רשויות, וממשלה מצומצמת.',
     sourceUrl: VISION_URL,
     sources: [
       VISION_SOURCE,

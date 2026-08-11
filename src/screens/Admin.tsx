@@ -642,7 +642,7 @@ export default function Admin() {
           <section className="mt-5">
             <MixChart slices={pillarSlices(pillars)} />
             <div className="mt-4 space-y-3">
-              {pillars.map((pillar) => {
+              {pillars.map((pillar, index) => {
                 const available = activeCount(pillar.id)
                 const pinnedInPillar = questions.filter(
                   (question) => question.pillarId === pillar.id && question.pinned,
@@ -653,24 +653,40 @@ export default function Admin() {
                     className="flex items-center justify-between gap-4 rounded-xl border border-line bg-white p-4 shadow-sm"
                   >
                     <div className="min-w-0">
-                      <p className="font-medium">{pillar.title}</p>
-                      {/* One line: what this pillar measures */}
-                      <p className="mt-0.5 text-xs text-muted">{pillar.description}</p>
-                      {/* The material the questions rely on */}
+                      <p className="flex items-center gap-2 font-medium">
+                        {/* Same colour the donut above uses for this category */}
+                        <span
+                          aria-hidden="true"
+                          className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                          style={{ backgroundColor: categoryColor(index) }}
+                        />
+                        {pillar.title}
+                      </p>
+                      {/* What this category's questions are about */}
+                      <p className="mt-0.5 text-xs leading-relaxed text-muted">
+                        {pillar.description}
+                      </p>
+                      {/* The material the questions must rest on */}
                       {pillar.sources.length > 0 && (
-                        <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
-                          {pillar.sources.map((source) => (
-                            <a
-                              key={source.url}
-                              href={source.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-navy underline underline-offset-2 hover:text-navy-dark"
-                            >
-                              {source.label} ↗
-                            </a>
-                          ))}
-                        </p>
+                        <div className="mt-2">
+                          <p className="text-xs font-bold text-navy">
+                            השאלות צריכות להתבסס על המקורות הבאים:
+                          </p>
+                          <ul className="mt-1 space-y-0.5">
+                            {pillar.sources.map((source) => (
+                              <li key={source.url} className="text-xs">
+                                <a
+                                  href={source.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-navy underline underline-offset-2 hover:text-navy-dark"
+                                >
+                                  {source.label} ↗
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       )}
                       {pinnedInPillar > 0 && (
                         <p className="mt-1 text-xs text-muted">
