@@ -9,6 +9,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { FEMALE, MALE, NEUTRAL, genderize } from 'ivrita/src/ivrita'
+// The official switch bar's own stylesheet, straight from the package.
+import 'ivrita/src/ui/style.scss'
 
 export type GenderMode = 'neutral' | 'male' | 'female'
 
@@ -67,47 +69,83 @@ export function useGender(): GenderContextValue {
   return value
 }
 
-const OPTIONS: Array<{ mode: GenderMode; label: string; aria: string }> = [
-  { mode: 'female', label: 'נקבה', aria: 'לפנות אליי בלשון נקבה' },
-  { mode: 'neutral', label: 'שניהם', aria: 'לפנות אליי בשתי הלשונות' },
-  { mode: 'male', label: 'זכר', aria: 'לפנות אליי בלשון זכר' },
+/**
+ * The official Ivrita switch bar.
+ *
+ * This is their bar, not a lookalike: the stylesheet imported above is
+ * `node_modules/ivrita/src/ui/style.scss` verbatim, and the markup below
+ * reproduces their `render()` exactly - same class names, same icon glyphs
+ * from their Ivritacons font, same collapse-until-hover behaviour (their CSS
+ * does that with `:focus-within`), same ⓘ link back to the project.
+ *
+ * What we do not use is their `DefaultSwitch` class itself. It builds its DOM
+ * with a different JSX factory (`jsx-render`, not React) and appends itself to
+ * `document.body` outside the React tree. Rendering the same markup from React
+ * keeps one owner of the DOM, and their `setMode` was only ever a thin call
+ * into whatever object you hand it - which here is React state.
+ *
+ * Their labels and icons, from src/ui/hebrew.js and src/ui/default.js.
+ */
+const BAR_TITLE = 'עבריתה'
+const ABOUT_TEXT = 'אודות מיזם עבריתה'
+const ABOUT_URL = 'https://alefalefalef.co.il/ivrita/'
+const LOGO_ICON = '⚥︎'
+
+// Their display order: male, female, neutral.
+const OPTIONS: Array<{ mode: GenderMode; ivritaMode: number; label: string; icon: string }> = [
+  { mode: 'male', ivritaMode: MALE, label: 'איש', icon: '♂︎' },
+  { mode: 'female', ivritaMode: FEMALE, label: 'אישה', icon: '♀︎' },
+  { mode: 'neutral', ivritaMode: NEUTRAL, label: 'ניטרלי', icon: '⚥︎' },
 ]
 
-/**
- * The switch itself. `compact` is the version that rides in the header;
- * the full one introduces itself, for the opening screen.
- */
-export function GenderSwitch({ compact = false }: { compact?: boolean }) {
-  const { mode, setMode, g } = useGender()
+export function GenderSwitch() {
+  const { mode, setMode } = useGender()
 
   return (
-    <div className={compact ? 'flex items-center gap-1.5' : 'flex flex-col items-center gap-1.5'}>
-      {!compact && <span className="text-xs text-muted">{g('איך לפנות אליכם/ן?')}</span>}
-      <div
-        role="radiogroup"
-        aria-label="לשון הפנייה"
-        className="flex items-center gap-0.5 rounded-full border border-line bg-white p-0.5"
+    <div
+      className="ivrita-switch ivrita-switch--left"
+      tabIndex={0}
+      title={BAR_TITLE}
+      role="radiogroup"
+      aria-label={BAR_TITLE}
+    >
+      <span className="ivrita-logo" title={BAR_TITLE} aria-hidden="true">
+        {LOGO_ICON}
+      </span>
+      {OPTIONS.map((option) => {
+        const selected = mode === option.mode
+        return (
+          <a
+            key={option.mode}
+            href="#"
+            className={
+              'ivrita-mode-changer ivrita-button ivrita-button-style-0' +
+              (selected ? ' ivrita-active' : '')
+            }
+            data-ivrita-mode={option.ivritaMode}
+            title={option.label}
+            role="radio"
+            aria-checked={selected}
+            aria-label={option.label}
+            onClick={(event) => {
+              event.preventDefault()
+              setMode(option.mode)
+            }}
+          >
+            {option.icon}
+          </a>
+        )
+      })}
+      <a
+        href={ABOUT_URL}
+        className="ivrita-info-link"
+        title={ABOUT_TEXT}
+        aria-label={ABOUT_TEXT}
+        target="_blank"
+        rel="noopener noreferrer"
       >
-        {OPTIONS.map((option) => {
-          const selected = mode === option.mode
-          return (
-            <button
-              key={option.mode}
-              type="button"
-              role="radio"
-              aria-checked={selected}
-              aria-label={option.aria}
-              onClick={() => setMode(option.mode)}
-              className={
-                'rounded-full px-2.5 py-1 text-xs font-medium transition-colors ' +
-                (selected ? 'bg-navy text-white' : 'text-muted hover:text-navy')
-              }
-            >
-              {option.label}
-            </button>
-          )
-        })}
-      </div>
+        {'ⓘ'}
+      </a>
     </div>
   )
 }

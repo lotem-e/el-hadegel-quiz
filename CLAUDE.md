@@ -196,6 +196,17 @@ Rules when touching visitor copy:
 - `npm run verify` checks the exact forms the copy relies on, and that the
   screens still address both genders by default.
 
+The switch is Ivrita's own bar: `src/ui/style.scss` from the package is imported
+verbatim (hence `sass` as a dev dependency, and their Ivritacons icon font in the
+build), and `GenderSwitch` reproduces their markup exactly - same classes, icons,
+collapse-until-hover, and the ⓘ link back to the project. What we do NOT use is
+their `DefaultSwitch` class: it builds its DOM with a different JSX factory and
+appends itself to `document.body` outside React. Their `setMode` was only ever a
+call into whatever object you hand it, so React state takes that role. The bar is
+`position: fixed`, so `App.tsx` renders it once for the whole visitor flow and
+never on `#/admin`. Its `<a href="#">` links call `preventDefault` - without that
+they would write a bare `#` into the URL and disturb the hash router.
+
 ## Known limitations / next
 
 - Frontend polish phase planned. Bundle grew to ~457KB raw (~132KB gzip)

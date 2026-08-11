@@ -14,6 +14,7 @@ import type { Question } from './content/types'
 import type { Answer } from './engine/scoring'
 import { scoreAnswers } from './engine/scoring'
 import { selectQuizQuestions } from './engine/selectQuestions'
+import { GenderSwitch } from './lib/gender'
 import { supabase } from './lib/supabaseClient'
 import { getContent, refreshContent } from './store/contentStore'
 import { getSeenStatements, rememberStatements } from './store/seenStatements'
@@ -94,18 +95,29 @@ export default function App() {
     setPhase({ name: 'results', answers, nonce })
   }
 
-  switch (phase.name) {
-    case 'landing':
-      return <Landing onStart={() => void startQuiz(1)} busy={starting} />
-    case 'quiz':
-      return (
-        <Quiz
-          key={phase.nonce}
-          questions={phase.questions}
-          onFinish={(answers) => finishQuiz(answers, phase.nonce)}
-        />
-      )
-    case 'results':
-      return <Results answers={phase.answers} onRestart={() => void startQuiz(phase.nonce + 1)} />
+  // The Ivrita bar is fixed to the viewport, so it lives here - one bar for
+  // the whole visitor flow, rather than one per screen.
+  return (
+    <>
+      {screen()}
+      <GenderSwitch />
+    </>
+  )
+
+  function screen() {
+    switch (phase.name) {
+      case 'landing':
+        return <Landing onStart={() => void startQuiz(1)} busy={starting} />
+      case 'quiz':
+        return (
+          <Quiz
+            key={phase.nonce}
+            questions={phase.questions}
+            onFinish={(answers) => finishQuiz(answers, phase.nonce)}
+          />
+        )
+      case 'results':
+        return <Results answers={phase.answers} onRestart={() => void startQuiz(phase.nonce + 1)} />
+    }
   }
 }

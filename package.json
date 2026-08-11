@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "verify": "esbuild scripts/verify.tsx --bundle --platform=node --format=cjs --outfile=node_modules/.cache/verify.cjs --log-level=error --jsx=automatic && node node_modules/.cache/verify.cjs",
+    "verify": "esbuild scripts/verify.tsx --bundle --platform=node --format=cjs --outfile=node_modules/.cache/verify.cjs --log-level=error --jsx=automatic --loader:.scss=empty --loader:.woff=empty --loader:.woff2=empty && node node_modules/.cache/verify.cjs",
     "check": "npm run build && npm run verify"
   },
   "dependencies": {
@@ -22,6 +22,7 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.4.1",
+    "sass": "^1.102.0",
     "tailwindcss": "^4.1.7",
     "typescript": "~5.8.3",
     "vite": "^6.3.5"

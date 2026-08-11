@@ -3,7 +3,7 @@
 // material live on the results screen, where the visitor has a reason to
 // follow them.
 import Logo from '../components/Logo'
-import { GenderSwitch, useGender } from '../lib/gender'
+import { useGender } from '../lib/gender'
 import { getContent } from '../store/contentStore'
 
 /** Roughly twelve seconds a statement, rounded to a friendly number */
@@ -36,7 +36,6 @@ export default function Landing({ onStart, busy = false }: { onStart: () => void
         {quizLength} היגדים · כ-{estimateMinutes(quizLength)} דקות
       </p>
       <div className="mt-10">
-        <GenderSwitch />
       </div>
     </main>
   )

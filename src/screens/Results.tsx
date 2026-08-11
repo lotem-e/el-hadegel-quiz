@@ -11,7 +11,7 @@ import { PLATFORM_PDF_URL, VISION_URL } from '../content/pillars'
 import { scoreAnswers } from '../engine/scoring'
 import type { Answer } from '../engine/scoring'
 import { categoryColor } from '../lib/categoryColors'
-import { GenderSwitch, useGender } from '../lib/gender'
+import { useGender } from '../lib/gender'
 import { getContent } from '../store/contentStore'
 
 interface ResultsProps {
@@ -236,9 +236,6 @@ export default function Results({ answers, onRestart }: ResultsProps) {
           {suggestAnotherRound ? 'לסבב נוסף' : 'שאלון חדש'}
         </button>
 
-        <div className="mt-6 flex justify-center">
-          <GenderSwitch compact />
-        </div>
 
         <div className="mt-6">
           <JoinBlock />
