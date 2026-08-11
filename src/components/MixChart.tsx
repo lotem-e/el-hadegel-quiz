@@ -115,12 +115,18 @@ export default function MixChart({ slices }: { slices: MixSlice[] }) {
             </div>
           </div>
 
-          {/* Legend: identity is never colour-alone */}
-          <ul className="grid w-full grid-cols-1 gap-x-6 gap-y-1.5 sm:grid-cols-2">
+          {/* Legend: identity is never colour-alone. Laid out as text
+              columns rather than a grid so it fills top-to-bottom - reading
+              down a column follows the category order used on the page,
+              which a row-major grid would scramble into 1,3,5,7. */}
+          <ul className="w-full columns-1 gap-x-6 sm:columns-2">
             {arcs.map((arc) => (
               <li
                 key={arc.id}
-                className={'flex items-center gap-2 text-xs ' + (arc.quota === 0 ? 'opacity-45' : '')}
+                className={
+                  'flex break-inside-avoid items-center gap-2 py-0.5 text-xs ' +
+                  (arc.quota === 0 ? 'opacity-45' : '')
+                }
               >
                 <span
                   aria-hidden="true"
