@@ -23,6 +23,15 @@
   --color-star-olive: #a3b06e;
 }
 
+/* Tailwind v4 deliberately switched buttons to the native arrow cursor.
+   On the web, everything clickable signals itself with a pointer - Lotem
+   caught the mismatch on a link-styled button. Restore the convention
+   app-wide; disabled buttons keep the arrow. */
+button:not(:disabled),
+[role='button']:not(:disabled) {
+  cursor: pointer;
+}
+
 body {
   background-color: var(--color-cream);
   color: var(--color-ink);
