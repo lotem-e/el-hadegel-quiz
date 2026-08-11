@@ -196,6 +196,16 @@ Rules when touching visitor copy:
 - `npm run verify` checks the exact forms the copy relies on, and that the
   screens still address both genders by default.
 
+**Do not "improve" their markup.** Their stylesheet keys everything - the
+Ivritacons font, the 33px box, the colour - to `.ivrita-switch a`. Rendering
+the logo as a semantically-tidier `<span>` silently dropped all of it and the
+collapsed bar (what you see almost all the time) fell back to Heebo. Verified
+against the reference implementation at alaxon.co.il, which is what Lotem
+points at for the correct look: logo is an `<a>`, mode buttons carry
+`ivrita-button-style-1` (the ss01 stylistic set - the library default style-0
+is a different icon set), bar background rgba(255,255,255,.8), radius
+0 7px 7px 0, neutral active by default.
+
 The switch is Ivrita's own bar: `src/ui/style.scss` from the package is imported
 verbatim (hence `sass` as a dev dependency, and their Ivritacons icon font in the
 build), and `GenderSwitch` reproduces their markup exactly - same classes, icons,

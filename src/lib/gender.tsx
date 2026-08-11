@@ -109,9 +109,21 @@ export function GenderSwitch() {
       role="radiogroup"
       aria-label={BAR_TITLE}
     >
-      <span className="ivrita-logo" title={BAR_TITLE} aria-hidden="true">
+      {/* Their stylesheet keys everything - the Ivritacons font, the 33px
+          box, the colour - to `.ivrita-switch a`. A <span> here silently
+          loses all of it, which is exactly what went wrong the first time:
+          the collapsed bar, the part you see almost always, fell back to
+          the page font. It stays an anchor, like theirs. */}
+      <a
+        href="#"
+        className="ivrita-logo"
+        tabIndex={-1}
+        title={BAR_TITLE}
+        aria-hidden="true"
+        onClick={(event) => event.preventDefault()}
+      >
         {LOGO_ICON}
-      </span>
+      </a>
       {OPTIONS.map((option) => {
         const selected = mode === option.mode
         return (
@@ -119,7 +131,12 @@ export function GenderSwitch() {
             key={option.mode}
             href="#"
             className={
-              'ivrita-mode-changer ivrita-button ivrita-button-style-0' +
+              // style-1 = the ss01 stylistic set of their icon font, which is
+              // what alaxon.co.il uses and what Lotem pointed at as the look.
+              // style-0 (the library default) is a different icon set entirely,
+              // and marks the active option with a swash glyph rather than a
+              // filled background.
+              'ivrita-mode-changer ivrita-button ivrita-button-style-1' +
               (selected ? ' ivrita-active' : '')
             }
             data-ivrita-mode={option.ivritaMode}
