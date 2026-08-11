@@ -139,7 +139,7 @@ console.log('screens render')
 
 // Landing (via App with empty hash)
 const landing = renderToString(createElement(App))
-expectContains('Landing', landing, ['בואו נגלה', 'כמה קרובים אתם', 'אל הדגל', 'היגדים · כ-'])
+expectContains('Landing', landing, ['בואו נגלה', 'כמה קרובים אתם', 'אל הדגל', '13 היגדים', 'דקות'])
 // the source links belong on the results screen now, not on the doorstep
 check('landing carries no outbound links', !landing.includes('elhadegel.co.il/about-us'))
 

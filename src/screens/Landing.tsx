@@ -11,6 +11,9 @@ function estimateMinutes(statements: number): number {
   return Math.max(1, Math.round((statements * 12) / 60))
 }
 
+const pillClass =
+  'rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-navy shadow-sm'
+
 export default function Landing({ onStart, busy = false }: { onStart: () => void; busy?: boolean }) {
   const quizLength = getContent().quizLength
   const { g } = useGender()
@@ -36,11 +39,12 @@ export default function Landing({ onStart, busy = false }: { onStart: () => void
       >
         {busy ? 'רק רגע...' : g(p('בואו נגלה', 'בוא/י נגלה'))}
       </button>
-      {/* The movement's own pill, from the campaign badge on their site */}
-      <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-1.5 text-sm text-navy shadow-sm">
-        <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-navy" />
-        {quizLength} היגדים · כ-{estimateMinutes(quizLength)} דקות
-      </p>
+      {/* Two pills, in the movement's own badge style: what the quiz is, and
+          what it costs you. Separate because they answer different questions. */}
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <span className={pillClass}>{quizLength} היגדים</span>
+        <span className={pillClass}>כ-{estimateMinutes(quizLength)} דקות</span>
+      </div>
     </main>
   )
 }
