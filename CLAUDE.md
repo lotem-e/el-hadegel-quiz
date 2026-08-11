@@ -85,6 +85,21 @@ hash routing make the subpath work; `.nojekyll` included). A TEMPORARY
 remove that one line at launch (movement sign-off for public branding was
 still pending as of 2026-08-10).
 
+## Link previews - since 2026-08-11
+
+`index.html` carries og:* and twitter:* tags plus `public/og-image.png`
+(1200x630, the logo on navy - built from the Logo.tsx vector paths so no font
+had to be rendered; `qlmanage` only renders SVG into a SQUARE thumbnail, so the
+source is a 1200x1200 square that `sips -c 630 1200` crops).
+
+**The URLs in those tags are absolute on purpose.** A scraper fetches the page
+from its own server, so vite's relative `base: './'` paths would resolve
+against the wrong host. If the site moves off github.io, those URLs move with
+it - they are the one place in the app that hardcodes the domain.
+
+The `noindex` meta does not stop link previews: it is a search-engine
+directive, and the social scrapers go by robots.txt (there is none here).
+
 ## Backend (Supabase) - since 2026-08-10
 
 Project `el-hadegel-quiz` in Lotem's Supabase org (lotem-e), URL

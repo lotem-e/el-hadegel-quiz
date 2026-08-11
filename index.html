@@ -7,8 +7,43 @@
     <meta name="theme-color" content="#1B2D52" />
     <!-- TEMPORARY while in beta: keep search engines away until launch. Remove this line to go public. -->
     <meta name="robots" content="noindex" />
-    <meta name="description" content="שאלון ההתאמה של תנועת אל הדגל - גלו כמה אתם קרובים לדרך" />
+    <meta
+      name="description"
+      content="לפניכם היגדים מתוך החזון והמצע של תנועת אל הדגל. דרגו עד כמה אתם מסכימים, וגלו בסוף את אחוז ההתאמה שלכם."
+    />
     <title>אל הדגל | שאלון ההתאמה</title>
+
+    <!--
+      Link previews (WhatsApp, X, Facebook, Telegram, Slack).
+      These URLs MUST be absolute: a scraper fetches the page from its own
+      server, so the relative paths that let vite serve the site from a
+      subpath would resolve against the wrong host. If the site ever moves
+      off github.io, these four lines move with it.
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="אל הדגל" />
+    <meta property="og:locale" content="he_IL" />
+    <meta property="og:url" content="https://lotem-e.github.io/el-hadegel-quiz/" />
+    <meta property="og:title" content="כמה קרובים אתם לדרך של אל הדגל?" />
+    <meta
+      property="og:description"
+      content="לפניכם היגדים מתוך החזון והמצע של תנועת אל הדגל. דרגו עד כמה אתם מסכימים, וגלו בסוף את אחוז ההתאמה שלכם."
+    />
+    <meta property="og:image" content="https://lotem-e.github.io/el-hadegel-quiz/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="אל הדגל - דור חדש של ציונות" />
+
+    <!-- X reads og:* as a fallback, but wants its own card type declared -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="כמה קרובים אתם לדרך של אל הדגל?" />
+    <meta
+      name="twitter:description"
+      content="לפניכם היגדים מתוך החזון והמצע של תנועת אל הדגל. דרגו עד כמה אתם מסכימים, וגלו בסוף את אחוז ההתאמה שלכם."
+    />
+    <meta name="twitter:image" content="https://lotem-e.github.io/el-hadegel-quiz/og-image.png" />
+    <meta name="twitter:image:alt" content="אל הדגל - דור חדש של ציונות" />
     <!-- Heebo is the same font the reference site (elhadegel-friends.com) loads -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
