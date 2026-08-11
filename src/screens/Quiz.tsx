@@ -25,6 +25,18 @@ export default function Quiz({ questions, onFinish }: QuizProps) {
 
   const question = questions[index]
 
+  // Defensive: an empty mix would otherwise crash on the first render.
+  if (!question) {
+    return (
+      <>
+        <Header />
+        <main className="mx-auto max-w-xl px-4 py-16 text-center text-muted">
+          השאלון אינו זמין כרגע. נסו שוב מאוחר יותר.
+        </main>
+      </>
+    )
+  }
+
   function handleSelect(value: number) {
     if (pending) return
     const nextAnswers = answers.map((answer, i) => (i === index ? value : answer))

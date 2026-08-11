@@ -1,12 +1,9 @@
 // quizConfig.ts - how a single quiz is composed.
-// Every quiz has QUIZ_LENGTH questions total. DEFAULT_QUOTAS says how many
-// of them come from each pillar ("the mix"). These numbers are Lotem's own:
-// she hand-tuned them in the admin mix editor (2026-08-10) and they were
-// adopted here as the shipped default. The counts must always add up to
-// QUIZ_LENGTH.
+// DEFAULT_QUOTAS says how many questions come from each pillar ("the mix").
+// The quiz LENGTH is not configured anywhere: it is simply what the mix
+// produces (the sum of the quotas), so the admin controls it directly by
+// editing the mix - nothing to keep in sync and nothing to validate against.
 import type { PillarId } from './types'
-
-export const QUIZ_LENGTH = 13
 
 export const DEFAULT_QUOTAS: Record<PillarId, number> = {
   'vision-victory': 1,

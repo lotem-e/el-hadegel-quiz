@@ -7,9 +7,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import Header from '../components/Header'
+import MixChart, { pillarSlices } from '../components/MixChart'
 import { PILLARS as BAKED_PILLARS } from '../content/pillars'
 import { BASE_QUESTIONS } from '../content/questions'
-import { DEFAULT_QUOTAS, QUIZ_LENGTH } from '../content/quizConfig'
+import { DEFAULT_QUOTAS } from '../content/quizConfig'
 import type { Pillar, PillarId, Question } from '../content/types'
 import { supabase } from '../lib/supabaseClient'
 
@@ -58,7 +59,6 @@ export default function Admin() {
   const [tab, setTab] = useState<Tab>('questions')
   const [pillars, setPillars] = useState<PillarRow[]>(() => (offline ? bakedPillarRows() : []))
   const [questions, setQuestions] = useState<Question[]>(() => (offline ? BASE_QUESTIONS : []))
-  const [quizLength, setQuizLength] = useState(QUIZ_LENGTH)
   const [loading, setLoading] = useState(() => !offline)
   const [loadError, setLoadError] = useState(false)
   const [saveError, setSaveError] = useState(false)
@@ -106,12 +106,11 @@ export default function Admin() {
     if (!supabase) return
     setLoading(true)
     setLoadError(false)
-    const [pillarsRes, questionsRes, configRes] = await Promise.all([
+    const [pillarsRes, questionsRes] = await Promise.all([
       supabase.from('pillars').select('*').order('sort_order'),
       supabase.from('questions').select('*').order('sort_order'),
-      supabase.from('quiz_config').select('*').limit(1).single(),
     ])
-    if (pillarsRes.error || questionsRes.error || configRes.error) {
+    if (pillarsRes.error || questionsRes.error) {
       setLoading(false)
       setLoadError(true)
       return
@@ -140,7 +139,6 @@ export default function Admin() {
         sourceLabel: row.source_label,
       })),
     )
-    setQuizLength(configRes.data.quiz_length)
     await loadPublished()
     setLoading(false)
   }
@@ -371,26 +369,10 @@ export default function Admin() {
           snap.sources !== now.sources
         )
       }))
-  // The publish gate: a broken mix may exist in the draft (editing passes
-  // through unbalanced states) but must never reach visitors.
-  const mixProblems: string[] = []
-  if (!offline && !loading) {
-    if (quotaSum !== quizLength) {
-      mixProblems.push(`סכום התמהיל הוא ${quotaSum} במקום ${quizLength}`)
-    }
-    for (const pillar of pillars) {
-      if (pillar.quota > activeCount(pillar.id)) {
-        mixProblems.push(`בפילר ״${pillar.short}״ המכסה גבוהה ממספר השאלות שנותרו במאגר`)
-      }
-      const pinnedCount = questions.filter(
-        (question) => question.pillarId === pillar.id && question.pinned,
-      ).length
-      if (pinnedCount > pillar.quota) {
-        mixProblems.push(`בפילר ״${pillar.short}״ יש יותר שאלות נעוצות מהמכסה`)
-      }
-    }
-  }
-  const publishBlocked = mixProblems.length > 0
+  // The quiz length is simply what the mix yields, so there is nothing to
+  // validate it against - any mix is publishable. The single exception is an
+  // empty quiz, which would leave visitors with nothing to answer.
+  const publishBlocked = !offline && !loading && quotaSum === 0
 
   if (loading) {
     return (
@@ -473,9 +455,9 @@ export default function Admin() {
                 : 'עדיין לא פורסמה גרסה ראשונה'}
           </p>
         )}
-        {!offline && !migrationMissing && !loading && publishBlocked && (
+        {!offline && !migrationMissing && publishBlocked && (
           <p className="mt-2 rounded-lg border border-red-300 bg-red-600/5 p-3 text-xs leading-relaxed text-red-600">
-            אי אפשר לפרסם עד שהתמהיל תקין: {mixProblems.join(' · ')}
+            אי אפשר לפרסם שאלון ריק - יש לקבוע לפחות שאלה אחת באחד הפילרים.
           </p>
         )}
         {saveError && (
@@ -490,7 +472,7 @@ export default function Admin() {
             ניהול מאגר השאלות ({questions.length})
           </TabButton>
           <TabButton active={tab === 'mix'} onClick={() => setTab('mix')}>
-            ניהול אורך ותמהיל השאלון
+            ניהול אורך ותמהיל השאלון ({quotaSum})
           </TabButton>
         </div>
 
@@ -602,7 +584,8 @@ export default function Admin() {
 
         {tab === 'mix' && (
           <section className="mt-5">
-            <div className="space-y-3">
+            <MixChart slices={pillarSlices(pillars)} />
+            <div className="mt-4 space-y-3">
               {pillars.map((pillar) => {
                 const available = activeCount(pillar.id)
                 const pinnedInPillar = questions.filter(
@@ -676,24 +659,6 @@ export default function Admin() {
                 )
               })}
             </div>
-            <div
-              className={
-                'mt-4 flex items-center justify-between rounded-xl border p-4 font-bold ' +
-                (quotaSum === quizLength
-                  ? 'border-line bg-white text-green-700'
-                  : 'border-red-300 bg-red-600/5 text-red-600')
-              }
-            >
-              <span>סה״כ בשאלון</span>
-              <span className="tabular-nums">
-                {quotaSum} / {quizLength}
-              </span>
-            </div>
-            {quotaSum !== quizLength && (
-              <p className="mt-2 text-xs text-red-600">
-                יש להגיע בדיוק ל-{quizLength} כדי שהשאלון יעבוד כמתוכנן.
-              </p>
-            )}
           </section>
         )}
       </main>
