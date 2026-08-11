@@ -7,6 +7,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import Header from '../components/Header'
+import IconButton, { EditIcon, PinIcon, TrashIcon } from '../components/IconButton'
 import MixChart, { pillarSlices } from '../components/MixChart'
 import { PILLARS as BAKED_PILLARS } from '../content/pillars'
 import { BASE_QUESTIONS } from '../content/questions'
@@ -373,6 +374,89 @@ export default function Admin() {
   // validate it against - any mix is publishable. The single exception is an
   // empty quiz, which would leave visitors with nothing to answer.
   const publishBlocked = !offline && !loading && quotaSum === 0
+  const pinnedVisible = visibleQuestions.filter((question) => question.pinned)
+  const restVisible = visibleQuestions.filter((question) => !question.pinned)
+
+  function renderQuestionCard(question: Question) {
+    const pillar = pillars.find((p) => p.id === question.pillarId)
+    const isEditing = editingId === question.id
+    return (
+      <div
+        key={question.id}
+        className={
+          'rounded-xl border bg-white p-4 shadow-sm ' +
+          (question.pinned ? 'border-navy/30 ' : 'border-line ') +
+          (question.active ? '' : 'opacity-60')
+        }
+      >
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="rounded-full border border-line bg-cream px-2.5 py-0.5 font-medium text-navy">
+            {pillar?.short}
+          </span>
+          {!question.active && (
+            <span className="rounded-full bg-red-600/10 px-2.5 py-0.5 font-medium text-red-600">
+              כבויה
+            </span>
+          )}
+          <span className="grow" />
+          {!offline && !isEditing && (
+            <span className="flex items-center gap-1">
+              <IconButton
+                label={
+                  question.pinned
+                    ? 'ביטול נעיצה - השאלה תחזור להגרלה הרגילה'
+                    : 'נעיצה - השאלה תיכלל בכל שאלון, בלי הגרלה'
+                }
+                tone={question.pinned ? 'active' : 'default'}
+                onClick={() => void handleTogglePin(question)}
+              >
+                <PinIcon filled={question.pinned} />
+              </IconButton>
+              <IconButton label="עריכת נוסח השאלה" onClick={() => startEdit(question)}>
+                <EditIcon />
+              </IconButton>
+              <IconButton
+                label="מחיקת השאלה מהמאגר"
+                tone="danger"
+                onClick={() => setConfirmDeleteId(question.id)}
+              >
+                <TrashIcon />
+              </IconButton>
+            </span>
+          )}
+        </div>
+
+        {isEditing ? (
+          <div className="mt-3">
+            <textarea
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              rows={3}
+              className="w-full rounded-lg border border-line p-3 text-sm leading-relaxed focus:border-navy focus:outline-none"
+            />
+            <div className="mt-2 flex gap-2">
+              <button
+                type="button"
+                onClick={() => void saveEdit()}
+                className="rounded-lg bg-navy px-4 py-1.5 text-sm font-medium text-white hover:bg-navy-dark"
+              >
+                שמירה
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditingId(null)}
+                className="rounded-lg border border-line px-4 py-1.5 text-sm text-muted hover:border-navy hover:text-navy"
+              >
+                ביטול
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-2 text-sm leading-relaxed">{question.text}</p>
+        )}
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -493,91 +577,30 @@ export default function Admin() {
               ))}
             </div>
 
-            <div className="mt-4 space-y-3">
-              {visibleQuestions.map((question) => {
-                const pillar = pillars.find((p) => p.id === question.pillarId)
-                const isEditing = editingId === question.id
-                return (
-                  <div
-                    key={question.id}
-                    className={
-                      'rounded-xl border border-line bg-white p-4 shadow-sm ' +
-                      (question.active ? '' : 'opacity-60')
-                    }
-                  >
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="rounded-full border border-line bg-cream px-2.5 py-0.5 font-medium text-navy">
-                        {pillar?.short}
-                      </span>
-                      {question.pinned && (
-                        <span className="rounded-full bg-navy px-2.5 py-0.5 font-medium text-white">
-                          נעוצה בכל שאלון
-                        </span>
-                      )}
-                      {!question.active && (
-                        <span className="rounded-full bg-red-600/10 px-2.5 py-0.5 font-medium text-red-600">
-                          כבויה
-                        </span>
-                      )}
-                      <span className="grow" />
-                      {!offline && !isEditing && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => void handleTogglePin(question)}
-                            className="text-muted underline underline-offset-2 transition-colors hover:text-navy"
-                          >
-                            {question.pinned ? 'ביטול נעיצה' : 'נעיצה'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => startEdit(question)}
-                            className="text-muted underline underline-offset-2 transition-colors hover:text-navy"
-                          >
-                            עריכה
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setConfirmDeleteId(question.id)}
-                            className="rounded-md px-2 py-0.5 font-medium text-red-600 transition-colors hover:bg-red-600/10"
-                          >
-                            מחיקה
-                          </button>
-                        </>
-                      )}
-                    </div>
+            {/* Pinned questions lead the list, under their own explanation */}
+            {pinnedVisible.length > 0 && (
+              <div className="mt-5">
+                <h2 className="flex items-center gap-1.5 text-sm font-bold text-navy">
+                  <span className="text-navy">
+                    <PinIcon filled />
+                  </span>
+                  שאלות נעוצות ({pinnedVisible.length})
+                </h2>
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  שאלה נעוצה נכללת בכל שאלון ואינה תלויה בהגרלה. מיקומה בתוך השאלון עדיין
+                  אקראי, והיא תופסת מקום מתוך המכסה של הפילר שלה.
+                </p>
+                <div className="mt-3 space-y-3">{pinnedVisible.map(renderQuestionCard)}</div>
+              </div>
+            )}
 
-                    {isEditing ? (
-                      <div className="mt-3">
-                        <textarea
-                          value={draft}
-                          onChange={(event) => setDraft(event.target.value)}
-                          rows={3}
-                          className="w-full rounded-lg border border-line p-3 text-sm leading-relaxed focus:border-navy focus:outline-none"
-                        />
-                        <div className="mt-2 flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => void saveEdit()}
-                            className="rounded-lg bg-navy px-4 py-1.5 text-sm font-medium text-white hover:bg-navy-dark"
-                          >
-                            שמירה
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditingId(null)}
-                            className="rounded-lg border border-line px-4 py-1.5 text-sm text-muted hover:border-navy hover:text-navy"
-                          >
-                            ביטול
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="mt-2 text-sm leading-relaxed">{question.text}</p>
-                    )}
-                  </div>
-                )
-              })}
+            <div className={pinnedVisible.length > 0 ? 'mt-6' : 'mt-4'}>
+              {pinnedVisible.length > 0 && (
+                <h2 className="mb-3 text-sm font-bold text-navy">
+                  שאר המאגר ({restVisible.length})
+                </h2>
+              )}
+              <div className="space-y-3">{restVisible.map(renderQuestionCard)}</div>
             </div>
           </section>
         )}
