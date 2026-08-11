@@ -11,8 +11,22 @@ function estimateMinutes(statements: number): number {
   return Math.max(1, Math.round((statements * 12) / 60))
 }
 
+/**
+ * The movement's own badge, copied value for value off the pill on
+ * elhadegel-friends.com. Theirs is two elements - a wrapper carrying the shape
+ * and a span carrying the type - so reading the wrapper alone gives you the
+ * inherited 16px/400 and not the real text style. The type is on the span:
+ *
+ *   wrapper  bg-[#1B2D52]/5  ring-1 ring-[#1B2D52]/10  px-4 py-1.5  rounded-full
+ *   text     text-xs font-semibold tracking-wide text-[#1B2D52]   -> 28px tall
+ *
+ * The tint plus a hairline ring is what makes it sit ON the cream rather than
+ * float above it; a white fill with a solid border reads as a card. Merged
+ * into one element here because Lotem does not want their navy dot, which is
+ * the only reason theirs needed a wrapper.
+ */
 const pillClass =
-  'rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-navy shadow-sm'
+  'rounded-full bg-navy/5 px-4 py-1.5 text-xs font-semibold tracking-wide text-navy ring-1 ring-navy/10'
 
 export default function Landing({ onStart, busy = false }: { onStart: () => void; busy?: boolean }) {
   const quizLength = getContent().quizLength
