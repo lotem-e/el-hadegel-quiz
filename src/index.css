@@ -30,6 +30,30 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Each statement slides in from the leading edge, so moving through the
+   quiz feels like moving rather than like a slideshow swap. */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.slide-in {
+  animation: slide-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Anyone who asked for less motion gets none of it */
+@media (prefers-reduced-motion: reduce) {
+  .slide-in,
+  .toast-pop {
+    animation: none;
+  }
+}
+
 /* Toast entrance: a quick rise + fade, used by the admin publish toast */
 @keyframes toast-pop {
   from {

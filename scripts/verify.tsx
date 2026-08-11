@@ -135,7 +135,9 @@ console.log('screens render')
 
 // Landing (via App with empty hash)
 const landing = renderToString(createElement(App))
-expectContains('Landing', landing, ['מתחילים', 'כמה קרובים אתם', 'אל הדגל', 'לקריאת החזון המלא'])
+expectContains('Landing', landing, ['מתחילים', 'כמה קרובים אתם', 'אל הדגל', 'היגדים · כ-'])
+// the source links belong on the results screen now, not on the doorstep
+check('landing carries no outbound links', !landing.includes('elhadegel.co.il/about-us'))
 
 // Quiz with a real random selection
 const questions = selectQuizQuestions(BASE_QUESTIONS, DEFAULT_QUOTAS)
@@ -145,11 +147,25 @@ expectContains('Quiz', quiz, ['היגד 1 מתוך 13', 'מסכים/ה מאוד'
 // Results: high score (pin CTA must appear) and low score (must not)
 const high: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pillarId, value: 5 }))
 const highHtml = renderToString(createElement(Results, { answers: high, onRestart: () => {} }))
-expectContains('Results-high', highHtml, ['100%', 'נועצים את הדגל', 'פירוט לפי עמודי החזון', 'שאלון חדש'])
+expectContains('Results-high', highHtml, [
+  '100%',
+  'נועצים את הדגל',
+  'איפה התחברתם, ואיפה פחות',
+  'רוצים לקרוא את המקור המלא?',
+  'הצטרפו אלינו',
+  'לקריאה נוספת',
+])
+check('confetti only above the flag threshold', highHtml.includes('canvas'))
 
 const low: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pillarId, value: 2 }))
 const lowHtml = renderToString(createElement(Results, { answers: low, onRestart: () => {} }))
-expectContains('Results-low', lowHtml, ['25%'])
+expectContains('Results-low', lowHtml, ['25%', 'נסכים לא להסכים', 'הצטרפו אלינו'])
+check('no confetti below the threshold', !lowHtml.includes('canvas'))
+
+// the band just under the flag offers another round instead of a plain restart
+const nearAnswers: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pillarId, value: 4 }))
+const nearHtml = renderToString(createElement(Results, { answers: nearAnswers, onRestart: () => {} }))
+expectContains('Results-near', nearHtml, ['75%', 'קרובים מאוד', 'לסבב נוסף'])
 if (lowHtml.includes('נועצים את הדגל')) {
   failures++
   console.error('FAIL: pin CTA shown below threshold')

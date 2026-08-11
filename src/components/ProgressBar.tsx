@@ -1,20 +1,32 @@
-// ProgressBar.tsx - "question X of Y" + a thin fill bar.
-// In RTL the fill naturally starts from the right, which is what we want.
+// ProgressBar.tsx - one segment per statement, so progress is countable at
+// a glance ("two to go") instead of a percentage you have to translate.
+// In RTL the row fills from the right on its own.
 export default function ProgressBar({ current, total }: { current: number; total: number }) {
-  const percent = Math.round((current / total) * 100)
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-sm text-muted">
         <span>
           היגד {current} מתוך {total}
         </span>
-        <span className="tabular-nums">{percent}%</span>
+        {current === total && <span className="font-medium text-navy">האחרון!</span>}
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-line" role="progressbar" aria-valuenow={current} aria-valuemin={0} aria-valuemax={total}>
-        <div
-          className="h-full rounded-full bg-navy transition-all duration-300"
-          style={{ width: `${percent}%` }}
-        />
+      <div
+        className="flex gap-1"
+        role="progressbar"
+        aria-valuenow={current}
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-label={`היגד ${current} מתוך ${total}`}
+      >
+        {Array.from({ length: total }, (_, index) => (
+          <span
+            key={index}
+            className={
+              'h-1.5 flex-1 rounded-full transition-colors duration-300 ' +
+              (index < current ? 'bg-navy' : 'bg-line')
+            }
+          />
+        ))}
       </div>
     </div>
   )

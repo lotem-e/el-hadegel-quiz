@@ -1,7 +1,14 @@
 // Landing.tsx - the opening screen: big logo, one sentence, one button.
+// Nothing here competes with the button; the links to the movement's
+// material live on the results screen, where the visitor has a reason to
+// follow them.
 import Logo from '../components/Logo'
-import { VISION_URL } from '../content/pillars'
 import { getContent } from '../store/contentStore'
+
+/** Roughly twelve seconds a statement, rounded to a friendly number */
+function estimateMinutes(statements: number): number {
+  return Math.max(1, Math.round((statements * 12) / 60))
+}
 
 export default function Landing({ onStart, busy = false }: { onStart: () => void; busy?: boolean }) {
   const quizLength = getContent().quizLength
@@ -23,15 +30,9 @@ export default function Landing({ onStart, busy = false }: { onStart: () => void
       >
         {busy ? 'רק רגע...' : 'מתחילים'}
       </button>
-      <p className="mt-3 text-sm text-muted">{quizLength} היגדים · כ-3 דקות</p>
-      <a
-        href={VISION_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-14 text-sm text-navy underline underline-offset-4 hover:text-navy-dark"
-      >
-        לקריאת החזון המלא באתר התנועה ↗
-      </a>
+      <p className="mt-3 text-sm text-muted">
+        {quizLength} היגדים · כ-{estimateMinutes(quizLength)} דקות
+      </p>
     </main>
   )
 }

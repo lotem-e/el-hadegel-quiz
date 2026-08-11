@@ -1,8 +1,12 @@
 // Quiz.tsx - one statement at a time. Picking an answer briefly highlights
 // it and auto-advances; a back link lets you revisit and change answers.
+//
+// Two things make it feel like movement rather than a slideshow: each
+// statement slides in, and the number keys 1-5 answer directly, so a
+// keyboard user never reaches for the mouse.
 import { useEffect, useRef, useState } from 'react'
 import Header from '../components/Header'
-import LikertScale from '../components/LikertScale'
+import LikertScale, { LIKERT_OPTIONS } from '../components/LikertScale'
 import ProgressBar from '../components/ProgressBar'
 import type { Question } from '../content/types'
 import type { Answer } from '../engine/scoring'
@@ -14,9 +18,9 @@ interface QuizProps {
 
 export default function Quiz({ questions, onFinish }: QuizProps) {
   const [index, setIndex] = useState(0)
-  // One slot per question; null = not answered yet.
+  // One slot per statement; null = not answered yet.
   const [answers, setAnswers] = useState<(number | null)[]>(() => questions.map(() => null))
-  // While the short "selected" highlight plays we ignore extra clicks.
+  // While the short "selected" highlight plays we ignore extra input.
   const [pending, setPending] = useState(false)
   const timerRef = useRef<number | undefined>(undefined)
 
@@ -47,8 +51,8 @@ export default function Quiz({ questions, onFinish }: QuizProps) {
       if (index + 1 < questions.length) {
         setIndex(index + 1)
       } else {
-        // Build the final Answer list. Every slot is filled by now because
-        // advancing only happens after a selection.
+        // Every slot is filled by now, because advancing only happens
+        // after a selection.
         const finished: Answer[] = []
         questions.forEach((q, i) => {
           const value = nextAnswers[i]
@@ -62,15 +66,23 @@ export default function Quiz({ questions, onFinish }: QuizProps) {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-xl px-4 py-8">
+      <main className="mx-auto max-w-xl px-4 py-6 sm:py-8">
         <ProgressBar current={index + 1} total={questions.length} />
-        <div className="mt-6 rounded-xl border border-line bg-white p-6 shadow-sm sm:p-8">
-          {/* min height keeps the card from jumping between short and long statements */}
-          <p className="min-h-24 text-xl font-bold leading-snug text-navy sm:text-2xl">
+        {/* key on the index restarts the entrance animation per statement */}
+        <div
+          key={index}
+          className="slide-in mt-5 rounded-xl border border-line bg-white p-5 shadow-sm sm:mt-6 sm:p-8"
+        >
+          <p className="min-h-20 text-lg font-bold leading-snug text-navy sm:min-h-24 sm:text-2xl">
             {question.text}
           </p>
-          <div className="mt-6">
-            <LikertScale value={answers[index]} onSelect={handleSelect} disabled={pending} />
+          <div className="mt-5 sm:mt-6">
+            <LikertScale
+              value={answers[index]}
+              onSelect={handleSelect}
+              disabled={pending}
+              enableKeyboard
+            />
           </div>
         </div>
         {index > 0 && (
@@ -82,6 +94,9 @@ export default function Quiz({ questions, onFinish }: QuizProps) {
             חזרה להיגד הקודם
           </button>
         )}
+        <p className="mt-6 hidden text-center text-xs text-muted sm:block">
+          אפשר גם במקלדת: {LIKERT_OPTIONS.length}-1
+        </p>
       </main>
     </>
   )

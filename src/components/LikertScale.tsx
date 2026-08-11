@@ -1,6 +1,8 @@
 // LikertScale.tsx - the 1-5 agree/disagree answer control.
 // Vertical buttons work well on both mobile and desktop and keep the
 // labels fully readable (no cramped 5-column row).
+import { useEffect } from 'react'
+
 export const LIKERT_OPTIONS = [
   { value: 1, label: 'כלל לא מסכים/ה' },
   { value: 2, label: 'לא מסכים/ה' },
@@ -13,9 +15,33 @@ interface LikertScaleProps {
   value: number | null
   onSelect: (value: number) => void
   disabled?: boolean
+  /** Answer with the number keys 1-5 */
+  enableKeyboard?: boolean
 }
 
-export default function LikertScale({ value, onSelect, disabled = false }: LikertScaleProps) {
+export default function LikertScale({
+  value,
+  onSelect,
+  disabled = false,
+  enableKeyboard = false,
+}: LikertScaleProps) {
+  useEffect(() => {
+    if (!enableKeyboard || disabled) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      // Ignore while typing somewhere, or with a modifier held.
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+      const target = event.target as HTMLElement | null
+      if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return
+      const picked = Number(event.key)
+      if (picked >= 1 && picked <= LIKERT_OPTIONS.length) {
+        event.preventDefault()
+        onSelect(picked)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [enableKeyboard, disabled, onSelect])
+
   return (
     <div className="flex flex-col gap-2" role="radiogroup" aria-label="עד כמה אתם מסכימים?">
       {LIKERT_OPTIONS.map((option) => {
@@ -28,11 +54,12 @@ export default function LikertScale({ value, onSelect, disabled = false }: Liker
             aria-checked={selected}
             disabled={disabled}
             onClick={() => onSelect(option.value)}
+            // min-h-12 keeps every option a comfortable tap target on a phone
             className={
-              'flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-right font-medium transition-colors ' +
+              'flex min-h-12 w-full items-center gap-3 rounded-lg border px-4 py-3 text-right font-medium transition-colors ' +
               (selected
                 ? 'border-navy bg-navy text-white'
-                : 'border-line bg-white hover:border-navy')
+                : 'border-line bg-white hover:border-navy active:border-navy')
             }
           >
             <span
