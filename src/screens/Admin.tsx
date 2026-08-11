@@ -165,7 +165,7 @@ export default function Admin() {
   }
 
   async function handlePublish() {
-    if (!supabase) return
+    if (!supabase || publishBlocked) return
     setPublishing(true)
     setSaveError(false)
     const { error } = await supabase.rpc('publish_content')
@@ -194,6 +194,32 @@ export default function Admin() {
     setQuestions((current) =>
       current.map((question) => (question.id === id ? { ...question, ...patch } : question)),
     )
+  }
+
+  // Hermetic in-tab blocking (her request): impossible quota values are
+  // refused with an explanation instead of saved-then-warned. The one thing
+  // that cannot be blocked per-change is the SUM (any single edit passes
+  // through an unbalanced state) - that is enforced at publish time.
+  async function handleQuotaChange(pillar: PillarRow, requested: number) {
+    const clamped = Math.max(0, Math.min(99, Math.round(requested)))
+    const available = activeCount(pillar.id)
+    const pinnedCount = questions.filter(
+      (question) => question.pillarId === pillar.id && question.pinned,
+    ).length
+    if (clamped > available) {
+      showToast(`אי אפשר לקבוע מכסה גבוהה ממספר השאלות שיש בפילר ( ${available} )`, 'warn')
+      return
+    }
+    if (clamped < pinnedCount) {
+      showToast(
+        pinnedCount === 1
+          ? 'אי אפשר לרדת מתחת לשאלה הנעוצה - בטלו את הנעיצה קודם'
+          : `אי אפשר לרדת מתחת ל-${pinnedCount} השאלות הנעוצות - בטלו נעיצות קודם`,
+        'warn',
+      )
+      return
+    }
+    await saveQuota(pillar.id, clamped)
   }
 
   async function saveQuota(pillarId: PillarId, quota: number) {
@@ -266,6 +292,8 @@ export default function Admin() {
 
   const visibleQuestions = filter === 'all' ? questions : questions.filter((q) => q.pillarId === filter)
   const quotaSum = pillars.reduce((sum, pillar) => sum + pillar.quota, 0)
+  const activeCount = (pillarId: PillarId) =>
+    questions.filter((q) => q.pillarId === pillarId && q.active).length
   // Unpublished changes exist when any editable field differs from the
   // latest published snapshot (or when nothing was ever published).
   const dirty =
@@ -283,8 +311,26 @@ export default function Admin() {
         )
       }) ||
       pillars.some((pillar) => published.quotaState.get(pillar.id) !== pillar.quota))
-  const activeCount = (pillarId: PillarId) =>
-    questions.filter((q) => q.pillarId === pillarId && q.active).length
+  // The publish gate: a broken mix may exist in the draft (editing passes
+  // through unbalanced states) but must never reach visitors.
+  const mixProblems: string[] = []
+  if (!offline && !loading) {
+    if (quotaSum !== quizLength) {
+      mixProblems.push(`סכום התמהיל הוא ${quotaSum} במקום ${quizLength}`)
+    }
+    for (const pillar of pillars) {
+      if (pillar.quota > activeCount(pillar.id)) {
+        mixProblems.push(`בפילר ״${pillar.short}״ המכסה גבוהה ממספר השאלות שנותרו במאגר`)
+      }
+      const pinnedCount = questions.filter(
+        (question) => question.pillarId === pillar.id && question.pinned,
+      ).length
+      if (pinnedCount > pillar.quota) {
+        mixProblems.push(`בפילר ״${pillar.short}״ יש יותר שאלות נעוצות מהמכסה`)
+      }
+    }
+  }
+  const publishBlocked = mixProblems.length > 0
 
   if (loading) {
     return (
@@ -326,7 +372,7 @@ export default function Admin() {
               <button
                 type="button"
                 onClick={() => void handlePublish()}
-                disabled={!dirty || publishing || migrationMissing}
+                disabled={!dirty || publishing || migrationMissing || publishBlocked}
                 className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {publishing ? 'מפרסם...' : 'פרסום לשאלון החי'}
@@ -353,6 +399,11 @@ export default function Admin() {
               : published
                 ? 'פרסום אחרון: ' + formatPublishedAt(published.publishedAt)
                 : 'עדיין לא פורסמה גרסה ראשונה'}
+          </p>
+        )}
+        {!offline && !migrationMissing && !loading && publishBlocked && (
+          <p className="mt-2 rounded-lg border border-red-300 bg-red-600/5 p-3 text-xs leading-relaxed text-red-600">
+            אי אפשר לפרסם עד שהתמהיל תקין: {mixProblems.join(' · ')}
           </p>
         )}
         {saveError && (
@@ -511,12 +562,12 @@ export default function Admin() {
                     </div>
                     <input
                       type="number"
-                      min={0}
-                      max={9}
+                      min={pinnedInPillar}
+                      max={available}
                       value={pillar.quota}
                       disabled={offline}
                       onChange={(event) =>
-                        void saveQuota(pillar.id, Number.parseInt(event.target.value, 10) || 0)
+                        void handleQuotaChange(pillar, Number.parseInt(event.target.value, 10) || 0)
                       }
                       className="w-16 rounded-lg border border-line p-2 text-center tabular-nums focus:border-navy focus:outline-none"
                       aria-label={`מספר שאלות: ${pillar.title}`}
