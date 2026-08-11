@@ -54,7 +54,8 @@ export default function Confetti() {
         y: -20 - Math.random() * height() * 0.6,
         vx: (Math.random() - 0.5) * 1.4,
         vy: 1.6 + Math.random() * 2.2,
-        size: isFlag ? 12 + Math.random() * 6 : 5 + Math.random() * 5,
+        // Flags carry a star now, so they need more room than a ribbon.
+        size: isFlag ? 18 + Math.random() * 10 : 5 + Math.random() * 5,
         spin: (Math.random() - 0.5) * 0.12,
         angle: Math.random() * Math.PI * 2,
         color: RIBBON_COLORS[Math.floor(Math.random() * RIBBON_COLORS.length)],
@@ -65,15 +66,42 @@ export default function Confetti() {
     const start = performance.now()
     let frame = 0
 
+    /**
+     * The Star of David, drawn as two overlapping filled triangles.
+     *
+     * Filled, not stroked: at this size a stroke is under a pixel wide and
+     * the browser dissolves it into grey. Two solid triangles survive, and
+     * that is the whole construction of the star anyway.
+     */
+    const drawStar = (radius: number) => {
+      context.fillStyle = '#0038b8'
+      // The second triangle is the first turned half a turn.
+      for (const turn of [0, Math.PI]) {
+        context.beginPath()
+        for (let corner = 0; corner < 3; corner++) {
+          const a = turn + (corner * 2 * Math.PI) / 3 - Math.PI / 2
+          const x = Math.cos(a) * radius
+          const y = Math.sin(a) * radius
+          if (corner === 0) context.moveTo(x, y)
+          else context.lineTo(x, y)
+        }
+        context.closePath()
+        context.fill()
+      }
+    }
+
     const drawFlag = (size: number) => {
       const w = size
       const h = size * 0.66
-      const bar = h * 0.17
+      const bar = h * 0.16
       context.fillStyle = '#ffffff'
       context.fillRect(-w / 2, -h / 2, w, h)
       context.fillStyle = '#0038b8'
       context.fillRect(-w / 2, -h / 2, w, bar)
       context.fillRect(-w / 2, h / 2 - bar, w, bar)
+      // Sized to the gap between the stripes, not to the flag, so it never
+      // touches them however big the flag is.
+      drawStar((h / 2 - bar) * 0.82)
     }
 
     const tick = (now: number) => {
