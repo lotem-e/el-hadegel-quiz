@@ -47,7 +47,11 @@ export default function ProgressBar({ current, total, onBack, canGoBack }: Progr
         {/* dir="ltr": the fraction reads 2 / 14 with the current number on
             the LEFT (Lotem's direction), and stays that way regardless of
             the RTL page around it. */}
-        <span dir="ltr" className="flex items-baseline gap-1 text-muted">
+        {/* pl-6 mirrors the button's own px-6: the arrow sits 24px in from
+            the right edge, so the counter sits 24px in from the left one.
+            Physical pl, not logical ps - this span is dir="ltr" inside an
+            RTL page, and a logical property would flip with it. */}
+        <span dir="ltr" className="flex items-baseline gap-1 pl-6 text-muted">
           <span className="text-base font-bold tabular-nums text-navy">{current}</span>
           <span className="text-xs">/</span>
           <span className="tabular-nums">{total}</span>
