@@ -10,8 +10,6 @@ import type { Pillar } from './types'
 export const VISION_URL = 'https://www.elhadegel.co.il/about-us'
 export const PLATFORM_PDF_URL = 'https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf'
 
-const VISION_SOURCE = { label: 'החזון שלנו באתר התנועה', url: VISION_URL }
-
 export const PILLARS: Pillar[] = [
   {
     id: 'vision-victory',
@@ -20,8 +18,9 @@ export const PILLARS: Pillar[] = [
     description: 'בקטגוריה זו ישנן שאלות העוסקות בשתי ההבנות של ה-7 באוקטובר: חובת העוצמה, והנהגה מהדור שנלחם.',
     sourceUrl: VISION_URL,
     sources: [
-      VISION_SOURCE,
-      { label: 'המצע המלא - הקדמה ( עמ׳ 1-2 )', url: PLATFORM_PDF_URL + '#page=1' },
+      { label: 'החזון שלנו - חזון ציוני למדינת ישראל', url: 'https://www.elhadegel.co.il/about-us#principe-0' },
+      { label: 'החזון שלנו - מחליפים את דור הכישלון בדור הניצחון', url: 'https://www.elhadegel.co.il/about-us#principe-12' },
+      { label: 'המצע המלא - הקדמה ( עמ׳ 1-2 )', url: 'https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=1' },
     ],
   },
   {
@@ -30,7 +29,11 @@ export const PILLARS: Pillar[] = [
     short: 'שבירת הגושים וכפיית ממשלה רחבה וציונית',
     description: 'בקטגוריה זו ישנן שאלות העוסקות בציונות שמעל מחנות: מה נכון לפני מי צודק, אחדות שאינה אחידות, וגוש ציוני רחב.',
     sourceUrl: VISION_URL,
-    sources: [VISION_SOURCE],
+    sources: [
+      { label: 'החזון שלנו - ימין ושמאל Out | ציונות In', url: 'https://www.elhadegel.co.il/about-us#principe-5' },
+      { label: 'החזון שלנו - אחדות העם כתנאי לביטחון', url: 'https://www.elhadegel.co.il/about-us#principe-1' },
+      { label: 'החזון שלנו - קואליציה ציונית רחבה', url: 'https://www.elhadegel.co.il/about-us#principe-7' },
+    ],
   },
   {
     id: 'winning-iron-wall',
@@ -39,8 +42,9 @@ export const PILLARS: Pillar[] = [
     description: 'בקטגוריה זו ישנן שאלות העוסקות בתפיסת הביטחון: הכרעה במקום סבבים, הסברה כחזית, יוזמה, ותנאי השלום.',
     sourceUrl: VISION_URL,
     sources: [
-      VISION_SOURCE,
-      { label: 'המצע המלא - מצע ביטחון ( עמ׳ 3-9 )', url: PLATFORM_PDF_URL + '#page=3' },
+      { label: 'החזון שלנו - איך מדינת ישראל מתחילה לנצח?', url: 'https://www.elhadegel.co.il/about-us#principe-2' },
+      { label: 'החזון שלנו - ישראל אחרי עידן התמימות', url: 'https://www.elhadegel.co.il/about-us#principe-3' },
+      { label: 'המצע המלא - מצע ביטחון ( עמ׳ 3-9 )', url: 'https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=3' },
     ],
   },
   {
@@ -50,8 +54,9 @@ export const PILLARS: Pillar[] = [
     description: 'בקטגוריה זו ישנן שאלות העוסקות בשוויון בנטל ובשילוב: שירות לכל אזרח, שירות תמורת זכויות, ושותפות כלל החברה.',
     sourceUrl: VISION_URL,
     sources: [
-      VISION_SOURCE,
-      { label: 'המצע המלא - לכידות חברתית ( עמ׳ 4 )', url: PLATFORM_PDF_URL + '#page=4' },
+      { label: 'החזון שלנו - חוק יסוד: שירות אל הדגל', url: 'https://www.elhadegel.co.il/about-us#principe-4' },
+      { label: 'החזון שלנו - מנצחים את הסכנה הדמוגרפית', url: 'https://www.elhadegel.co.il/about-us#principe-10' },
+      { label: 'המצע המלא - לכידות חברתית ( עמ׳ 4 )', url: 'https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=4' },
     ],
   },
   {
@@ -61,8 +66,8 @@ export const PILLARS: Pillar[] = [
     description: 'בקטגוריה זו ישנן שאלות העוסקות בחינוך ציוני משותף: ליבה אחת לכל הזרמים, מצוינות מורים, ודור גאה בציונותו.',
     sourceUrl: VISION_URL,
     sources: [
-      VISION_SOURCE,
-      { label: 'המצע המלא - מצע חינוך ( עמ׳ 10-13 )', url: PLATFORM_PDF_URL + '#page=10' },
+      { label: 'החזון שלנו - מהפכת החינוך הציוני', url: 'https://www.elhadegel.co.il/about-us#principe-8' },
+      { label: 'המצע המלא - מצע חינוך ( עמ׳ 10-13 )', url: 'https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=10' },
     ],
   },
   {
@@ -72,8 +77,8 @@ export const PILLARS: Pillar[] = [
     description: 'בקטגוריה זו ישנן שאלות העוסקות בתיקון מאוזן של המשפט והממשל: חוקה מוסכמת, איזון רשויות, וממשלה מצומצמת.',
     sourceUrl: VISION_URL,
     sources: [
-      VISION_SOURCE,
-      { label: 'המצע המלא - מצע ממשל ומשפט ( עמ׳ 14-19 )', url: PLATFORM_PDF_URL + '#page=14' },
+      { label: 'החזון שלנו - הרפורמה המשפטית של ״אל הדגל״', url: 'https://www.elhadegel.co.il/about-us#principe-9' },
+      { label: 'המצע המלא - מצע ממשל ומשפט ( עמ׳ 14-19 )', url: 'https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=14' },
     ],
   },
   {
@@ -83,8 +88,8 @@ export const PILLARS: Pillar[] = [
     description: 'בקטגוריה זו ישנן שאלות העוסקות בכלכלה שמתגמלת תרומה: המעמד המשרת במרכז, יוקר המחיה, ועבודה שמשתלמת.',
     sourceUrl: VISION_URL,
     sources: [
-      VISION_SOURCE,
-      { label: 'המצע המלא - מצע כלכלה ( עמ׳ 20-25 )', url: PLATFORM_PDF_URL + '#page=20' },
+      { label: 'החזון שלנו - כלכלה ציונית', url: 'https://www.elhadegel.co.il/about-us#principe-6' },
+      { label: 'המצע המלא - מצע כלכלה ( עמ׳ 20-25 )', url: 'https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=20' },
     ],
   },
 ]
