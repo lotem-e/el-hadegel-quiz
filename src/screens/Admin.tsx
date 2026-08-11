@@ -244,7 +244,7 @@ export default function Admin() {
       (question) => question.pillarId === pillar.id && question.pinned,
     ).length
     if (clamped > available) {
-      showToast(`אי אפשר לקבוע מכסה גבוהה ממספר השאלות שיש בפילר ( ${available} )`, 'warn')
+      showToast(`אי אפשר לקבוע מכסה גבוהה ממספר השאלות שיש בקטגוריה ( ${available} )`, 'warn')
       return
     }
     if (clamped < pinnedCount) {
@@ -291,8 +291,8 @@ export default function Admin() {
       if (pinnedCount + 1 > quota) {
         showToast(
           quota === 1
-            ? 'אי אפשר לנעוץ יותר משאלה אחת בפילר הזה - זו המכסה שלו בתמהיל'
-            : `אי אפשר לנעוץ יותר מ-${quota} שאלות בפילר הזה - זו המכסה שלו בתמהיל`,
+            ? 'אי אפשר לנעוץ יותר משאלה אחת בקטגוריה הזאת - זו המכסה שלה בתמהיל'
+            : `אי אפשר לנעוץ יותר מ-${quota} שאלות בקטגוריה הזאת - זו המכסה שלה בתמהיל`,
           'warn',
         )
         return
@@ -542,7 +542,7 @@ export default function Admin() {
         )}
         {!offline && !migrationMissing && publishBlocked && (
           <p className="mt-2 rounded-lg border border-red-300 bg-red-600/5 p-3 text-xs leading-relaxed text-red-600">
-            אי אפשר לפרסם שאלון ריק - יש לקבוע לפחות שאלה אחת באחד הפילרים.
+            אי אפשר לפרסם שאלון ריק - יש לקבוע לפחות שאלה אחת באחת הקטגוריות.
           </p>
         )}
         {saveError && (
@@ -594,7 +594,7 @@ export default function Admin() {
                 </h2>
                 <p className="mt-1 text-xs leading-relaxed text-muted">
                   שאלה נעוצה נכללת בכל שאלון ואינה תלויה בהגרלה. מיקומה בתוך השאלון עדיין
-                  אקראי, והיא תופסת מקום מתוך המכסה של הפילר שלה.
+                  אקראי, והיא תופסת מקום מתוך המכסה של הקטגוריה שלה.
                 </p>
                 <div className="mt-3 space-y-3">{pinnedVisible.map(renderQuestionCard)}</div>
               </div>
@@ -652,7 +652,7 @@ export default function Admin() {
                       )}
                       {pillar.quota > available && (
                         <p className="mt-1 text-xs font-medium text-red-600">
-                          אין מספיק שאלות במאגר לפילר הזה
+                          אין מספיק שאלות במאגר לקטגוריה הזאת
                         </p>
                       )}
                       {pinnedInPillar > pillar.quota && (
@@ -678,7 +678,7 @@ export default function Admin() {
                       <span className="text-lg font-bold text-muted">/</span>
                       {/* The pillar's full pool size - controlled in the questions tab */}
                       <span
-                        title="סך השאלות בפילר - נקבע בטאב ניהול מאגר השאלות"
+                        title="סך השאלות בקטגוריה - נקבע בטאב ניהול מאגר השאלות"
                         className="w-8 text-center text-lg font-semibold tabular-nums text-muted/60"
                       >
                         {available}

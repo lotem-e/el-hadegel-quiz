@@ -71,7 +71,7 @@ export default function MixChart({ slices }: { slices: MixSlice[] }) {
       <h2 className="text-sm font-bold text-navy">תמהיל השאלון</h2>
 
       {total === 0 ? (
-        <p className="mt-3 text-xs text-muted">כל הפילרים על 0 - כרגע אין שאלות בשאלון.</p>
+        <p className="mt-3 text-xs text-muted">כל הקטגוריות על 0 - כרגע אין שאלות בשאלון.</p>
       ) : (
         <div className="mt-4 flex flex-col items-center gap-6 sm:flex-row sm:items-center">
           {/* The ring. Mirrored so it fills counter-clockwise, matching the
