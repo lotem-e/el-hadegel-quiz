@@ -45,8 +45,15 @@ export default function App() {
 
   // Pull the live content from Supabase once at startup. Until it lands
   // (or if it fails) the baked-in content keeps everything working.
+  //
+  // The state bump after the fetch is the important part: getContent() is
+  // read during render, so without a re-render the opening screen keeps
+  // showing the BAKED statement count forever. Lotem caught it live - she
+  // published a 14th statement and her phone still said 13, because the
+  // quiz flow awaited the fetch but the landing never redrew.
+  const [, setContentVersion] = useState(0)
   useEffect(() => {
-    void refreshContent()
+    void refreshContent().then(() => setContentVersion((version) => version + 1))
   }, [])
 
   // The browser tab should say which of the two screens you are on.
