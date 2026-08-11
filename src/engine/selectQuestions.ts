@@ -18,9 +18,15 @@ export function shuffle<T>(items: T[]): T[] {
   return copy
 }
 
+/**
+ * @param seen statements this visitor already met, so a second round can
+ *   show them something new. Pinned statements ignore this by design -
+ *   "always included" means always.
+ */
 export function selectQuizQuestions(
   allQuestions: Question[],
   quotas: Record<PillarId, number>,
+  seen: ReadonlySet<string> = new Set(),
 ): Question[] {
   const picked: Question[] = []
   // Walk pillars in their canonical order so the composition is stable.
@@ -35,7 +41,19 @@ export function selectQuizQuestions(
     const pinned = pool.filter((question) => question.pinned)
     const rest = pool.filter((question) => !question.pinned)
     const taken = shuffle(pinned).slice(0, quota)
-    taken.push(...shuffle(rest).slice(0, Math.max(0, quota - taken.length)))
+
+    // Fill from what they have not seen first, and only fall back to
+    // repeats once this category's pool runs dry - so the quiz never
+    // shrinks just because someone played twice.
+    const room = Math.max(0, quota - taken.length)
+    if (room > 0) {
+      const fresh = shuffle(rest.filter((question) => !seen.has(question.id)))
+      taken.push(...fresh.slice(0, room))
+      if (taken.length < quota) {
+        const repeats = shuffle(rest.filter((question) => seen.has(question.id)))
+        taken.push(...repeats.slice(0, quota - taken.length))
+      }
+    }
     // If a pillar has fewer active questions than its quota we take what
     // exists - same warning applies.
     picked.push(...taken)

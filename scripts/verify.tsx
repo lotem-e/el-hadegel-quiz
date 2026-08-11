@@ -181,6 +181,32 @@ if (admin.includes('ממשק ניהול')) {
 }
 
 
+console.log('repeat rounds')
+// A second round must prefer statements the visitor has not met yet, and
+// must never shrink because of it.
+{
+  const firstRound = selectQuizQuestions(BASE_QUESTIONS, DEFAULT_QUOTAS)
+  const seen = new Set(firstRound.map((q) => q.id))
+  const secondRound = selectQuizQuestions(BASE_QUESTIONS, DEFAULT_QUOTAS, seen)
+  check('a second round is still full length', secondRound.length === firstRound.length)
+
+  // Per category: repeats are allowed only once the unseen ones run out.
+  for (const pillar of PILLARS) {
+    const quota = DEFAULT_QUOTAS[pillar.id]
+    if (!quota) continue
+    const poolSize = BASE_QUESTIONS.filter((q) => q.pillarId === pillar.id && q.active).length
+    const unseenLeft = poolSize - firstRound.filter((q) => q.pillarId === pillar.id).length
+    const repeated = secondRound.filter((q) => q.pillarId === pillar.id && seen.has(q.id)).length
+    const allowedRepeats = Math.max(0, quota - unseenLeft)
+    check(`${pillar.short}: no needless repeat`, repeated <= allowedRepeats)
+  }
+
+  // Exhaust the pool: every statement seen, so a round must still fill up.
+  const everything = new Set(BASE_QUESTIONS.map((q) => q.id))
+  const exhausted = selectQuizQuestions(BASE_QUESTIONS, DEFAULT_QUOTAS, everything)
+  check('a full pool of repeats still fills the quiz', exhausted.length === firstRound.length)
+}
+
 console.log('content integrity')
 check('every category has a colour of its own',
   new Set(PILLARS.map((p) => categoryColor(p.id))).size === PILLARS.length)

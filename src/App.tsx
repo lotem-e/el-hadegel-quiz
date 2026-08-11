@@ -16,6 +16,7 @@ import { scoreAnswers } from './engine/scoring'
 import { selectQuizQuestions } from './engine/selectQuestions'
 import { supabase } from './lib/supabaseClient'
 import { getContent, refreshContent } from './store/contentStore'
+import { getSeenStatements, rememberStatements } from './store/seenStatements'
 
 /** Tracks window.location.hash and re-renders when it changes */
 function useHashRoute(): string {
@@ -73,7 +74,10 @@ export default function App() {
     ])
     setStarting(false)
     const content = getContent()
-    const questions = selectQuizQuestions(content.questions, content.quotas)
+    // Prefer statements this visitor has not met yet, so "another round"
+    // genuinely shows them something new.
+    const questions = selectQuizQuestions(content.questions, content.quotas, getSeenStatements())
+    rememberStatements(questions.map((question) => question.id))
     setPhase({ name: 'quiz', questions, nonce })
   }
 

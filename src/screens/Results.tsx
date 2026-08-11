@@ -37,7 +37,7 @@ function tier(percent: number, flagThreshold: number) {
   if (percent >= ANOTHER_ROUND_FLOOR) {
     return {
       headline: 'קרובים מאוד לדרך שלנו.',
-      body: 'כל שאלון מגריל היגדים אחרים מהמאגר, אז סבב נוסף יחדד את התמונה.',
+      body: 'סבב נוסף יביא היגדים שעוד לא ראיתם, ויחדד את התמונה.',
     }
   }
   if (percent >= PARTIAL_FLOOR) {
