@@ -34,7 +34,7 @@ const PARTIAL_FLOOR = 55
 const CONTACT_MAILTO = 'mailto:info@elhadegel.com'
 
 /** The verdict and its reasoning, for the three bands below the threshold. */
-function tier(percent: number): { headline: Phrase; body: Phrase; contact: boolean } {
+function tier(percent: number): { headline: Phrase; body: Phrase; contactLabel: Phrase | null } {
   if (percent >= ANOTHER_ROUND_FLOOR) {
     return {
       // Lotem's wording, reaffirmed. First person plural, so it needs no
@@ -44,17 +44,19 @@ function tier(percent: number): { headline: Phrase; body: Phrase; contact: boole
         'שווה לחקור ולראות במו עיניכם על מה המחלוקת, וגם לאתגר אותנו.',
         'שווה לחקור ולראות במו עיניך על מה המחלוקת, וגם לאתגר אותנו.',
       ),
-      contact: true,
+      contactLabel: p('צרו קשר', 'צור/י קשר'),
     }
   }
   if (percent >= PARTIAL_FLOOR) {
     return {
       headline: p('יש בינינו הרבה מן המשותף.', 'יש בינינו הרבה מן המשותף.'),
+      // "נראה שיש בינינו מחלוקות" carries no address at all, so only the
+      // invitation needs a singular form.
       body: p(
-        'אבל בהחלט יש מקומות שבהם אתם חושבים אחרת. אנחנו מזמינים אתכם לעיין במצע המלא ובנימוקים שלנו ולאתגר אותנו.',
-        'אבל בהחלט יש מקומות שבהם את/ה חושב/ת אחרת. אנחנו מזמינים אותך לעיין במצע המלא ובנימוקים שלנו ולאתגר אותנו.',
+        'אבל בהחלט יש מקומות שבהם נראה שיש בינינו מחלוקות. אנחנו מזמינים אתכם לעיין במצע המלא ולאתגר אותנו.',
+        'אבל בהחלט יש מקומות שבהם נראה שיש בינינו מחלוקות. אנחנו מזמינים אותך לעיין במצע המלא ולאתגר אותנו.',
       ),
-      contact: true,
+      contactLabel: p('תסבירו לנו', 'תסביר/י לנו'),
     }
   }
   return {
@@ -63,7 +65,7 @@ function tier(percent: number): { headline: Phrase; body: Phrase; contact: boole
       'הדרך שלנו פחות מדברת אליכם, וגם זו תשובה. אם בכל זאת הסתקרנתם - תוכלו לעיין במצע המלא שלנו, ללא פרשנות נוספת.',
       'הדרך שלנו פחות מדברת אליך, וגם זו תשובה. אם בכל זאת הסתקרנת - תוכל/י לעיין במצע המלא שלנו, ללא פרשנות נוספת.',
     ),
-    contact: false,
+    contactLabel: null,
   }
 }
 
@@ -156,14 +158,14 @@ export default function Results({ answers, onRestart }: ResultsProps) {
             <h2 className="text-xl font-extrabold text-navy sm:text-2xl">{g(message.headline)}</h2>
             <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
               {g(message.body)}
-              {message.contact && (
+              {message.contactLabel && (
                 <>
                   {' '}
                   <a
                     href={CONTACT_MAILTO}
                     className="font-semibold text-navy underline underline-offset-2 hover:text-navy-dark"
                   >
-                    {g(p('צרו קשר', 'צור/י קשר'))}
+                    {g(message.contactLabel)}
                   </a>
                 </>
               )}

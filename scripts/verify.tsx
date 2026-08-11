@@ -199,6 +199,18 @@ check('vision label shortens', shortSourceLabel('החזון שלנו - כלכל�
 check('the law label shortens', shortSourceLabel('הצעת חוק יסוד: שירות חובה למען המדינה ( נוסח מלא )') === 'נוסח החוק המלא')
 check('an unknown label is untouched', shortSourceLabel('מקור חדש לגמרי') === 'מקור חדש לגמרי')
 
+// the middle band: Lotem's wording, and its own contact label
+const midAnswers: Answer[] = questions.map((q, i) => ({
+  questionId: q.id, pillarId: q.pillarId, value: i % 2 === 0 ? 3 : 4,
+}))
+const midHtml = renderToString(createElement(Results, { answers: midAnswers, onRestart: () => {} }))
+expectContains('Results-mid', midHtml, [
+  'יש בינינו הרבה מן המשותף',
+  'נראה שיש בינינו מחלוקות',
+  'תסבירו לנו',
+  'mailto:info@elhadegel.com',
+])
+
 // Admin - with Supabase configured, the first render is the loading state
 // (data arrives async in the browser; renderToString never runs effects).
 const admin = renderToString(createElement(Admin))
@@ -264,6 +276,7 @@ console.log('gendered address')
       'רוצים לקרוא את המקור המלא?', 'רוצה לקרוא את המקור המלא?', 'רוצה לקרוא את המקור המלא?'],
     [p('בואו נגלה', 'בוא/י נגלה'), 'בואו נגלה', 'בוא נגלה', 'בואי נגלה'],
     [p('נועצים את הדגל', 'נועץ/ת את הדגל'), 'נועצים את הדגל', 'נועץ את הדגל', 'נועצת את הדגל'],
+    [p('תסבירו לנו', 'תסביר/י לנו'), 'תסבירו לנו', 'תסביר לנו', 'תסבירי לנו'],
   ]
   for (const [phrase, neutral, male, female] of cases) {
     check(`neutral is masculine plural: ${neutral.slice(0, 20)}`, renderPhrase(phrase, 'neutral') === neutral)
