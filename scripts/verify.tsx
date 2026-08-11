@@ -236,6 +236,19 @@ console.log('gendered address')
     check(`female: ${slashed.slice(0, 22)}`, genderize(slashed, FEMALE) === female)
     check(`neutral keeps the slashes: ${slashed.slice(0, 18)}`, genderize(slashed, NEUTRAL) === slashed)
   }
+  // Ivrita must be incapable of touching plain text, because the statements
+  // now flow through it too. This is the check that makes that safe.
+  for (const q of BASE_QUESTIONS) {
+    check(`statement untouched: ${q.id}`,
+      genderize(q.text, MALE) === q.text && genderize(q.text, FEMALE) === q.text)
+  }
+  // A slash form Lotem writes herself in the admin IS honoured.
+  check('an authored slash form is genderized',
+    genderize('אני מסכים/ה', FEMALE) === 'אני מסכימה')
+  // And Ivrita never guesses: plain masculine stays plain masculine.
+  check('plain masculine is never inferred',
+    genderize('אתם מסכימים', FEMALE) === 'אתם מסכימים')
+
   // The screens must not ship a bare masculine address any more.
   const landingNeutral = renderToString(createElement(App))
   check('landing addresses both by default', landingNeutral.includes('קרובים/ות'))

@@ -179,9 +179,15 @@ Rules when touching visitor copy:
 - A new string that addresses the reader goes in slash form and through `g()`.
 - Plural imperatives (דרגו, נסו, הצטרפו, גלו) are already gender-neutral -
   leave them alone. Participles used as CTAs (מתחילים/ות, נועצים/ות) are not.
-- **Never pass database content through `g()`.** The statements are Lotem's
-  editorial content and must never be rewritten at runtime - `g()` is only for
-  hardcoded UI copy.
+- **Database content goes through `g()` too**, including the statements, the
+  category names and the source labels. This is safe because Ivrita transforms
+  ONLY slash forms - verified against all 54 statements, zero are altered. So
+  plain text Lotem writes reaches visitors byte for byte, and a slash form she
+  writes deliberately in the admin is honoured. It is authorship, not a runtime
+  rewrite. What Ivrita cannot do is infer gender: it will never turn a plain
+  "אתם מסכימים" into "אתן מסכימות", so the slash form has to be written.
+- **The admin shows raw text, never genderized.** She is authoring the slash
+  form there and has to see exactly what she typed.
 - The import is the deep path `ivrita/src/ivrita`, not `ivrita`. The package's
   `browser` field points at `src/element.js` (a DOM wrapper that rewrites the
   page in place) which does not export `genderize`, so a plain `import` builds

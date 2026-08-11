@@ -67,7 +67,7 @@ export default function Results({ answers, onRestart }: ResultsProps) {
   const ranked = [...score.byPillar].sort((a, b) => b.percent - a.percent)
   const strongest = ranked[0]
   const weakest = ranked[ranked.length - 1]
-  const nameOf = (id: string) => content.pillars.find((p) => p.id === id)?.short ?? id
+  const nameOf = (id: string) => g(content.pillars.find((p) => p.id === id)?.short ?? id)
   const showExtremes = ranked.length > 1 && strongest.percent !== weakest.percent
 
   return (
@@ -152,7 +152,7 @@ export default function Results({ answers, onRestart }: ResultsProps) {
                           className="h-2.5 w-2.5 shrink-0 rounded-sm"
                           style={{ backgroundColor: color }}
                         />
-                        {pillar?.short ?? pillarScore.pillarId}
+                        {g(pillar?.short ?? pillarScore.pillarId)}
                       </span>
                       <span className="shrink-0 tabular-nums text-muted">
                         {pillarScore.percent}%
@@ -180,7 +180,7 @@ export default function Results({ answers, onRestart }: ResultsProps) {
                             rel="noopener noreferrer"
                             className="text-xs text-navy underline underline-offset-2 hover:text-navy-dark"
                           >
-                            {source.label} ↗
+                            {g(source.label)} ↗
                           </a>
                         </li>
                       ))}

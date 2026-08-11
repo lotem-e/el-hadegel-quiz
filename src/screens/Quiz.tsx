@@ -76,7 +76,7 @@ export default function Quiz({ questions, onFinish }: QuizProps) {
           className="slide-in mt-5 rounded-xl border border-line bg-white p-5 shadow-sm sm:mt-6 sm:p-8"
         >
           <p className="min-h-20 text-lg font-bold leading-snug text-navy sm:min-h-24 sm:text-2xl">
-            {question.text}
+            {g(question.text)}
           </p>
           <div className="mt-5 sm:mt-6">
             <LikertScale
