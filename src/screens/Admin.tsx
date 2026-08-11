@@ -4,7 +4,7 @@
 // Row Level Security (only an authenticated session may write).
 // Without a configured Supabase connection the screen falls back to a
 // read-only view of the baked-in content.
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import Header from '../components/Header'
 import { PILLARS as BAKED_PILLARS } from '../content/pillars'
@@ -53,6 +53,11 @@ export default function Admin() {
   const [published, setPublished] = useState<PublishedSnapshot | null>(null)
   const [migrationMissing, setMigrationMissing] = useState(false)
   const [publishing, setPublishing] = useState(false)
+  // Short-lived confirmation toast after a successful publish.
+  const [toastVisible, setToastVisible] = useState(false)
+  const toastTimerRef = useRef<number | undefined>(undefined)
+
+  useEffect(() => () => window.clearTimeout(toastTimerRef.current), [])
 
   useEffect(() => {
     if (!offline) void loadAll()
@@ -141,6 +146,9 @@ export default function Admin() {
       setSaveError(true)
     } else {
       await loadPublished()
+      setToastVisible(true)
+      window.clearTimeout(toastTimerRef.current)
+      toastTimerRef.current = window.setTimeout(() => setToastVisible(false), 3000)
     }
     setPublishing(false)
   }
@@ -286,14 +294,9 @@ export default function Admin() {
           </div>
         </div>
 
-        {offline ? (
+        {offline && (
           <p className="mt-3 rounded-lg border border-line bg-white p-3 text-xs leading-relaxed text-muted">
             אין חיבור למסד הנתונים - מוצג התוכן המובנה לקריאה בלבד.
-          </p>
-        ) : (
-          <p className="mt-3 rounded-lg border border-line bg-white p-3 text-xs leading-relaxed text-muted">
-            העריכות נשמרות כטיוטה פרטית. לחיצה על ״פרסום לאתר״ מעלה את הגרסה
-            הנוכחית לכל המבקרים.
           </p>
         )}
         {migrationMissing && (
@@ -307,7 +310,7 @@ export default function Admin() {
             {dirty
               ? 'יש שינויים שעדיין לא פורסמו'
               : published
-                ? 'כל השינויים פורסמו · פרסום אחרון: ' + formatPublishedAt(published.publishedAt)
+                ? 'פרסום אחרון: ' + formatPublishedAt(published.publishedAt)
                 : 'עדיין לא פורסמה גרסה ראשונה'}
           </p>
         )}
@@ -494,6 +497,14 @@ export default function Admin() {
           </section>
         )}
       </main>
+
+      {toastVisible && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-8 z-30 flex justify-center">
+          <div className="toast-pop rounded-lg bg-navy-dark px-5 py-2.5 text-sm font-medium text-white shadow-lg">
+            כל השינויים פורסמו ✓
+          </div>
+        </div>
+      )}
     </>
   )
 }

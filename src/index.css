@@ -29,3 +29,18 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
+
+/* Toast entrance: a quick rise + fade, used by the admin publish toast */
+@keyframes toast-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.toast-pop {
+  animation: toast-pop 0.25s ease-out;
+}
