@@ -27,9 +27,18 @@ export function selectQuizQuestions(
   for (const pillar of getContent().pillars) {
     const quota = quotas[pillar.id] ?? 0
     const pool = allQuestions.filter((question) => question.pillarId === pillar.id && question.active)
+    // Pinned questions enter first - they are guaranteed a slot. The quota
+    // always wins though: if more questions are pinned than the quota
+    // allows (possible when the quota was lowered after pinning), a random
+    // subset of the pinned ones keeps the quiz length exact. The admin mix
+    // screen warns about that situation.
+    const pinned = pool.filter((question) => question.pinned)
+    const rest = pool.filter((question) => !question.pinned)
+    const taken = shuffle(pinned).slice(0, quota)
+    taken.push(...shuffle(rest).slice(0, Math.max(0, quota - taken.length)))
     // If a pillar has fewer active questions than its quota we take what
-    // exists. The admin mix screen warns about this situation.
-    picked.push(...shuffle(pool).slice(0, quota))
+    // exists - same warning applies.
+    picked.push(...taken)
   }
   return shuffle(picked)
 }

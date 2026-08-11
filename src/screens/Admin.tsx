@@ -21,7 +21,7 @@ interface PillarRow extends Pillar {
  *  used to decide whether there are unpublished changes. */
 interface PublishedSnapshot {
   publishedAt: string
-  questionState: Map<string, { text: string; active: boolean }>
+  questionState: Map<string, { text: string; active: boolean; pinned: boolean }>
   quotaState: Map<string, number>
 }
 
@@ -53,9 +53,15 @@ export default function Admin() {
   const [published, setPublished] = useState<PublishedSnapshot | null>(null)
   const [migrationMissing, setMigrationMissing] = useState(false)
   const [publishing, setPublishing] = useState(false)
-  // Short-lived confirmation toast after a successful publish.
-  const [toastVisible, setToastVisible] = useState(false)
+  // Short-lived feedback toast (publish confirmation / pin warnings).
+  const [toast, setToast] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null)
   const toastTimerRef = useRef<number | undefined>(undefined)
+
+  function showToast(text: string, tone: 'ok' | 'warn' = 'ok') {
+    setToast({ text, tone })
+    window.clearTimeout(toastTimerRef.current)
+    toastTimerRef.current = window.setTimeout(() => setToast(null), 3000)
+  }
   // Delete confirmation modal (browser confirm dialogs are unreliable in
   // embedded panes, so this is a real in-UI modal).
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
@@ -108,6 +114,8 @@ export default function Admin() {
         pillarId: row.pillar_id,
         text: row.text,
         active: row.active,
+        // Defensive default until migration 4 adds the column.
+        pinned: row.pinned ?? false,
         sourceUrl: row.source_url,
         sourceLabel: row.source_label,
       })),
@@ -144,7 +152,12 @@ export default function Admin() {
       questionState: new Map(
         (content.questions ?? []).map((q) => [
           q.id as string,
-          { text: q.text as string, active: q.active as boolean },
+          {
+            text: q.text as string,
+            active: q.active as boolean,
+            // Snapshots published before the pinned feature lack this field.
+            pinned: (q.pinned as boolean | undefined) ?? false,
+          },
         ]),
       ),
       quotaState: new Map((content.pillars ?? []).map((p) => [p.id as string, p.quota as number])),
@@ -160,16 +173,17 @@ export default function Admin() {
       setSaveError(true)
     } else {
       await loadPublished()
-      setToastVisible(true)
-      window.clearTimeout(toastTimerRef.current)
-      toastTimerRef.current = window.setTimeout(() => setToastVisible(false), 3000)
+      showToast('כל השינויים פורסמו ✓')
     }
     setPublishing(false)
   }
 
   // DB-first save: only update the screen after the database accepted the
   // change, so what you see is always what visitors get.
-  async function saveQuestionPatch(id: string, patch: { text?: string; active?: boolean }) {
+  async function saveQuestionPatch(
+    id: string,
+    patch: { text?: string; active?: boolean; pinned?: boolean },
+  ) {
     if (!supabase) return
     setSaveError(false)
     const { error } = await supabase.from('questions').update(patch).eq('id', id)
@@ -199,6 +213,29 @@ export default function Admin() {
   function startEdit(question: Question) {
     setEditingId(question.id)
     setDraft(question.text)
+  }
+
+  async function handleTogglePin(question: Question) {
+    // Pinning beyond the pillar's quota would be an impossible promise -
+    // block it up front (edge case 1). The reverse hole (quota lowered
+    // after pinning) is warned about in the mix tab and kept safe by the
+    // selection engine (quota always wins).
+    if (!question.pinned) {
+      const quota = pillars.find((pillar) => pillar.id === question.pillarId)?.quota ?? 0
+      const pinnedCount = questions.filter(
+        (item) => item.pillarId === question.pillarId && item.pinned,
+      ).length
+      if (pinnedCount + 1 > quota) {
+        showToast(
+          quota === 1
+            ? 'אי אפשר לנעוץ יותר משאלה אחת בפילר הזה - זו המכסה שלו בתמהיל'
+            : `אי אפשר לנעוץ יותר מ-${quota} שאלות בפילר הזה - זו המכסה שלו בתמהיל`,
+          'warn',
+        )
+        return
+      }
+    }
+    await saveQuestionPatch(question.id, { pinned: !question.pinned })
   }
 
   async function handleDeleteConfirmed() {
@@ -238,7 +275,12 @@ export default function Admin() {
       questions.length !== published.questionState.size ||
       questions.some((question) => {
         const snap = published.questionState.get(question.id)
-        return !snap || snap.text !== question.text || snap.active !== question.active
+        return (
+          !snap ||
+          snap.text !== question.text ||
+          snap.active !== question.active ||
+          snap.pinned !== question.pinned
+        )
       }) ||
       pillars.some((pillar) => published.quotaState.get(pillar.id) !== pillar.quota))
   const activeCount = (pillarId: PillarId) =>
@@ -362,6 +404,11 @@ export default function Admin() {
                       <span className="rounded-full border border-line bg-cream px-2.5 py-0.5 font-medium text-navy">
                         {pillar?.short}
                       </span>
+                      {question.pinned && (
+                        <span className="rounded-full bg-navy px-2.5 py-0.5 font-medium text-white">
+                          נעוצה בכל שאלון
+                        </span>
+                      )}
                       {!question.active && (
                         <span className="rounded-full bg-red-600/10 px-2.5 py-0.5 font-medium text-red-600">
                           כבויה
@@ -370,6 +417,13 @@ export default function Admin() {
                       <span className="grow" />
                       {!offline && !isEditing && (
                         <>
+                          <button
+                            type="button"
+                            onClick={() => void handleTogglePin(question)}
+                            className="text-muted underline underline-offset-2 transition-colors hover:text-navy"
+                          >
+                            {question.pinned ? 'ביטול נעיצה' : 'נעיצה'}
+                          </button>
                           <button
                             type="button"
                             onClick={() => startEdit(question)}
@@ -428,6 +482,9 @@ export default function Admin() {
             <div className="space-y-3">
               {pillars.map((pillar) => {
                 const available = activeCount(pillar.id)
+                const pinnedInPillar = questions.filter(
+                  (question) => question.pillarId === pillar.id && question.pinned,
+                ).length
                 return (
                   <div
                     key={pillar.id}
@@ -436,10 +493,19 @@ export default function Admin() {
                     <div>
                       <p className="font-medium">{pillar.title}</p>
                       <p className="mt-0.5 text-xs text-muted">{pillar.description}</p>
-                      <p className="mt-0.5 text-xs text-muted">{available} שאלות במאגר</p>
+                      <p className="mt-0.5 text-xs text-muted">
+                        {available} שאלות במאגר
+                        {pinnedInPillar > 0 &&
+                          (pinnedInPillar === 1 ? ' · נעוצה אחת' : ` · ${pinnedInPillar} נעוצות`)}
+                      </p>
                       {pillar.quota > available && (
                         <p className="mt-1 text-xs font-medium text-red-600">
                           אין מספיק שאלות במאגר לפילר הזה
+                        </p>
+                      )}
+                      {pinnedInPillar > pillar.quota && (
+                        <p className="mt-1 text-xs font-medium text-red-600">
+                          יש יותר שאלות נעוצות מהמכסה - רק חלק מהנעוצות ייכנסו לכל שאלון
                         </p>
                       )}
                     </div>
@@ -481,10 +547,15 @@ export default function Admin() {
         )}
       </main>
 
-      {toastVisible && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-8 z-30 flex justify-center">
-          <div className="toast-pop rounded-lg bg-navy-dark px-5 py-2.5 text-sm font-medium text-white shadow-lg">
-            כל השינויים פורסמו ✓
+      {toast && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-8 z-30 flex justify-center px-6">
+          <div
+            className={
+              'toast-pop rounded-lg px-5 py-2.5 text-sm font-medium text-white shadow-lg ' +
+              (toast.tone === 'warn' ? 'bg-amber-600' : 'bg-navy-dark')
+            }
+          >
+            {toast.text}
           </div>
         </div>
       )}

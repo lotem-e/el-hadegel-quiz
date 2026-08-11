@@ -79,6 +79,8 @@ export async function refreshContent(): Promise<void> {
         pillarId: row.pillar_id as PillarId,
         text: row.text as string,
         active: row.active as boolean,
+        // Snapshots published before the pinned feature lack this field.
+        pinned: (row.pinned as boolean | undefined) ?? false,
         sourceUrl: row.source_url as string,
         sourceLabel: row.source_label as string,
       }))

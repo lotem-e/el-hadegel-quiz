@@ -18,7 +18,7 @@ import { VISION_URL } from './pillars'
 
 // Small helper so every entry stays short and consistent.
 function q(id: string, pillarId: Question['pillarId'], text: string, sourceLabel: string): Question {
-  return { id, pillarId, text, active: true, sourceUrl: VISION_URL, sourceLabel }
+  return { id, pillarId, text, active: true, pinned: false, sourceUrl: VISION_URL, sourceLabel }
 }
 
 // Source labels point at the ORIGINAL vision chapter(s) a statement is

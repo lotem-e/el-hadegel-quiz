@@ -36,6 +36,8 @@ export interface Question {
   text: string
   /** Admins can switch a question off without deleting it */
   active: boolean
+  /** Pinned questions are guaranteed a slot in every quiz (within quota) */
+  pinned: boolean
   /** Link back to the source material this question was derived from */
   sourceUrl: string
   sourceLabel: string
