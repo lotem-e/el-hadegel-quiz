@@ -117,11 +117,21 @@ of this automation. Note: GitHub disables cron workflows after ~60 days
 without repo activity; a quiet repo means the last backup simply stays the
 last one, and the workflow can be re-enabled from the Actions tab.
 
+## Quiz length
+
+Derived, never configured: the length is the sum of the pillar quotas, so
+the admin sets it by editing the mix. `contentStore.deriveQuizLength` counts
+`min(quota, questions the pillar actually has)` so the number shown to
+visitors is what they will really be asked. `quiz_config.quiz_length` still
+exists in the database but nothing reads it. The only publish restriction
+left is that an empty quiz (all quotas 0) cannot be published.
+
 ## Known limitations / next
 
 - Frontend polish phase planned. Bundle grew to ~457KB raw (~132KB gzip)
   with supabase-js - a code-split candidate.
 - Results are recorded but not yet visible anywhere (admin results view is
   future work). Pin-the-flag feature still awaits Lotem's spec.
-- Quiz config (length/threshold) is in the DB but not editable in the admin
-  UI yet.
+- The pin-flag threshold is in the DB but not editable in the admin UI yet.
+- Pillar descriptions and source links live in the DB with no editing UI -
+  change them via SQL (see `supabase/migration-5-pillar-sources.sql`).
