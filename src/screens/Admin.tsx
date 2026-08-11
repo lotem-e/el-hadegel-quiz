@@ -550,13 +550,18 @@ export default function Admin() {
           </p>
         )}
 
-        {/* Tabs */}
-        <div className="mt-5 flex gap-2">
-          <TabButton active={tab === 'questions'} onClick={() => setTab('questions')}>
-            ניהול מאגר השאלות ({questions.length})
+        {/* Tabs: underlined so they read as navigation between sections,
+            clearly apart from the pill-shaped filters inside a section. */}
+        <div role="tablist" className="mt-6 flex gap-6 border-b border-line">
+          <TabButton
+            active={tab === 'questions'}
+            onClick={() => setTab('questions')}
+            count={questions.length}
+          >
+            ניהול מאגר השאלות
           </TabButton>
-          <TabButton active={tab === 'mix'} onClick={() => setTab('mix')}>
-            ניהול אורך ותמהיל השאלון ({quotaSum})
+          <TabButton active={tab === 'mix'} onClick={() => setTab('mix')} count={quotaSum}>
+            ניהול אורך ותמהיל השאלון
           </TabButton>
         </div>
 
@@ -746,22 +751,37 @@ export default function Admin() {
 function TabButton({
   active,
   onClick,
+  count,
   children,
 }: {
   active: boolean
   onClick: () => void
+  count: number
   children: ReactNode
 }) {
   return (
     <button
       type="button"
+      role="tab"
+      aria-selected={active}
       onClick={onClick}
+      // -mb-px lets the active underline sit ON the row's hairline
       className={
-        'rounded-lg px-4 py-2 text-sm font-medium transition-colors ' +
-        (active ? 'bg-navy text-white' : 'border border-line bg-white text-muted hover:text-navy')
+        '-mb-px flex items-center gap-2 border-b-2 pb-2.5 text-sm transition-colors ' +
+        (active
+          ? 'border-navy font-bold text-navy'
+          : 'border-transparent font-medium text-muted hover:border-line hover:text-navy')
       }
     >
       {children}
+      <span
+        className={
+          'rounded-full px-1.5 py-0.5 text-[11px] tabular-nums ' +
+          (active ? 'bg-navy text-white' : 'bg-line/70 text-muted')
+        }
+      >
+        {count}
+      </span>
     </button>
   )
 }
