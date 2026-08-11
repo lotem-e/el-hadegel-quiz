@@ -223,21 +223,6 @@ export default function Admin() {
     setEditingId(null)
   }
 
-  function handleExport() {
-    const payload = {
-      quizLength,
-      quotas: Object.fromEntries(pillars.map((pillar) => [pillar.id, pillar.quota])),
-      questions,
-    }
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'elhadegel-questions.json'
-    link.click()
-    URL.revokeObjectURL(url)
-  }
-
   async function handleSignOut() {
     if (supabase) await supabase.auth.signOut()
   }
@@ -305,23 +290,6 @@ export default function Admin() {
                 {publishing ? 'מפרסם...' : 'פרסום לשאלון החי'}
               </button>
             )}
-            <span className="group relative">
-              <button
-                type="button"
-                onClick={handleExport}
-                className="rounded-lg border border-navy px-4 py-2 text-sm font-medium text-navy transition-colors hover:bg-navy hover:text-white"
-              >
-                גיבוי JSON
-              </button>
-              {/* Styled tooltip: appears on hover and on keyboard focus */}
-              <span
-                role="tooltip"
-                className="pointer-events-none absolute end-0 top-full z-20 mt-2 hidden w-64 rounded-lg bg-navy-dark p-3 text-xs leading-relaxed text-white shadow-lg group-hover:block group-focus-within:block"
-              >
-                מוריד קובץ עם כל המאגר הנוכחי. במסד הנתונים החינמי אין גיבוי
-                אוטומטי - מומלץ להוריד אחרי כל סבב עריכות משמעותי.
-              </span>
-            </span>
           </div>
         </div>
 

@@ -104,6 +104,17 @@ Claude never knows the password). The admin writes straight to the DB.
 Anonymous visitors can read content and insert results only - verified by
 direct REST probes.
 
+## Content backups
+
+Automatic: `.github/workflows/backup-published.yml` runs daily (and on
+demand) - fetches the latest published snapshot and commits it to
+`backups/published-latest.json` when it changed. The file's git history is
+the full archive of every published version, living outside Supabase.
+The manual "גיבוי JSON" admin button was removed (Lotem's decision) in favor
+of this automation. Note: GitHub disables cron workflows after ~60 days
+without repo activity; a quiet repo means the last backup simply stays the
+last one, and the workflow can be re-enabled from the Actions tab.
+
 ## Known limitations / next
 
 - Frontend polish phase planned. Bundle grew to ~457KB raw (~132KB gzip)

@@ -1,0 +1,57 @@
+# Automatic external backup of the quiz content.
+#
+# Once a day (and on demand from the Actions tab) this fetches the latest
+# PUBLISHED content snapshot from Supabase and commits it into the repo when
+# it changed. The repo thus holds an always-fresh copy of the content that
+# lives OUTSIDE Supabase, and the file's git history is a full archive of
+# every published version.
+#
+# The URL and key below are the project's public client credentials (the
+# same ones shipped inside the site's bundle); the snapshot is world-
+# readable by design, so no secrets are needed here.
+name: Backup published content
+
+on:
+  schedule:
+    # Daily at 03:30 UTC (~06:30 Israel time)
+    - cron: '30 3 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Fetch the latest published snapshot
+        run: |
+          mkdir -p backups
+          curl -sf "https://wlvfvkvatxqrlhpwikeu.supabase.co/rest/v1/published_content?select=content,published_at&order=published_at.desc&limit=1" \
+            -H "apikey: sb_publishable_1gYrRhnmfK5SL3OeR2m4tQ_15nz4HWC" \
+            -o /tmp/latest.json
+          python3 - <<'EOF'
+          import json
+          rows = json.load(open('/tmp/latest.json'))
+          if not rows:
+              raise SystemExit('no published snapshot found')
+          row = rows[0]
+          with open('backups/published-latest.json', 'w', encoding='utf-8') as f:
+              json.dump({'published_at': row['published_at'], 'content': row['content']}, f, ensure_ascii=False, indent=2)
+              f.write('\n')
+          EOF
+
+      - name: Commit the backup if anything changed
+        run: |
+          git add backups/published-latest.json
+          if git diff --cached --quiet; then
+            echo "No changes since the last backup."
+          else
+            git config user.name "content-backup"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "Backup published content ($(date -u +%Y-%m-%d))"
+            git push
+          fi
