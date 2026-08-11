@@ -1,7 +1,6 @@
 // JoinBlock.tsx - the movement's "join us" panel, rebuilt from the block at
-// the end of the printed platform: the QR on the right, the invitation and
-// the social row beside it.
-import { p, useGender } from '../lib/gender'
+// the end of the printed platform: the QR on one side, the invitation and the
+// social row on the other, with real space between them.
 const SOCIALS = [
   { name: 'טיקטוק', url: 'https://www.tiktok.com/@elhadegel' },
   { name: 'אינסטגרם', url: 'https://www.instagram.com/elhadegel/' },
@@ -43,23 +42,16 @@ const ICONS: Record<string, React.ReactNode> = {
 }
 
 export default function JoinBlock() {
-  const { g } = useGender()
   return (
     <section className="rounded-xl bg-navy p-5 text-white sm:p-6">
-      {/* The panel is wider than this content needs. Centring the QR and the
-          text as one group splits the slack evenly instead of leaving one
-          odd hole at the end of the row. */}
-      <div className="flex flex-col items-center gap-5 text-center sm:flex-row-reverse sm:justify-center sm:gap-6 sm:text-right">
+      <div className="flex flex-col items-center gap-5 text-center sm:flex-row-reverse sm:gap-10 sm:text-right">
         <img
           src="./join-qr.png"
           alt="קוד QR להצטרפות לתנועת אל הדגל"
           className="h-24 w-24 shrink-0 rounded-lg"
         />
-        <div className="min-w-0">
+        <div className="min-w-0 sm:flex-1">
           <h2 className="text-lg font-extrabold">הצטרפו אלינו</h2>
-          <p className="mt-1 text-sm text-white/75">
-            {g(p('סרקו את הקוד, או עקבו אחרינו ברשתות.', 'סרוק/י את הקוד, או עקוב/י אחרינו ברשתות.'))}
-          </p>
           <ul className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
             {SOCIALS.map((social) => (
               <li key={social.name}>

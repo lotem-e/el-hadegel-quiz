@@ -80,11 +80,11 @@ export default function Quiz({ questions, onFinish }: QuizProps) {
           key={index}
           className="slide-in mt-5 rounded-xl border border-line bg-white p-5 shadow-sm sm:mt-6 sm:p-8"
         >
-          {/* Fixed height, sized to the longest statement in the pool, so the
-              card and the answers below it never move between statements.
-              Short statements sit centred rather than clinging to the top. */}
-          <div className="flex h-48 items-center overflow-y-auto">
-            <p className="text-base font-bold leading-relaxed text-navy sm:text-xl">
+          {/* Fixed height, so the card and the answers below it never move
+              between statements. The text starts at the top and grows down
+              into the space, rather than shifting as it gets longer. */}
+          <div className="flex h-56 items-start overflow-y-auto">
+            <p className="text-base font-semibold leading-relaxed text-navy sm:text-xl">
               {g(question.text)}
             </p>
           </div>
