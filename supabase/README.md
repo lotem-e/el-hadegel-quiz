@@ -16,6 +16,7 @@ against the live project.
 | `migration-9-source-deeplinks.sql` | Sources point at the movement site's individual accordions |
 | `migration-10-statements-wording.sql` | "שאלות" became "היגדים"; the Basic Law bill joined the service category's sources |
 | `migration-11-publish-plumbing.sql` | `build_snapshot()` split out, plus the self-publishing envelope for future migrations |
+| `migration-12-zionist-unity-rename.sql` | ממשלה ציונית רחבה - the zionist-unity name, reworded |
 
 ## Writing the next one
 
