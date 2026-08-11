@@ -1,9 +1,11 @@
-// Results.tsx - the match percentage, what it means, and where to go next.
+// Results.tsx - the score, what it means, and the one action that follows.
 //
-// The per-category breakdown carries each category's own colour, the same
-// one the admin uses, and every row opens to the sources that category's
-// statements rest on - so a visitor who disagrees somewhere can go read the
-// movement's own words on exactly that subject.
+// Three cards in a fixed order (Lotem's layout, 2026-08-11): the number with
+// a scale that anchors it against the pin-flag threshold; then the verdict
+// TOGETHER WITH the action it justifies - pin the flag above the threshold,
+// read the source below it; then the per-category breakdown, whose rows carry
+// their sources as chips. The verdict lives in the action card on purpose:
+// it is the reason to press the button under it.
 import Confetti from '../components/Confetti'
 import Header from '../components/Header'
 import JoinBlock from '../components/JoinBlock'
@@ -12,6 +14,7 @@ import { scoreAnswers } from '../engine/scoring'
 import type { Answer } from '../engine/scoring'
 import { categoryColor } from '../lib/categoryColors'
 import { p, useGender } from '../lib/gender'
+import type { Phrase } from '../lib/gender'
 import { getContent } from '../store/contentStore'
 
 interface ResultsProps {
@@ -19,93 +22,121 @@ interface ResultsProps {
   onRestart: () => void
 }
 
-/**
- * The bands, and what each one offers. Above the flag threshold we invite
- * them to pin a flag; just below it another round is genuinely useful,
- * because each quiz is a sample of the pool and a second draw can settle a
- * borderline score; lower down we simply offer the material.
- */
+// Band edges below the pin threshold. Above ANOTHER_ROUND_FLOOR the gap is
+// small enough to point at; above PARTIAL_FLOOR there is real common ground;
+// below it we part as friends.
 const ANOTHER_ROUND_FLOOR = 75
 const PARTIAL_FLOOR = 55
 
-function tier(percent: number, flagThreshold: number) {
-  if (percent >= flagThreshold) {
-    return {
-      headline: p('אתם אל הדגל.', 'את/ה אל הדגל.'),
-      body: p('מקומכם איתנו על המפה.', 'מקומך איתנו על המפה.'),
-    }
-  }
+// The movement's inbox. Both elhadegel.com and elhadegel.co.il receive mail
+// (checked via their MX records) - but this exact mailbox still owes Lotem
+// one test mail before launch.
+const CONTACT_MAILTO = 'mailto:info@elhadegel.com'
+
+/** The verdict and its reasoning, for the three bands below the threshold. */
+function tier(percent: number): { headline: Phrase; body: Phrase; contact: boolean } {
   if (percent >= ANOTHER_ROUND_FLOOR) {
     return {
-      headline: p('קרובים מאוד לדרך שלנו.', 'קרוב/ה מאוד לדרך שלנו.'),
+      headline: p('קרובים מאוד.', 'קרוב/ה מאוד.'),
       body: p(
-        'סבב נוסף יביא היגדים שעוד לא ראיתם, ויחדד את התמונה.',
-        'סבב נוסף יביא היגדים שעוד לא ראית, ויחדד את התמונה.',
+        'שווה לחקור ולראות במו עיניכם על מה המחלוקת, וגם לאתגר אותנו.',
+        'שווה לחקור ולראות במו עיניך על מה המחלוקת, וגם לאתגר אותנו.',
       ),
+      contact: true,
     }
   }
   if (percent >= PARTIAL_FLOOR) {
     return {
-      headline: p('יש בינינו לא מעט מן המשותף.', 'יש בינינו לא מעט מן המשותף.'),
+      headline: p('יש בינינו הרבה מן המשותף.', 'יש בינינו הרבה מן המשותף.'),
       body: p(
-        'וגם מקומות שבהם אתם חושבים אחרת. שווה לקרוא מאיפה הדברים באים.',
-        'וגם מקומות שבהם את/ה חושב/ת אחרת. שווה לקרוא מאיפה הדברים באים.',
+        'אבל בהחלט יש מקומות שבהם אתם חושבים אחרת. אנחנו מזמינים אתכם לעיין במצע המלא ובנימוקים שלנו ולאתגר אותנו.',
+        'אבל בהחלט יש מקומות שבהם את/ה חושב/ת אחרת. אנחנו מזמינים אותך לעיין במצע המלא ובנימוקים שלנו ולאתגר אותנו.',
       ),
+      contact: true,
     }
   }
   return {
-    headline: p('נסכים לא להסכים.', 'נסכים לא להסכים.'),
+    headline: p('נסכים שלא להסכים.', 'נסכים שלא להסכים.'),
     body: p(
-      'הדרך שלנו פחות מדברת אליכם, וגם זו תשובה. הדלת פתוחה אם תרצו להכיר אותה מקרוב.',
-      'הדרך שלנו פחות מדברת אליך, וגם זו תשובה. הדלת פתוחה אם תרצה/י להכיר אותה מקרוב.',
+      'הדרך שלנו פחות מדברת אליכם, וגם זו תשובה. אם בכל זאת הסתקרנתם - תוכלו לעיין במצע שלנו ללא פרשנות נוספת.',
+      'הדרך שלנו פחות מדברת אליך, וגם זו תשובה. אם בכל זאת הסתקרנת - תוכל/י לעיין במצע שלנו ללא פרשנות נוספת.',
     ),
+    contact: false,
   }
 }
+
+/**
+ * Source labels are written for the admin ("המצע המלא - מצע ביטחון ( עמ׳ 3-9 )")
+ * and are too long for a chip. Shorten the shapes we know; anything
+ * unrecognised passes through untouched, so a new label Lotem writes in the
+ * database can never break the page.
+ */
+export function shortSourceLabel(label: string): string {
+  const pages = label.match(/עמ׳ [\d-]+/)
+  if (label.startsWith('המצע המלא') && pages) return `המצע · ${pages[0]}`
+  if (label.startsWith('החזון שלנו - ')) return `החזון · ${label.slice('החזון שלנו - '.length)}`
+  if (label.startsWith('הצעת חוק יסוד')) return 'נוסח החוק המלא'
+  return label
+}
+
+const isPlatformSource = (label: string) => label.startsWith('המצע המלא')
 
 export default function Results({ answers, onRestart }: ResultsProps) {
   const { g } = useGender()
   const content = getContent()
   const score = scoreAnswers(answers)
-  const passedThreshold = score.totalPercent >= content.pinFlagThreshold
-  const message = tier(score.totalPercent, content.pinFlagThreshold)
-  const suggestAnotherRound =
-    !passedThreshold && score.totalPercent >= ANOTHER_ROUND_FLOOR
-
-  // Which category spoke to them most, and which least - only worth saying
-  // when the quiz actually covered more than one.
-  const ranked = [...score.byPillar].sort((a, b) => b.percent - a.percent)
-  const strongest = ranked[0]
-  const weakest = ranked[ranked.length - 1]
-  const nameOf = (id: string) => g(content.pillars.find((p) => p.id === id)?.short ?? id)
-  const showExtremes = ranked.length > 1 && strongest.percent !== weakest.percent
+  const threshold = content.pinFlagThreshold
+  const passedThreshold = score.totalPercent >= threshold
+  const message = tier(score.totalPercent)
+  const nameOf = (id: string) => g(content.pillars.find((pillar) => pillar.id === id)?.short ?? id)
 
   return (
     <>
       {passedThreshold && <Confetti />}
       <Header />
       <main className="mx-auto max-w-xl px-4 py-6 sm:py-8">
-        {/* Hero number */}
+        {/* The number, anchored: the scale shows where it sits against the
+            pin threshold, so 71% stops being a floating figure. */}
         <section className="rounded-xl border border-line bg-white p-6 text-center shadow-sm sm:p-8">
-          <p className="text-sm text-muted">{g(p('אחוז ההתאמה שלכם לדרך של אל הדגל', 'אחוז ההתאמה שלך לדרך של אל הדגל'))}</p>
-          <p className="mt-2 text-5xl font-extrabold tabular-nums text-navy sm:text-6xl">
+          <p className="text-sm text-muted">
+            {g(p('אחוז ההתאמה שלכם לדרך של אל הדגל', 'אחוז ההתאמה שלך לדרך של אל הדגל'))}
+          </p>
+          <p className="mt-2 text-6xl font-extrabold tabular-nums text-navy">
             {score.totalPercent}%
           </p>
-          <p className="mt-3 font-bold text-navy">{g(message.headline)}</p>
-          <p className="mt-1 text-sm leading-relaxed text-muted">{g(message.body)}</p>
+          {/* RTL: zero sits at the right edge, so the fill anchors right and
+              the tick is measured from the right. */}
+          <div className="relative mt-6 h-1.5 rounded-full bg-line">
+            <div
+              className="absolute inset-y-0 right-0 rounded-full bg-navy"
+              style={{ width: `${score.totalPercent}%` }}
+            />
+            <div
+              className="absolute -top-1 h-3.5 w-0.5 rounded bg-navy/35"
+              style={{ right: `${threshold}%` }}
+            />
+          </div>
+          <div className="relative mt-1.5 h-4">
+            <span
+              className="absolute text-[11px] text-muted"
+              style={{ right: `${threshold}%`, transform: 'translateX(50%)' }}
+            >
+              {threshold}%
+            </span>
+          </div>
         </section>
 
-        {/* Pin-the-flag invitation, only above the threshold */}
-        {passedThreshold && (
-          <section className="mt-4 rounded-xl bg-navy p-6 text-center text-white">
-            <h2 className="text-lg font-bold">
-              {g(p('עברתם את רף ה-', 'עברת את רף ה-'))}
-              {content.pinFlagThreshold}%
+        {/* The verdict, and the action it justifies */}
+        {passedThreshold ? (
+          <section className="mt-4 rounded-xl bg-navy p-7 text-center text-white sm:p-8">
+            <h2 className="text-2xl font-extrabold">
+              {g(p('הדגל הזה גם שלכם.', 'הדגל הזה גם שלך.'))}
             </h2>
-            <p className="mt-1 text-sm text-white/80">
+            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-white/80">
               {g(
                 p(
-                  'הצטרפו לפרויקט ה-150,000 ונעצו את הדגל שלכם על המפה.',
-                  'הצטרף/י לפרויקט ה-150,000 ונעץ/י את הדגל שלך על המפה.',
+                  'פרויקט ה-150,000 אוסף את מי שהדרך הזאת מדברת אליהם. הדגל שלכם על המפה הוא הסימן שאתם שם.',
+                  'פרויקט ה-150,000 אוסף את מי שהדרך הזאת מדברת אליהם. הדגל שלך על המפה הוא הסימן שאת/ה שם.',
                 )
               )}
             </p>
@@ -113,145 +144,128 @@ export default function Results({ answers, onRestart }: ResultsProps) {
               href={content.pinFlagUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 inline-block rounded-lg bg-white px-8 py-2.5 font-bold text-navy transition-colors hover:bg-cream"
+              className="mt-6 inline-block rounded-lg bg-white px-10 py-3 text-lg font-bold text-navy transition-colors hover:bg-cream"
             >
               {g(p('נועצים את הדגל ↗', 'נועץ/ת את הדגל ↗'))}
             </a>
           </section>
-        )}
-
-        {/* Per-category breakdown */}
-        <section className="mt-4 rounded-xl border border-line bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="font-bold text-navy">{g(p('איפה התחברתם, ואיפה פחות', 'איפה התחברת, ואיפה פחות'))}</h2>
-
-          {showExtremes && (
-            <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              <div className="rounded-lg bg-cream p-3">
-                <p className="text-xs text-muted">{g(p('הכי התחברתם', 'הכי התחברת'))}</p>
-                <p className="mt-0.5 flex items-center gap-2 text-sm font-bold text-navy">
-                  <span
-                    aria-hidden="true"
-                    className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                    style={{ backgroundColor: categoryColor(strongest.pillarId) }}
-                  />
-                  {nameOf(strongest.pillarId)}
-                </p>
-              </div>
-              <div className="rounded-lg bg-cream p-3">
-                <p className="text-xs text-muted">הכי פחות</p>
-                <p className="mt-0.5 flex items-center gap-2 text-sm font-bold text-navy">
-                  <span
-                    aria-hidden="true"
-                    className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                    style={{ backgroundColor: categoryColor(weakest.pillarId) }}
-                  />
-                  {nameOf(weakest.pillarId)}
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className="mt-4 space-y-3">
-            {score.byPillar.map((pillarScore) => {
-              const pillar = content.pillars.find((p) => p.id === pillarScore.pillarId)
-              const color = categoryColor(pillarScore.pillarId)
-              const sources = pillar?.sources ?? []
-              return (
-                <details key={pillarScore.pillarId} className="group">
-                  <summary className="cursor-pointer list-none">
-                    <div className="flex items-baseline justify-between gap-3 text-sm">
-                      <span className="flex items-center gap-2 font-medium">
-                        <span
-                          aria-hidden="true"
-                          className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                          style={{ backgroundColor: color }}
-                        />
-                        {g(pillar?.short ?? pillarScore.pillarId)}
-                      </span>
-                      <span className="shrink-0 tabular-nums text-muted">
-                        {pillarScore.percent}%
-                      </span>
-                    </div>
-                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-line">
-                      <div
-                        className="h-full rounded-full transition-all"
-                        style={{ width: `${pillarScore.percent}%`, backgroundColor: color }}
-                      />
-                    </div>
-                    {sources.length > 0 && (
-                      <span className="mt-1 inline-block text-xs text-muted underline underline-offset-2 group-open:hidden">
-                        לקריאה נוספת
-                      </span>
-                    )}
-                  </summary>
-                  {sources.length > 0 && (
-                    <ul className="mt-2 space-y-1 border-e-2 pe-3" style={{ borderColor: color }}>
-                      {sources.map((source) => (
-                        <li key={source.url}>
-                          <a
-                            href={source.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-navy underline underline-offset-2 hover:text-navy-dark"
-                          >
-                            {g(source.label)} ↗
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </details>
-              )
-            })}
-          </div>
-
-          <p className="mt-4 text-xs text-muted">
-            ההיגדים נבחרים אקראית מתוך מאגר גדול יותר - כל שאלון מעט שונה.
-          </p>
-        </section>
-
-        {/* The two whole documents, for anyone who wants the full picture */}
-        <section className="mt-4 rounded-xl border border-line bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="font-bold text-navy">{g(p('רוצים לקרוא את המקור המלא?', 'רוצה לקרוא את המקור המלא?'))}</h2>
-          <ul className="mt-2 space-y-1.5">
-            <li>
-              <a
-                href={VISION_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-navy underline underline-offset-4 hover:text-navy-dark"
-              >
-                החזון של אל הדגל, באתר התנועה ↗
-              </a>
-            </li>
-            <li>
+        ) : (
+          <section className="mt-4 rounded-xl border border-line bg-white p-6 text-center shadow-sm sm:p-7">
+            <h2 className="text-xl font-extrabold text-navy sm:text-2xl">{g(message.headline)}</h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+              {g(message.body)}
+              {message.contact && (
+                <>
+                  {' '}
+                  <a
+                    href={CONTACT_MAILTO}
+                    className="font-semibold text-navy underline underline-offset-2 hover:text-navy-dark"
+                  >
+                    {g(p('צרו קשר', 'צור/י קשר'))}
+                  </a>
+                </>
+              )}
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
               <a
                 href={PLATFORM_PDF_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-navy underline underline-offset-4 hover:text-navy-dark"
+                className="rounded-lg bg-navy px-7 py-2.5 font-bold text-white transition-colors hover:bg-navy-dark"
               >
                 המצע המלא ↗
               </a>
-            </li>
-          </ul>
+              <a
+                href={VISION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-navy px-7 py-2.5 font-bold text-navy transition-colors hover:bg-navy hover:text-white"
+              >
+                החזון שלנו ↗
+              </a>
+            </div>
+          </section>
+        )}
+
+        {/* Per-category breakdown; each row carries its own sources */}
+        <section className="mt-4 rounded-xl border border-line bg-white p-5 shadow-sm sm:p-6">
+          <h2 className="font-bold text-navy">
+            {g(p('איפה התחברתם, ואיפה פחות', 'איפה התחברת, ואיפה פחות'))}
+          </h2>
+          <div className="mt-2 divide-y divide-line">
+            {score.byPillar.map((pillarScore) => {
+              const pillar = content.pillars.find((item) => item.id === pillarScore.pillarId)
+              const color = categoryColor(pillarScore.pillarId)
+              // Platform links lead the chips: seeing the platform itself is
+              // the point of showing sources at all.
+              const sources = [...(pillar?.sources ?? [])].sort(
+                (a, b) => Number(isPlatformSource(b.label)) - Number(isPlatformSource(a.label)),
+              )
+              return (
+                <div key={pillarScore.pillarId} className="py-3.5">
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <span className="flex items-center gap-2 font-medium text-navy">
+                      <span
+                        aria-hidden="true"
+                        className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                        style={{ backgroundColor: color }}
+                      />
+                      {nameOf(pillarScore.pillarId)}
+                    </span>
+                    <span className="shrink-0 tabular-nums text-muted">{pillarScore.percent}%</span>
+                  </div>
+                  <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-line">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{ width: `${pillarScore.percent}%`, backgroundColor: color }}
+                    />
+                  </div>
+                  {sources.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {sources.map((source) => (
+                        <a
+                          key={source.url}
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={
+                            'rounded-full border px-2.5 py-0.5 text-[11px] transition-colors ' +
+                            (isPlatformSource(source.label)
+                              ? 'border-navy/35 font-semibold text-navy hover:border-navy'
+                              : 'border-line text-muted hover:border-navy hover:text-navy')
+                          }
+                        >
+                          {g(shortSourceLabel(source.label))} ↗
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </section>
 
-        <button
-          type="button"
-          onClick={onRestart}
-          className={
-            'mt-4 w-full rounded-lg py-3 font-bold transition-colors ' +
-            (suggestAnotherRound
-              ? 'bg-navy text-white hover:bg-navy-dark'
-              : 'border border-navy text-navy hover:bg-navy hover:text-white')
-          }
-        >
-          {suggestAnotherRound ? 'לסבב נוסף' : 'שאלון חדש'}
-        </button>
+        {/* Why another quiz is a different quiz, and the way to take one */}
+        <p className="mt-4 text-center text-xs leading-relaxed text-muted">
+          ההיגדים נבחרים אקראית מתוך מאגר גדול יותר - כל שאלון מעט שונה.
+          <br />
+          {g(
+            p(
+              'רוצים לראות היגדים נוספים המשקפים את אל הדגל?',
+              'רוצה לראות היגדים נוספים המשקפים את אל הדגל?',
+            )
+          )}{' '}
+          <button
+            type="button"
+            onClick={onRestart}
+            className="font-medium text-navy underline underline-offset-2 transition-colors hover:text-navy-dark"
+          >
+            {g(p('נסו שאלון חדש', 'נסה/י שאלון חדש'))}
+          </button>
+        </p>
 
-
-        <div className="mt-6">
+        <div className="mt-5">
           <JoinBlock />
         </div>
       </main>

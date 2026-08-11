@@ -18,7 +18,7 @@ import { createElement } from 'react'
 import App from '../src/App'
 import Admin, { canonical, computeNextQuestionId, summarizeDiff } from '../src/screens/Admin'
 import Quiz from '../src/screens/Quiz'
-import Results from '../src/screens/Results'
+import Results, { shortSourceLabel } from '../src/screens/Results'
 import { selectQuizQuestions } from '../src/engine/selectQuestions'
 import { scoreAnswers } from '../src/engine/scoring'
 import type { Answer } from '../src/engine/scoring'
@@ -153,27 +153,51 @@ const high: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pil
 const highHtml = renderToString(createElement(Results, { answers: high, onRestart: () => {} }))
 expectContains('Results-high', highHtml, [
   '100%',
+  // the verdict lives in the pin panel, with the action it justifies
+  'הדגל הזה גם שלכם.',
   'נועצים את הדגל',
   'איפה התחברתם, ואיפה פחות',
-  'רוצים לקרוא את המקור המלא?',
+  // every category row carries its sources as chips
+  'המצע · עמ׳ 3-9',
+  'נוסח החוק המלא',
   'הצטרפו אלינו',
-  'לקריאה נוספת',
+  'נסו שאלון חדש',
 ])
 check('confetti only above the flag threshold', highHtml.includes('canvas'))
+// above the threshold there is ONE action: no read-the-source buttons
+check('no platform button above the threshold', !highHtml.includes('המצע המלא ↗'))
 
 const low: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pillarId, value: 2 }))
 const lowHtml = renderToString(createElement(Results, { answers: low, onRestart: () => {} }))
-expectContains('Results-low', lowHtml, ['25%', 'נסכים לא להסכים', 'הצטרפו אלינו'])
+expectContains('Results-low', lowHtml, [
+  '25%',
+  'נסכים שלא להסכים',
+  'אם בכל זאת הסתקרנתם',
+  'המצע המלא',
+  'החזון שלנו',
+  'הצטרפו אלינו',
+])
 check('no confetti below the threshold', !lowHtml.includes('canvas'))
+// the lowest band offers the source, not a conversation
+check('no contact link in the far band', !lowHtml.includes('mailto:'))
 
-// the band just under the flag offers another round instead of a plain restart
+// the band just under the flag: verdict + reading buttons + the contact link
 const nearAnswers: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pillarId, value: 4 }))
 const nearHtml = renderToString(createElement(Results, { answers: nearAnswers, onRestart: () => {} }))
-expectContains('Results-near', nearHtml, ['75%', 'קרובים מאוד', 'לסבב נוסף'])
+expectContains('Results-near', nearHtml, ['75%', 'קרובים מאוד', 'צרו קשר', 'mailto:info@elhadegel.com', 'המצע המלא'])
 if (lowHtml.includes('נועצים את הדגל')) {
   failures++
   console.error('FAIL: pin CTA shown below threshold')
 }
+
+// the scale under the number anchors it against the pin threshold
+check('the threshold tick is drawn', highHtml.includes('right:90%') || highHtml.includes('right: 90%'))
+
+// source labels shrink to chip length, and unknown labels pass through
+check('platform label shortens', shortSourceLabel('המצע המלא - מצע ביטחון ( עמ׳ 3-9 )') === 'המצע · עמ׳ 3-9')
+check('vision label shortens', shortSourceLabel('החזון שלנו - כלכלה ציונית') === 'החזון · כלכלה ציונית')
+check('the law label shortens', shortSourceLabel('הצעת חוק יסוד: שירות חובה למען המדינה ( נוסח מלא )') === 'נוסח החוק המלא')
+check('an unknown label is untouched', shortSourceLabel('מקור חדש לגמרי') === 'מקור חדש לגמרי')
 
 // Admin - with Supabase configured, the first render is the loading state
 // (data arrives async in the browser; renderToString never runs effects).
