@@ -391,12 +391,57 @@ export default function Admin() {
   // validate it against - any mix is publishable. The single exception is an
   // empty quiz, which would leave visitors with nothing to answer.
   const publishBlocked = !offline && !loading && quotaSum === 0
+
+  // Spell out WHAT is unpublished. Without this the admin only knows that
+  // something differs from the live version - including changes made
+  // straight in the database, which never passed through this screen.
+  const changeSummary: string[] = []
+  if (dirty && published) {
+    const publishedIds = new Set(published.questionState.keys())
+    const added = questions.filter((q) => !publishedIds.has(q.id)).length
+    const removed = [...publishedIds].filter((id) => !questions.some((q) => q.id === id)).length
+    const reworded = questions.filter((q) => {
+      const snap = published.questionState.get(q.id)
+      return snap && snap.text !== q.text
+    }).length
+    const pinChanged = questions.filter((q) => {
+      const snap = published.questionState.get(q.id)
+      return snap && snap.pinned !== q.pinned
+    }).length
+    const quotaChanged = pillars.filter((p) => {
+      const snap = published.pillarState.get(p.id)
+      return snap && snap.quota !== p.quota
+    }).length
+    const categoryChanged = pillars.filter((p) => {
+      const snap = published.pillarState.get(p.id)
+      if (!snap) return false
+      const now = pillarFingerprint(p)
+      return (
+        snap.title !== now.title ||
+        snap.short !== now.short ||
+        snap.description !== now.description ||
+        snap.sources !== now.sources
+      )
+    }).length
+    const newCategories = pillars.filter((p) => !published.pillarState.has(p.id)).length
+
+    if (added) changeSummary.push(added === 1 ? 'שאלה חדשה' : `${added} שאלות חדשות`)
+    if (removed) changeSummary.push(removed === 1 ? 'שאלה שנמחקה' : `${removed} שאלות שנמחקו`)
+    if (reworded) changeSummary.push(reworded === 1 ? 'ניסוח של שאלה' : `ניסוח של ${reworded} שאלות`)
+    if (pinChanged) changeSummary.push(pinChanged === 1 ? 'נעיצה של שאלה' : `נעיצה של ${pinChanged} שאלות`)
+    if (quotaChanged)
+      changeSummary.push(quotaChanged === 1 ? 'תמהיל של קטגוריה' : `תמהיל של ${quotaChanged} קטגוריות`)
+    if (categoryChanged)
+      changeSummary.push(
+        categoryChanged === 1 ? 'פרטים של קטגוריה' : `פרטים של ${categoryChanged} קטגוריות`,
+      )
+    if (newCategories) changeSummary.push(`${newCategories} קטגוריות חדשות`)
+  }
   const pinnedVisible = visibleQuestions.filter((question) => question.pinned)
   const restVisible = visibleQuestions.filter((question) => !question.pinned)
 
   function renderQuestionCard(question: Question) {
-    const pillarIndex = pillars.findIndex((p) => p.id === question.pillarId)
-    const pillar = pillars[pillarIndex]
+    const pillar = pillars.find((p) => p.id === question.pillarId)
     const isEditing = editingId === question.id
     return (
       <div
@@ -410,11 +455,11 @@ export default function Admin() {
         <div className="flex flex-wrap items-center gap-2 text-xs">
           {/* Same category colour as the filter pills and the mix donut */}
           <span className="flex items-center gap-1.5 rounded-full border border-line bg-cream px-2.5 py-0.5 font-medium text-navy">
-            {pillarIndex >= 0 && (
+            {pillar && (
               <span
                 aria-hidden="true"
                 className="h-2 w-2 shrink-0 rounded-sm"
-                style={{ backgroundColor: categoryColor(pillarIndex) }}
+                style={{ backgroundColor: categoryColor(question.pillarId) }}
               />
             )}
             {pillar?.short}
@@ -560,7 +605,9 @@ export default function Admin() {
         {!offline && !migrationMissing && !publishInfoError && (
           <p className={'mt-2 text-xs ' + (dirty ? 'font-medium text-amber-600' : 'text-muted')}>
             {dirty
-              ? 'יש שינויים שעדיין לא פורסמו'
+              ? changeSummary.length > 0
+                ? 'שינויים שעדיין לא פורסמו: ' + changeSummary.join(' · ')
+                : 'יש שינויים שעדיין לא פורסמו'
               : published
                 ? 'פרסום אחרון: ' + formatPublishedAt(published.publishedAt)
                 : 'עדיין לא פורסמה גרסה ראשונה'}
@@ -598,11 +645,11 @@ export default function Admin() {
               <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>
                 הכול ({questions.length})
               </FilterChip>
-              {pillars.map((pillar, index) => (
+              {pillars.map((pillar) => (
                 <FilterChip
                   key={pillar.id}
                   active={filter === pillar.id}
-                  color={categoryColor(index)}
+                  color={categoryColor(pillar.id)}
                   onClick={() => setFilter(pillar.id)}
                 >
                   {pillar.short} ({questions.filter((q) => q.pillarId === pillar.id).length})
@@ -642,7 +689,7 @@ export default function Admin() {
           <section className="mt-5">
             <MixChart slices={pillarSlices(pillars)} />
             <div className="mt-4 space-y-3">
-              {pillars.map((pillar, index) => {
+              {pillars.map((pillar) => {
                 const available = activeCount(pillar.id)
                 const pinnedInPillar = questions.filter(
                   (question) => question.pillarId === pillar.id && question.pinned,
@@ -658,7 +705,7 @@ export default function Admin() {
                         <span
                           aria-hidden="true"
                           className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                          style={{ backgroundColor: categoryColor(index) }}
+                          style={{ backgroundColor: categoryColor(pillar.id) }}
                         />
                         {pillar.title}
                       </p>

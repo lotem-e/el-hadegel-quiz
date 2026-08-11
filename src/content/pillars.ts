@@ -55,17 +55,6 @@ export const PILLARS: Pillar[] = [
     ],
   },
   {
-    id: 'zionist-economy',
-    title: 'דגל הכלכלה',
-    short: 'דגל הכלכלה',
-    description: 'בקטגוריה זו ישנן שאלות העוסקות בכלכלה שמתגמלת תרומה: המעמד המשרת במרכז, יוקר המחיה, ועבודה שמשתלמת.',
-    sourceUrl: VISION_URL,
-    sources: [
-      VISION_SOURCE,
-      { label: 'המצע המלא - מצע כלכלה ( עמ׳ 20-25 )', url: PLATFORM_PDF_URL + '#page=20' },
-    ],
-  },
-  {
     id: 'education-revolution',
     title: 'דגל החינוך והלכידות',
     short: 'דגל החינוך והלכידות',
@@ -87,8 +76,18 @@ export const PILLARS: Pillar[] = [
       { label: 'המצע המלא - מצע ממשל ומשפט ( עמ׳ 14-19 )', url: PLATFORM_PDF_URL + '#page=14' },
     ],
   },
+  {
+    id: 'zionist-economy',
+    title: 'דגל הכלכלה',
+    short: 'דגל הכלכלה',
+    description: 'בקטגוריה זו ישנן שאלות העוסקות בכלכלה שמתגמלת תרומה: המעמד המשרת במרכז, יוקר המחיה, ועבודה שמשתלמת.',
+    sourceUrl: VISION_URL,
+    sources: [
+      VISION_SOURCE,
+      { label: 'המצע המלא - מצע כלכלה ( עמ׳ 20-25 )', url: PLATFORM_PDF_URL + '#page=20' },
+    ],
+  },
 ]
-
 /** Quick lookup: pillar object by its id */
 export function getPillar(id: string): Pillar | undefined {
   return PILLARS.find((p) => p.id === id)

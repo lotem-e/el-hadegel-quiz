@@ -34,13 +34,13 @@ export default function MixChart({ slices }: { slices: MixSlice[] }) {
 
   // Walk the slices once, remembering where each one starts on the ring.
   let cumulative = 0
-  const arcs = slices.map((slice, index) => {
+  const arcs = slices.map((slice) => {
     const length = total > 0 ? (slice.quota / total) * CIRCUMFERENCE : 0
     const start = cumulative
     cumulative += length
     return {
       ...slice,
-      color: categoryColor(index),
+      color: categoryColor(slice.id),
       length,
       start,
       percent: total > 0 ? Math.round((slice.quota / total) * 100) : 0,
