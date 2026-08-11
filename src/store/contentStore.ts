@@ -66,6 +66,8 @@ export async function refreshContent(): Promise<void> {
       short: row.short as string,
       description: row.description as string,
       sourceUrl: row.source_url as string,
+      // Snapshots published before the sources feature lack this field.
+      sources: (row.sources as Pillar['sources'] | undefined) ?? [],
     }))
     const pillarIds = new Set(pillars.map((p) => p.id))
     const quotas = Object.fromEntries(

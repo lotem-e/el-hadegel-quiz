@@ -17,16 +17,24 @@ export type PillarId =
   | 'education-revolution'
   | 'legal-reform'
 
+export interface PillarSource {
+  /** Human-readable name, including page numbers where relevant */
+  label: string
+  url: string
+}
+
 export interface Pillar {
   id: PillarId
   /** Full chapter title, exactly as it appears on the vision page */
   title: string
   /** Short label for charts and admin chips */
   short: string
-  /** One-line summary shown in the admin */
+  /** One line in the admin: what this pillar measures */
   description: string
   /** Where this pillar's text lives */
   sourceUrl: string
+  /** Source material links shown in the admin mix tab */
+  sources: PillarSource[]
 }
 
 export interface Question {

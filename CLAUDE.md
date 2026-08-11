@@ -38,9 +38,11 @@ hash router in `App.tsx` (`#/admin` = backoffice). No backend yet.
   a statement comes from "החזון שלנו", "המצע המלא" or the official site),
   `quizConfig.ts` (quiz length 13, Lotem's hand-tuned mix, pin-flag
   threshold + URL), `types.ts`
-- `docs/full-platform-2026-05.pdf` - the full 25-page party platform (source
-  of the "המצע המלא" statements; page map: 1-2 intro/vision, 3-9 security,
-  10-13 education, 14-19 governance and legal, 20-25 economy)
+- `public/docs/full-platform.pdf` - the full 25-page party platform (May
+  2026). Both the source record for the "המצע המלא" statements AND a served
+  site asset, so the admin's source links can deep-link into it
+  (`...#page=N`). Page map: 1-2 intro/vision, 3-9 security, 10-13 education,
+  14-19 governance and legal, 20-25 economy.
 - `src/engine/` - pure logic: `selectQuestions.ts` (random pick per pillar
   quota), `scoring.ts` (1-5 answer -> 0-100%, total + per-pillar)
 - `src/store/adminStore.ts` - effective data = base content + localStorage

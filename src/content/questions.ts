@@ -2,7 +2,7 @@
 // REWRITTEN 2026-08-10 per Lotem's "quality over quantity" pass (50 sharp
 // statements authored by reading each merged pillar's chapters TOGETHER),
 // then EXTENDED same day after synthesizing the FULL party platform
-// (25-page PDF, May 2026, copy at docs/full-platform-2026-05.pdf): platform
+// (25-page PDF, May 2026, copy at public/docs/full-platform.pdf): platform
 // statements for significant positions the short vision chapters did not
 // carry, plus a clarity pass on the security pillar, followed by Lotem's
 // editorial pruning and invited additions. 60 total.
@@ -42,7 +42,7 @@ const SRC = {
   legal: 'החזון שלנו - הרפורמה המשפטית של ״אל הדגל״',
   intro: 'המצע המלא - הקדמה: חזון ציוני למדינת ישראל',
   siteFlags: 'האתר הרשמי - הקדמת ארבעת הדגלים',
-  // Full-platform sources (docs/full-platform-2026-05.pdf)
+  // Full-platform sources (public/docs/full-platform.pdf)
   secTimeline: 'המצע המלא - מצע ביטחון: היפוך שעון החול',
   secPeace: 'המצע המלא - מצע ביטחון: זרוע שלום יזום',
   secPeaceTrack: 'המצע המלא - מצע ביטחון: מסלול השלום המותנה',

@@ -22,7 +22,22 @@ interface PillarRow extends Pillar {
 interface PublishedSnapshot {
   publishedAt: string
   questionState: Map<string, { text: string; active: boolean; pinned: boolean }>
-  quotaState: Map<string, number>
+  /** Everything publish_content() snapshots per pillar, so the dirty check
+   *  cannot miss a field (quota, description, sources). */
+  pillarState: Map<string, { quota: number; description: string; sources: string }>
+}
+
+/** Stable string form of a pillar's editable fields, for change detection */
+function pillarFingerprint(pillar: {
+  quota: number
+  description: string
+  sources: unknown
+}): { quota: number; description: string; sources: string } {
+  return {
+    quota: pillar.quota,
+    description: pillar.description ?? '',
+    sources: JSON.stringify(pillar.sources ?? []),
+  }
 }
 
 function formatPublishedAt(iso: string): string {
@@ -105,6 +120,8 @@ export default function Admin() {
         short: row.short,
         description: row.description,
         sourceUrl: row.source_url,
+        // Defensive default until migration 5 adds the column.
+        sources: row.sources ?? [],
         quota: row.quota,
       })),
     )
@@ -160,7 +177,16 @@ export default function Admin() {
           },
         ]),
       ),
-      quotaState: new Map((content.pillars ?? []).map((p) => [p.id as string, p.quota as number])),
+      pillarState: new Map(
+        (content.pillars ?? []).map((p) => [
+          p.id as string,
+          pillarFingerprint({
+            quota: p.quota as number,
+            description: p.description as string,
+            sources: p.sources,
+          }),
+        ]),
+      ),
     })
   }
 
@@ -310,7 +336,17 @@ export default function Admin() {
           snap.pinned !== question.pinned
         )
       }) ||
-      pillars.some((pillar) => published.quotaState.get(pillar.id) !== pillar.quota))
+      pillars.length !== published.pillarState.size ||
+      pillars.some((pillar) => {
+        const snap = published.pillarState.get(pillar.id)
+        const now = pillarFingerprint(pillar)
+        return (
+          !snap ||
+          snap.quota !== now.quota ||
+          snap.description !== now.description ||
+          snap.sources !== now.sources
+        )
+      }))
   // The publish gate: a broken mix may exist in the draft (editing passes
   // through unbalanced states) but must never reach visitors.
   const mixProblems: string[] = []
@@ -541,14 +577,31 @@ export default function Admin() {
                     key={pillar.id}
                     className="flex items-center justify-between gap-4 rounded-xl border border-line bg-white p-4 shadow-sm"
                   >
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-medium">{pillar.title}</p>
+                      {/* One line: what this pillar measures */}
                       <p className="mt-0.5 text-xs text-muted">{pillar.description}</p>
-                      <p className="mt-0.5 text-xs text-muted">
-                        {available} שאלות במאגר
-                        {pinnedInPillar > 0 &&
-                          (pinnedInPillar === 1 ? ' · נעוצה אחת' : ` · ${pinnedInPillar} נעוצות`)}
-                      </p>
+                      {/* The material the questions rely on */}
+                      {pillar.sources.length > 0 && (
+                        <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+                          {pillar.sources.map((source) => (
+                            <a
+                              key={source.url}
+                              href={source.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-navy underline underline-offset-2 hover:text-navy-dark"
+                            >
+                              {source.label} ↗
+                            </a>
+                          ))}
+                        </p>
+                      )}
+                      {pinnedInPillar > 0 && (
+                        <p className="mt-1 text-xs text-muted">
+                          {pinnedInPillar === 1 ? 'נעוצה אחת' : `${pinnedInPillar} נעוצות`}
+                        </p>
+                      )}
                       {pillar.quota > available && (
                         <p className="mt-1 text-xs font-medium text-red-600">
                           אין מספיק שאלות במאגר לפילר הזה
@@ -560,18 +613,29 @@ export default function Admin() {
                         </p>
                       )}
                     </div>
-                    <input
-                      type="number"
-                      min={pinnedInPillar}
-                      max={available}
-                      value={pillar.quota}
-                      disabled={offline}
-                      onChange={(event) =>
-                        void handleQuotaChange(pillar, Number.parseInt(event.target.value, 10) || 0)
-                      }
-                      className="w-16 rounded-lg border border-line p-2 text-center tabular-nums focus:border-navy focus:outline-none"
-                      aria-label={`מספר שאלות: ${pillar.title}`}
-                    />
+                    {/* dir="ltr" so it always reads "quota / total" like a fraction */}
+                    <div dir="ltr" className="flex shrink-0 items-center gap-1.5">
+                      <input
+                        type="number"
+                        min={pinnedInPillar}
+                        max={available}
+                        value={pillar.quota}
+                        disabled={offline}
+                        onChange={(event) =>
+                          void handleQuotaChange(pillar, Number.parseInt(event.target.value, 10) || 0)
+                        }
+                        className="w-14 rounded-lg border border-line p-2 text-center tabular-nums focus:border-navy focus:outline-none"
+                        aria-label={`מספר שאלות בשאלון: ${pillar.title}`}
+                      />
+                      <span className="text-lg font-bold text-muted">/</span>
+                      {/* The pillar's full pool size - controlled in the questions tab */}
+                      <span
+                        title="סך השאלות בפילר - נקבע בטאב ניהול מאגר השאלות"
+                        className="w-8 text-center text-lg font-semibold tabular-nums text-muted/60"
+                      >
+                        {available}
+                      </span>
+                    </div>
                   </div>
                 )
               })}
