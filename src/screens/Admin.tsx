@@ -56,8 +56,22 @@ export default function Admin() {
   // Short-lived confirmation toast after a successful publish.
   const [toastVisible, setToastVisible] = useState(false)
   const toastTimerRef = useRef<number | undefined>(undefined)
+  // Delete confirmation modal (browser confirm dialogs are unreliable in
+  // embedded panes, so this is a real in-UI modal).
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => () => window.clearTimeout(toastTimerRef.current), [])
+
+  // Close the modal on Escape while it is open.
+  useEffect(() => {
+    if (!confirmDeleteId) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setConfirmDeleteId(null)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [confirmDeleteId])
 
   useEffect(() => {
     if (!offline) void loadAll()
@@ -187,6 +201,21 @@ export default function Admin() {
     setDraft(question.text)
   }
 
+  async function handleDeleteConfirmed() {
+    if (!supabase || !confirmDeleteId) return
+    setDeleting(true)
+    setSaveError(false)
+    const { error } = await supabase.from('questions').delete().eq('id', confirmDeleteId)
+    setDeleting(false)
+    if (error) {
+      setSaveError(true)
+      setConfirmDeleteId(null)
+      return
+    }
+    setQuestions((current) => current.filter((question) => question.id !== confirmDeleteId))
+    setConfirmDeleteId(null)
+  }
+
   async function saveEdit() {
     if (editingId && draft.trim().length > 0) {
       await saveQuestionPatch(editingId, { text: draft.trim() })
@@ -233,7 +262,7 @@ export default function Admin() {
   if (loading) {
     return (
       <>
-        <Header badge="ממשק ניהול" onSignOut={offline ? undefined : () => void handleSignOut()} />
+        <Header onSignOut={offline ? undefined : () => void handleSignOut()} />
         <main className="mx-auto max-w-3xl px-4 py-16 text-center text-muted">טוען את המאגר...</main>
       </>
     )
@@ -242,7 +271,7 @@ export default function Admin() {
   if (loadError) {
     return (
       <>
-        <Header badge="ממשק ניהול" onSignOut={offline ? undefined : () => void handleSignOut()} />
+        <Header onSignOut={offline ? undefined : () => void handleSignOut()} />
         <main className="mx-auto max-w-3xl px-4 py-16 text-center">
           <p className="text-muted">לא הצלחתי לטעון את המאגר מהמסד.</p>
           <button
@@ -259,10 +288,12 @@ export default function Admin() {
 
   return (
     <>
-      <Header badge="ממשק ניהול" onSignOut={offline ? undefined : () => void handleSignOut()} />
+      <Header onSignOut={offline ? undefined : () => void handleSignOut()} />
       <main className="mx-auto max-w-3xl px-4 py-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-2xl font-extrabold text-navy">ניהול השאלון</h1>
+          <h1 className="text-2xl font-extrabold text-navy">
+            שאלון התאמה לאל הדגל - ממשק ניהול
+          </h1>
           <div className="flex gap-2">
             {!offline && (
               <button
@@ -271,7 +302,7 @@ export default function Admin() {
                 disabled={!dirty || publishing || migrationMissing}
                 className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {publishing ? 'מפרסם...' : 'פרסום לאתר'}
+                {publishing ? 'מפרסם...' : 'פרסום לשאלון החי'}
               </button>
             )}
             <span className="group relative">
@@ -323,10 +354,10 @@ export default function Admin() {
         {/* Tabs */}
         <div className="mt-5 flex gap-2">
           <TabButton active={tab === 'questions'} onClick={() => setTab('questions')}>
-            מאגר השאלות ({questions.length})
+            ניהול מאגר השאלות ({questions.length})
           </TabButton>
           <TabButton active={tab === 'mix'} onClick={() => setTab('mix')}>
-            תמהיל הפילרים
+            ניהול אורך ותמהיל השאלון
           </TabButton>
         </div>
 
@@ -369,25 +400,24 @@ export default function Admin() {
                         </span>
                       )}
                       <span className="grow" />
-                      <a
-                        href={question.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={question.sourceLabel}
-                        className="text-navy underline underline-offset-2 hover:text-navy-dark"
-                      >
-                        מקור ↗
-                      </a>
-                      <label className="flex cursor-pointer items-center gap-1.5 text-muted">
-                        <input
-                          type="checkbox"
-                          checked={question.active}
-                          disabled={offline}
-                          onChange={() => void saveQuestionPatch(question.id, { active: !question.active })}
-                          className="accent-navy"
-                        />
-                        פעילה
-                      </label>
+                      {!offline && !isEditing && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(question)}
+                            className="text-muted underline underline-offset-2 transition-colors hover:text-navy"
+                          >
+                            עריכה
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteId(question.id)}
+                            className="rounded-md px-2 py-0.5 font-medium text-red-600 transition-colors hover:bg-red-600/10"
+                          >
+                            מחיקה
+                          </button>
+                        </>
+                      )}
                     </div>
 
                     {isEditing ? (
@@ -416,18 +446,7 @@ export default function Admin() {
                         </div>
                       </div>
                     ) : (
-                      <div className="mt-2 flex items-start justify-between gap-3">
-                        <p className="text-sm leading-relaxed">{question.text}</p>
-                        {!offline && (
-                          <button
-                            type="button"
-                            onClick={() => startEdit(question)}
-                            className="shrink-0 text-xs text-muted underline underline-offset-2 hover:text-navy"
-                          >
-                            עריכה
-                          </button>
-                        )}
-                      </div>
+                      <p className="mt-2 text-sm leading-relaxed">{question.text}</p>
                     )}
                   </div>
                 )
@@ -438,11 +457,7 @@ export default function Admin() {
 
         {tab === 'mix' && (
           <section className="mt-5">
-            <p className="text-sm text-muted">
-              כמה שאלות מכל עמוד חזון נכנסות לכל שאלון. הכמויות לא חייבות להיות
-              זהות, אבל הסכום חייב להיות בדיוק {quizLength}.
-            </p>
-            <div className="mt-4 space-y-3">
+            <div className="space-y-3">
               {pillars.map((pillar) => {
                 const available = activeCount(pillar.id)
                 return (
@@ -453,10 +468,10 @@ export default function Admin() {
                     <div>
                       <p className="font-medium">{pillar.title}</p>
                       <p className="mt-0.5 text-xs text-muted">{pillar.description}</p>
-                      <p className="mt-0.5 text-xs text-muted">{available} שאלות פעילות במאגר</p>
+                      <p className="mt-0.5 text-xs text-muted">{available} שאלות במאגר</p>
                       {pillar.quota > available && (
                         <p className="mt-1 text-xs font-medium text-red-600">
-                          אין מספיק שאלות פעילות לפילר הזה
+                          אין מספיק שאלות במאגר לפילר הזה
                         </p>
                       )}
                     </div>
@@ -502,6 +517,47 @@ export default function Admin() {
         <div className="pointer-events-none fixed inset-x-0 bottom-8 z-30 flex justify-center">
           <div className="toast-pop rounded-lg bg-navy-dark px-5 py-2.5 text-sm font-medium text-white shadow-lg">
             כל השינויים פורסמו ✓
+          </div>
+        </div>
+      )}
+
+      {confirmDeleteId && (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-navy-dark/40 px-6"
+          onClick={() => setConfirmDeleteId(null)}
+        >
+          {/* Clicks inside the card must not close the modal */}
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="toast-pop w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 className="font-bold text-navy">למחוק את השאלה?</h2>
+            <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">
+              ״{questions.find((question) => question.id === confirmDeleteId)?.text}״
+            </p>
+            <p className="mt-2 text-xs text-muted">
+              המחיקה תיכנס לתוקף אצל המבקרים רק אחרי הפרסום הבא.
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => void handleDeleteConfirmed()}
+                disabled={deleting}
+                className="rounded-lg bg-red-600 px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? 'מוחקת...' : 'מחיקה'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteId(null)}
+                disabled={deleting}
+                className="rounded-lg border border-line px-5 py-2 text-sm font-medium text-muted transition-colors hover:border-navy hover:text-navy"
+              >
+                ביטול
+              </button>
+            </div>
           </div>
         </div>
       )}

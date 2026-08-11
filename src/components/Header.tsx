@@ -12,9 +12,13 @@ export default function Header({ badge, onSignOut }: { badge?: string; onSignOut
         <a href="#/" className="text-navy" aria-label="לעמוד הפתיחה">
           <Logo className="h-8 w-auto" />
         </a>
-        {badge && (
+        {(badge || onSignOut) && (
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-navy px-3 py-1 text-xs font-medium text-white">{badge}</span>
+            {badge && (
+              <span className="rounded-full bg-navy px-3 py-1 text-xs font-medium text-white">
+                {badge}
+              </span>
+            )}
             {onSignOut && (
               <button
                 type="button"
