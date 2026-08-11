@@ -45,20 +45,21 @@ export default function Landing({ onStart, busy = false }: { onStart: () => void
           )
         )}
       </p>
+      {/* Two pills, in the movement's own badge style: what the quiz is, and
+          what it costs you. They sit ABOVE the button (Lotem's order) - the
+          cost is part of deciding to press, not a footnote after it. */}
+      <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
+        <span className={pillClass}>{quizLength} היגדים</span>
+        <span className={pillClass}>כ-{estimateMinutes(quizLength)} דקות</span>
+      </div>
       <button
         type="button"
         onClick={onStart}
         disabled={busy}
-        className="mt-8 rounded-lg bg-navy px-12 py-3.5 text-lg font-bold text-white transition-colors hover:bg-navy-dark disabled:opacity-70"
+        className="mt-5 rounded-lg bg-navy px-12 py-3.5 text-lg font-bold text-white transition-colors hover:bg-navy-dark disabled:opacity-70"
       >
         {busy ? 'רק רגע...' : g(p('בואו נגלה', 'בוא/י נגלה'))}
       </button>
-      {/* Two pills, in the movement's own badge style: what the quiz is, and
-          what it costs you. Separate because they answer different questions. */}
-      <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-        <span className={pillClass}>{quizLength} היגדים</span>
-        <span className={pillClass}>כ-{estimateMinutes(quizLength)} דקות</span>
-      </div>
     </main>
   )
 }
