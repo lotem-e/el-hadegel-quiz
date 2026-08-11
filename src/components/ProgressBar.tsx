@@ -44,10 +44,10 @@ export default function ProgressBar({ current, total, onBack, canGoBack }: Progr
           </svg>
           חזרה
         </button>
-        {/* Flex, not bidi text: three separate boxes flow right-to-left on
-            their own, so the current number always sits on the right and no
-            bidi reordering can flip "1 / 14" into "14 / 1". */}
-        <span className="flex items-baseline gap-1 text-muted">
+        {/* dir="ltr": the fraction reads 2 / 14 with the current number on
+            the LEFT (Lotem's direction), and stays that way regardless of
+            the RTL page around it. */}
+        <span dir="ltr" className="flex items-baseline gap-1 text-muted">
           <span className="text-base font-bold tabular-nums text-navy">{current}</span>
           <span className="text-xs">/</span>
           <span className="tabular-nums">{total}</span>
