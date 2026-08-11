@@ -16,7 +16,7 @@
 import { renderToString } from 'react-dom/server'
 import { createElement } from 'react'
 import App from '../src/App'
-import Admin, { canonical, summarizeDiff } from '../src/screens/Admin'
+import Admin, { canonical, computeNextQuestionId, summarizeDiff } from '../src/screens/Admin'
 import Quiz from '../src/screens/Quiz'
 import Results from '../src/screens/Results'
 import { selectQuizQuestions } from '../src/engine/selectQuestions'
@@ -252,6 +252,37 @@ console.log('gendered address')
   // The screens must not ship a bare masculine address any more.
   const landingNeutral = renderToString(createElement(App))
   check('landing addresses both by default', landingNeutral.includes('קרובים/ות'))
+}
+
+console.log('new statement form')
+{
+  // Rendered offline (no database), the create button must not be offered -
+  // there would be nothing to insert into.
+  const adminOffline = renderToString(createElement(Admin)).replace(/<!--.*?-->/g, '')
+  check('no create button without a database', !adminOffline.includes('היגד חדש'))
+}
+
+console.log('new statement ids')
+{
+  const next = computeNextQuestionId
+  // The case that motivates the whole rule: vision-victory holds 1 and 2, but
+  // 3-8 were used and deleted. Only the published history remembers them.
+  check('a retired number is never handed out again',
+    next('vision-victory', ['vision-victory-1', 'vision-victory-2'],
+      ['vision-victory-3', 'vision-victory-8']) === 'vision-victory-9')
+  check('without history it still counts what exists',
+    next('vision-victory', ['vision-victory-1', 'vision-victory-2'], []) === 'vision-victory-3')
+  check('an empty category starts at 1', next('legal-reform', [], []) === 'legal-reform-1')
+  check('another category does not shift the count',
+    next('legal-reform', ['winning-iron-wall-22', 'legal-reform-8'], []) === 'legal-reform-9')
+  check('a non-numeric suffix is ignored',
+    next('legal-reform', ['legal-reform-2b', 'legal-reform-3'], []) === 'legal-reform-4')
+  // The real pool must never produce an id that already exists.
+  const live = BASE_QUESTIONS.map((q) => q.id)
+  for (const pillar of PILLARS) {
+    check(`live pool yields a free id for ${pillar.id}`,
+      !live.includes(computeNextQuestionId(pillar.id, live, [])))
+  }
 }
 
 console.log('unpublished-changes logic')

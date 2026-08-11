@@ -207,6 +207,26 @@ call into whatever object you hand it, so React state takes that role. The bar i
 never on `#/admin`. Its `<a href="#">` links call `preventDefault` - without that
 they would write a bare `#` into the URL and disturb the hash router.
 
+## Creating a statement - since 2026-08-11
+
+The admin could always edit, pin and delete; creating is new. The form takes
+only text and category (Lotem's call - no source fields, no duplicate check:
+"זו באחריות האדמין"). It inserts into the draft, so it publishes like any
+other change.
+
+The one subtle part is the id. Ids look like `<category>-<number>` and a
+retired number must never be reused, but DELETE removes the row outright so
+the questions table has no memory of it. `computeNextQuestionId` (exported
+from `Admin.tsx`, so `npm run verify` can exercise it) therefore counts the
+live pool AND every id in `published_content`, which is append-only.
+vision-victory is the case that proves it necessary: it holds 1 and 2 today,
+but 3-8 were used and retired, so counting only what exists would hand out 3.
+
+Verified without admin credentials by attempting an anonymous REST insert: it
+returns 42501 (RLS refusal) rather than PGRST204, which shows both that
+visitors cannot create statements and that every column name in the insert
+exists - a wrong name would fail before reaching the policy check.
+
 ## Known limitations / next
 
 - Frontend polish phase planned. Bundle grew to ~457KB raw (~132KB gzip)

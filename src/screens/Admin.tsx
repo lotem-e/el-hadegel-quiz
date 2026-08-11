@@ -113,6 +113,37 @@ function bakedPillarRows(): PillarRow[] {
   return BAKED_PILLARS.map((pillar) => ({ ...pillar, quota: DEFAULT_QUOTAS[pillar.id] }))
 }
 
+/**
+ * The next id for a category: "<category>-<number>".
+ *
+ * The number is one past the highest ever used, counting BOTH the statements
+ * that exist now and the ones that only survive in the published history.
+ * vision-victory is the case that makes this necessary: it holds 1 and 2
+ * today, but 3 through 8 were used and retired, so counting only what exists
+ * would hand out 3 again - and Lotem's rule is that a retired id never
+ * returns.
+ */
+export function computeNextQuestionId(
+  pillarId: string,
+  existingIds: Iterable<string>,
+  everPublishedIds: Iterable<string>,
+): string {
+  const prefix = `${pillarId}-`
+  let highest = 0
+  const consider = (id: string) => {
+    if (!id.startsWith(prefix)) return
+    const suffix = id.slice(prefix.length)
+    // Only a plain number counts, so a hand-made id like "legal-reform-2b"
+    // cannot corrupt the count.
+    if (!/^\d+$/.test(suffix)) return
+    highest = Math.max(highest, Number(suffix))
+  }
+  for (const id of existingIds) consider(id)
+  for (const id of everPublishedIds) consider(id)
+  return `${prefix}${highest + 1}`
+}
+
+
 export default function Admin() {
   // Offline mode (no Supabase configured): show baked content, block edits.
   const offline = !supabase
@@ -146,6 +177,16 @@ export default function Admin() {
     window.clearTimeout(toastTimerRef.current)
     toastTimerRef.current = window.setTimeout(() => setToast(null), 3000)
   }
+  // Creating a new statement.
+  const [creating, setCreating] = useState(false)
+  const [newText, setNewText] = useState('')
+  const [newPillarId, setNewPillarId] = useState<PillarId | ''>('')
+  const [savingNew, setSavingNew] = useState(false)
+  // Every statement id that has ever been PUBLISHED. Deleting a statement
+  // removes its row for good, so the live table cannot tell us which numbers
+  // are retired - but the published history is append-only and can.
+  const [everPublishedIds, setEverPublishedIds] = useState<Set<string>>(new Set())
+
   // Delete confirmation modal (browser confirm dialogs are unreliable in
   // embedded panes, so this is a real in-UI modal).
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
@@ -205,7 +246,7 @@ export default function Admin() {
         sourceLabel: row.source_label,
       })),
     )
-    await Promise.all([loadPublished(), refreshDraftSnapshot()])
+    await Promise.all([loadPublished(), refreshDraftSnapshot(), loadEverPublishedIds()])
     setLoading(false)
   }
 
@@ -234,6 +275,119 @@ export default function Admin() {
       return
     }
     setPublished({ publishedAt: data.published_at, content: data.content as Snapshot })
+  }
+
+  /**
+   * Collect every statement id that has ever been published.
+   *
+   * This is what keeps a retired number from coming back. Deleting a
+   * statement removes the row outright, so the questions table has no memory
+   * of it - but published_content is append-only, so every id that ever went
+   * live is still recorded in one of its snapshots. Failing here is not fatal:
+   * we fall back to the live table, which can only ever make the next number
+   * SMALLER, and the primary key would reject a genuine collision anyway.
+   */
+  async function loadEverPublishedIds() {
+    if (!supabase) return
+    const { data, error } = await supabase.from('published_content').select('content')
+    if (error || !data) return
+    const ids = new Set<string>()
+    for (const row of data) {
+      const snapshot = row.content as Snapshot
+      for (const question of snapshot.questions ?? []) {
+        const id = question.id
+        if (typeof id === 'string') ids.add(id)
+      }
+    }
+    setEverPublishedIds(ids)
+  }
+
+  function nextQuestionId(pillarId: PillarId): string {
+    return computeNextQuestionId(
+      pillarId,
+      questions.map((question) => question.id),
+      everPublishedIds,
+    )
+  }
+
+  async function createQuestion(): Promise<boolean> {
+    if (!supabase) return false
+    const text = newText.trim()
+    if (!text || !newPillarId) return false
+    setSaveError(false)
+
+    // Append to the end of the pool. Asking the database for the current
+    // maximum rather than tracking sort_order in component state keeps the
+    // two from drifting.
+    const { data: last } = await supabase
+      .from('questions')
+      .select('sort_order')
+      .order('sort_order', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    const sortOrder = (last?.sort_order ?? 0) + 1
+
+    const id = nextQuestionId(newPillarId)
+    const { error } = await supabase.from('questions').insert({
+      id,
+      pillar_id: newPillarId,
+      text,
+      active: true,
+      pinned: false,
+      source_url: '',
+      source_label: '',
+      sort_order: sortOrder,
+    })
+    if (error) {
+      setSaveError(true)
+      return false
+    }
+    setQuestions((current) => [
+      ...current,
+      {
+        id,
+        pillarId: newPillarId,
+        text,
+        active: true,
+        pinned: false,
+        sourceUrl: '',
+        sourceLabel: '',
+      },
+    ])
+    void refreshDraftSnapshot()
+    return true
+  }
+
+  async function handleCreate() {
+    if (savingNew) return
+    if (!newText.trim()) {
+      showToast('אי אפשר לשמור היגד ריק', 'warn')
+      return
+    }
+    if (!newPillarId) {
+      showToast('צריך לבחור קטגוריה', 'warn')
+      return
+    }
+    const pillarId = newPillarId
+    setSavingNew(true)
+    const created = await createQuestion()
+    setSavingNew(false)
+    if (!created) {
+      // Same rule as editing: a failed save leaves the form open with the
+      // text in it, so nothing she wrote is ever lost to a network blip.
+      showToast('השמירה נכשלה - הטקסט נשמר בטופס, אפשר לנסות שוב', 'warn')
+      return
+    }
+    const quota = pillars.find((pillar) => pillar.id === pillarId)?.quota ?? 0
+    showToast(
+      quota === 0
+        ? 'ההיגד נוסף. שימי לב שהמכסה של הקטגוריה הזאת היא 0, אז הוא לא יישאל עד שתעלי אותה בתמהיל.'
+        : 'ההיגד נוסף לטיוטה. הוא יגיע למבקרים אחרי הפרסום הבא.',
+      quota === 0 ? 'warn' : 'ok',
+    )
+    setNewText('')
+    setNewPillarId('')
+    setCreating(false)
   }
 
   /**
@@ -630,7 +784,84 @@ export default function Admin() {
 
         {tab === 'questions' && (
           <section className="mt-5">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs text-muted">
+                היגד חדש נכנס לטיוטה, ומגיע למבקרים רק אחרי הפרסום הבא.
+              </p>
+              {!offline && !creating && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    // If a category is filtered, that is almost certainly the
+                    // one she means - so it starts selected.
+                    setNewPillarId(filter === 'all' ? '' : filter)
+                    setNewText('')
+                    setCreating(true)
+                  }}
+                  className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark"
+                >
+                  + היגד חדש
+                </button>
+              )}
+            </div>
+
+            {creating && (
+              <div className="mt-4 rounded-xl border border-navy bg-white p-4">
+                <h2 className="text-sm font-bold text-navy">היגד חדש</h2>
+                <label className="mt-3 block text-xs font-medium text-muted" htmlFor="new-text">
+                  נוסח ההיגד
+                </label>
+                <textarea
+                  id="new-text"
+                  value={newText}
+                  onChange={(event) => setNewText(event.target.value)}
+                  rows={3}
+                  autoFocus
+                  className="mt-1 w-full rounded-lg border border-line p-3 text-sm leading-relaxed focus:border-navy focus:outline-none"
+                  placeholder="מה המבקרים ידרגו מ-1 עד 5"
+                />
+                <label className="mt-3 block text-xs font-medium text-muted" htmlFor="new-pillar">
+                  קטגוריה
+                </label>
+                <select
+                  id="new-pillar"
+                  value={newPillarId}
+                  onChange={(event) => setNewPillarId(event.target.value as PillarId | '')}
+                  className="mt-1 w-full rounded-lg border border-line bg-white p-2.5 text-sm focus:border-navy focus:outline-none"
+                >
+                  <option value="">בחרי קטגוריה</option>
+                  {pillars.map((pillar) => (
+                    <option key={pillar.id} value={pillar.id}>
+                      {pillar.short}
+                    </option>
+                  ))}
+                </select>
+                <div className="mt-4 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleCreate()}
+                    disabled={savingNew || !newText.trim() || !newPillarId}
+                    className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {savingNew ? 'שומרת...' : 'הוספה למאגר'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreating(false)
+                      setNewText('')
+                      setNewPillarId('')
+                    }}
+                    disabled={savingNew}
+                    className="rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:text-navy disabled:opacity-40"
+                  >
+                    ביטול
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-4 flex flex-wrap gap-2">
               <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>
                 הכול ({questions.length})
               </FilterChip>
