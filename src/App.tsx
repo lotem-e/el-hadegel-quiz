@@ -39,6 +39,7 @@ type Phase =
 export default function App() {
   const route = useHashRoute()
   const [phase, setPhase] = useState<Phase>({ name: 'landing' })
+  const [starting, setStarting] = useState(false)
 
   // Pull the live content from Supabase once at startup. Until it lands
   // (or if it fails) the baked-in content keeps everything working.
@@ -54,7 +55,16 @@ export default function App() {
     )
   }
 
-  function startQuiz(nonce: number) {
+  async function startQuiz(nonce: number) {
+    // Wait for the published content before composing, so a fast click never
+    // gets the baked fallback. Never hang on it though: after a short grace
+    // period we start with whatever we have.
+    setStarting(true)
+    await Promise.race([
+      refreshContent(),
+      new Promise((resolve) => window.setTimeout(resolve, 2500)),
+    ])
+    setStarting(false)
     const content = getContent()
     const questions = selectQuizQuestions(content.questions, content.quotas)
     setPhase({ name: 'quiz', questions, nonce })
@@ -75,7 +85,7 @@ export default function App() {
 
   switch (phase.name) {
     case 'landing':
-      return <Landing onStart={() => startQuiz(1)} />
+      return <Landing onStart={() => void startQuiz(1)} busy={starting} />
     case 'quiz':
       return (
         <Quiz
@@ -85,6 +95,6 @@ export default function App() {
         />
       )
     case 'results':
-      return <Results answers={phase.answers} onRestart={() => startQuiz(phase.nonce + 1)} />
+      return <Results answers={phase.answers} onRestart={() => void startQuiz(phase.nonce + 1)} />
   }
 }

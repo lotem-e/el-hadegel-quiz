@@ -37,13 +37,24 @@ export function getContent(): QuizContent {
   return current
 }
 
+// The in-flight (or finished) refresh, so callers can wait for the live
+// content instead of racing it. Starting the quiz awaits this: without it a
+// visitor who clicks before the fetch resolves would get the baked copy,
+// which drifts further from reality with every admin publish.
+let refreshPromise: Promise<void> | null = null
+
 /**
  * Pull the latest PUBLISHED snapshot from Supabase and swap it in.
  * Visitors never see the admin's draft - only what was explicitly
  * published. Safe to fire-and-forget: any failure leaves the baked
- * content in place.
+ * content in place. Repeat calls share the first fetch.
  */
-export async function refreshContent(): Promise<void> {
+export function refreshContent(): Promise<void> {
+  if (!refreshPromise) refreshPromise = fetchPublished()
+  return refreshPromise
+}
+
+async function fetchPublished(): Promise<void> {
   if (!supabase) return
   try {
     const { data, error } = await supabase

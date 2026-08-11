@@ -67,6 +67,9 @@ export default function Admin() {
   const [draft, setDraft] = useState('')
   const [published, setPublished] = useState<PublishedSnapshot | null>(null)
   const [migrationMissing, setMigrationMissing] = useState(false)
+  // Set when the published state could not be read for a transient reason -
+  // publishing stays available, we just cannot show what is in sync.
+  const [publishInfoError, setPublishInfoError] = useState(false)
   const [publishing, setPublishing] = useState(false)
   // Short-lived feedback toast (publish confirmation / pin warnings).
   const [toast, setToast] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null)
@@ -151,11 +154,17 @@ export default function Admin() {
       .limit(1)
       .maybeSingle()
     if (error) {
-      // Table missing = the publish migration was not run yet.
-      setMigrationMissing(true)
+      // Only a genuinely absent table means the migration was not run
+      // (PGRST205 = unknown table, 42P01 = undefined_table). Anything else
+      // is transient - an expired session, a hiccup - and must NOT claim a
+      // missing migration or lock the publish button for the session.
+      const tableMissing = error.code === 'PGRST205' || error.code === '42P01'
+      setMigrationMissing(tableMissing)
+      setPublishInfoError(!tableMissing)
       return
     }
     setMigrationMissing(false)
+    setPublishInfoError(false)
     if (!data) {
       setPublished(null)
       return
@@ -206,20 +215,23 @@ export default function Admin() {
 
   // DB-first save: only update the screen after the database accepted the
   // change, so what you see is always what visitors get.
+  /** Returns true only when the database accepted the change. Callers must
+   *  not discard the admin's input on a false. */
   async function saveQuestionPatch(
     id: string,
     patch: { text?: string; active?: boolean; pinned?: boolean },
-  ) {
-    if (!supabase) return
+  ): Promise<boolean> {
+    if (!supabase) return false
     setSaveError(false)
     const { error } = await supabase.from('questions').update(patch).eq('id', id)
     if (error) {
       setSaveError(true)
-      return
+      return false
     }
     setQuestions((current) =>
       current.map((question) => (question.id === id ? { ...question, ...patch } : question)),
     )
+    return true
   }
 
   // Hermetic in-tab blocking (her request): impossible quota values are
@@ -306,10 +318,19 @@ export default function Admin() {
   }
 
   async function saveEdit() {
-    if (editingId && draft.trim().length > 0) {
-      await saveQuestionPatch(editingId, { text: draft.trim() })
+    if (!editingId) return
+    if (draft.trim().length === 0) {
+      showToast('אי אפשר לשמור שאלה ריקה', 'warn')
+      return
     }
-    setEditingId(null)
+    const saved = await saveQuestionPatch(editingId, { text: draft.trim() })
+    // Close only on success - otherwise the editor stays open with the
+    // typed text, so a failed save can never lose the admin's writing.
+    if (saved) {
+      setEditingId(null)
+    } else {
+      showToast('השמירה נכשלה - הטקסט נשמר בעורך, אפשר לנסות שוב', 'warn')
+    }
   }
 
   async function handleSignOut() {
@@ -325,7 +346,10 @@ export default function Admin() {
   const dirty =
     !offline &&
     !migrationMissing &&
-    (published === null ||
+    // If the published state is unknown, allow publishing rather than
+    // locking her out on a transient read failure.
+    (publishInfoError ||
+      published === null ||
       questions.length !== published.questionState.size ||
       questions.some((question) => {
         const snap = published.questionState.get(question.id)
@@ -428,7 +452,19 @@ export default function Admin() {
             ב-SQL Editor.
           </p>
         )}
-        {!offline && !migrationMissing && (
+        {!offline && !migrationMissing && publishInfoError && (
+          <p className="mt-2 flex items-center gap-2 text-xs text-amber-600">
+            לא הצלחתי לבדוק מה כבר פורסם. אפשר לפרסם בכל מקרה.
+            <button
+              type="button"
+              onClick={() => void loadPublished()}
+              className="underline underline-offset-2 hover:text-navy"
+            >
+              ניסיון נוסף
+            </button>
+          </p>
+        )}
+        {!offline && !migrationMissing && !publishInfoError && (
           <p className={'mt-2 text-xs ' + (dirty ? 'font-medium text-amber-600' : 'text-muted')}>
             {dirty
               ? 'יש שינויים שעדיין לא פורסמו'

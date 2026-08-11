@@ -3,7 +3,7 @@ import Logo from '../components/Logo'
 import { VISION_URL } from '../content/pillars'
 import { getContent } from '../store/contentStore'
 
-export default function Landing({ onStart }: { onStart: () => void }) {
+export default function Landing({ onStart, busy = false }: { onStart: () => void; busy?: boolean }) {
   const quizLength = getContent().quizLength
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 py-12 text-center">
@@ -18,9 +18,10 @@ export default function Landing({ onStart }: { onStart: () => void }) {
       <button
         type="button"
         onClick={onStart}
-        className="mt-8 rounded-lg bg-navy px-12 py-3.5 text-lg font-bold text-white transition-colors hover:bg-navy-dark"
+        disabled={busy}
+        className="mt-8 rounded-lg bg-navy px-12 py-3.5 text-lg font-bold text-white transition-colors hover:bg-navy-dark disabled:opacity-70"
       >
-        מתחילים
+        {busy ? 'רק רגע...' : 'מתחילים'}
       </button>
       <p className="mt-3 text-sm text-muted">{quizLength} שאלות · כ-3 דקות</p>
       <a
