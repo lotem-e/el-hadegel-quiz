@@ -6,25 +6,10 @@
 // around it; the legend also names and counts every slice, so identity
 // never rests on colour alone.
 //
-// Colour: the categorical hues are assigned by pillar ORDER (identity),
-// never by size, so a pillar keeps its colour when the mix changes. The
-// palette was validated with the dataviz validator: every hue inside the
-// lightness band, above the chroma floor, worst adjacent CVD separation
-// 9.1 (target >= 8) and worst normal-vision separation 19.6 (floor 15).
-// Three hues fall under 3:1 contrast against white, which obliges visible
-// labels - the legend provides them.
+// Colour comes from the shared category palette (see lib/categoryColors),
+// so a category looks the same here, in the filter pills and on the cards.
 import type { Pillar } from '../content/types'
-
-/** Validated categorical palette, in fixed slot order */
-const SERIES_COLORS = [
-  '#2a78d6', // blue
-  '#eb6834', // orange
-  '#1baf7a', // aqua
-  '#eda100', // yellow
-  '#e87ba4', // magenta
-  '#008300', // green
-  '#4a3aa7', // violet
-]
+import { categoryColor } from '../lib/categoryColors'
 
 // Ring geometry. The stroke is drawn along the circle's path, so gaps and
 // segment lengths are expressed in path units (~pixels of arc).
@@ -55,7 +40,7 @@ export default function MixChart({ slices }: { slices: MixSlice[] }) {
     cumulative += length
     return {
       ...slice,
-      color: SERIES_COLORS[index % SERIES_COLORS.length],
+      color: categoryColor(index),
       length,
       start,
       percent: total > 0 ? Math.round((slice.quota / total) * 100) : 0,
@@ -133,7 +118,8 @@ export default function MixChart({ slices }: { slices: MixSlice[] }) {
                   className="h-2.5 w-2.5 shrink-0 rounded-sm"
                   style={{ backgroundColor: arc.color }}
                 />
-                <span className="truncate">{arc.label}</span>
+                {/* Names wrap rather than truncate - some are long */}
+                <span className="leading-snug">{arc.label}</span>
                 <span className="grow" />
                 <span className="shrink-0 tabular-nums text-muted">
                   {arc.quota} · {arc.percent}%

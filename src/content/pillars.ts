@@ -15,8 +15,8 @@ const VISION_SOURCE = { label: 'החזון שלנו באתר התנועה', url:
 export const PILLARS: Pillar[] = [
   {
     id: 'vision-victory',
-    title: 'חזון והנהגה',
-    short: 'חזון והנהגה',
+    title: 'צו השעה - חזון והנהגה',
+    short: 'צו השעה - חזון והנהגה',
     description: 'שתי ההבנות של ה-7 באוקטובר: חובת העוצמה, והנהגה מהדור שנלחם.',
     sourceUrl: VISION_URL,
     sources: [
@@ -26,16 +26,16 @@ export const PILLARS: Pillar[] = [
   },
   {
     id: 'zionist-unity',
-    title: 'ציונות ואחדות',
-    short: 'ציונות ואחדות',
+    title: 'שבירת הגושים וכפיית ממשלה רחבה וציונית',
+    short: 'שבירת הגושים וכפיית ממשלה רחבה וציונית',
     description: 'ציונות שמעל מחנות: מה נכון לפני מי צודק, אחדות שאינה אחידות, וגוש ציוני רחב.',
     sourceUrl: VISION_URL,
     sources: [VISION_SOURCE],
   },
   {
     id: 'winning-iron-wall',
-    title: 'ניצחון והרתעה',
-    short: 'ניצחון והרתעה',
+    title: 'דגל הביטחון',
+    short: 'דגל הביטחון',
     description: 'תפיסת הביטחון: הכרעה במקום סבבים, הסברה כחזית, יוזמה, ותנאי השלום.',
     sourceUrl: VISION_URL,
     sources: [
@@ -45,8 +45,8 @@ export const PILLARS: Pillar[] = [
   },
   {
     id: 'service-integration',
-    title: 'שירות ושילוב',
-    short: 'שירות ושילוב',
+    title: 'חוק יסוד השירות',
+    short: 'חוק יסוד השירות',
     description: 'שוויון בנטל ושילוב: שירות לכל אזרח, שירות תמורת זכויות, ושותפות כלל החברה.',
     sourceUrl: VISION_URL,
     sources: [
@@ -56,8 +56,8 @@ export const PILLARS: Pillar[] = [
   },
   {
     id: 'zionist-economy',
-    title: 'כלכלה ציונית',
-    short: 'כלכלה ציונית',
+    title: 'דגל הכלכלה',
+    short: 'דגל הכלכלה',
     description: 'כלכלה שמתגמלת תרומה: המעמד המשרת במרכז, יוקר המחיה, ועבודה שמשתלמת.',
     sourceUrl: VISION_URL,
     sources: [
@@ -67,8 +67,8 @@ export const PILLARS: Pillar[] = [
   },
   {
     id: 'education-revolution',
-    title: 'מהפכת החינוך הציוני',
-    short: 'מהפכת החינוך',
+    title: 'דגל החינוך והלכידות',
+    short: 'דגל החינוך והלכידות',
     description: 'חינוך ציוני משותף: ליבה אחת לכל הזרמים, מצוינות מורים, ודור גאה בציונותו.',
     sourceUrl: VISION_URL,
     sources: [
@@ -78,8 +78,8 @@ export const PILLARS: Pillar[] = [
   },
   {
     id: 'legal-reform',
-    title: 'הרפורמה המשפטית של ״אל הדגל״',
-    short: 'הרפורמה המשפטית',
+    title: 'דגל הממשל',
+    short: 'דגל הממשל',
     description: 'תיקון מאוזן של המשפט והממשל: חוקה מוסכמת, איזון רשויות, וממשלה מצומצמת.',
     sourceUrl: VISION_URL,
     sources: [

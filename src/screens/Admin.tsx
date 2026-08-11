@@ -9,6 +9,7 @@ import type { ReactNode } from 'react'
 import Header from '../components/Header'
 import IconButton, { EditIcon, PinIcon, PinOffIcon, TrashIcon } from '../components/IconButton'
 import MixChart, { pillarSlices } from '../components/MixChart'
+import { categoryColor } from '../lib/categoryColors'
 import { PILLARS as BAKED_PILLARS } from '../content/pillars'
 import { BASE_QUESTIONS } from '../content/questions'
 import { DEFAULT_QUOTAS } from '../content/quizConfig'
@@ -26,17 +27,29 @@ interface PublishedSnapshot {
   questionState: Map<string, { text: string; active: boolean; pinned: boolean }>
   /** Everything publish_content() snapshots per pillar, so the dirty check
    *  cannot miss a field (quota, description, sources). */
-  pillarState: Map<string, { quota: number; description: string; sources: string }>
+  pillarState: Map<string, PillarFingerprint>
 }
 
-/** Stable string form of a pillar's editable fields, for change detection */
+interface PillarFingerprint {
+  quota: number
+  title: string
+  short: string
+  description: string
+  sources: string
+}
+
+/** Every pillar field the snapshot carries, so the dirty check cannot miss one */
 function pillarFingerprint(pillar: {
   quota: number
-  description: string
-  sources: unknown
-}): { quota: number; description: string; sources: string } {
+  title?: string
+  short?: string
+  description?: string
+  sources?: unknown
+}): PillarFingerprint {
   return {
     quota: pillar.quota,
+    title: pillar.title ?? '',
+    short: pillar.short ?? '',
     description: pillar.description ?? '',
     sources: JSON.stringify(pillar.sources ?? []),
   }
@@ -190,6 +203,8 @@ export default function Admin() {
           p.id as string,
           pillarFingerprint({
             quota: p.quota as number,
+            title: p.title as string,
+            short: p.short as string,
             description: p.description as string,
             sources: p.sources,
           }),
@@ -366,6 +381,8 @@ export default function Admin() {
         return (
           !snap ||
           snap.quota !== now.quota ||
+          snap.title !== now.title ||
+          snap.short !== now.short ||
           snap.description !== now.description ||
           snap.sources !== now.sources
         )
@@ -378,7 +395,8 @@ export default function Admin() {
   const restVisible = visibleQuestions.filter((question) => !question.pinned)
 
   function renderQuestionCard(question: Question) {
-    const pillar = pillars.find((p) => p.id === question.pillarId)
+    const pillarIndex = pillars.findIndex((p) => p.id === question.pillarId)
+    const pillar = pillars[pillarIndex]
     const isEditing = editingId === question.id
     return (
       <div
@@ -390,7 +408,15 @@ export default function Admin() {
         }
       >
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="rounded-full border border-line bg-cream px-2.5 py-0.5 font-medium text-navy">
+          {/* Same category colour as the filter pills and the mix donut */}
+          <span className="flex items-center gap-1.5 rounded-full border border-line bg-cream px-2.5 py-0.5 font-medium text-navy">
+            {pillarIndex >= 0 && (
+              <span
+                aria-hidden="true"
+                className="h-2 w-2 shrink-0 rounded-sm"
+                style={{ backgroundColor: categoryColor(pillarIndex) }}
+              />
+            )}
             {pillar?.short}
           </span>
           {!question.active && (
@@ -572,10 +598,11 @@ export default function Admin() {
               <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>
                 הכול ({questions.length})
               </FilterChip>
-              {pillars.map((pillar) => (
+              {pillars.map((pillar, index) => (
                 <FilterChip
                   key={pillar.id}
                   active={filter === pillar.id}
+                  color={categoryColor(index)}
                   onClick={() => setFilter(pillar.id)}
                 >
                   {pillar.short} ({questions.filter((q) => q.pillarId === pillar.id).length})
@@ -787,26 +814,52 @@ function TabButton({
   )
 }
 
+/**
+ * A category filter pill. It carries the category's colour as a dot, and
+ * when selected tints its background and border with the same hue - the
+ * text stays in ink so the lighter hues remain readable, and the name is
+ * always present, so colour is never the only signal.
+ */
 function FilterChip({
   active,
   onClick,
+  color,
   children,
 }: {
   active: boolean
   onClick: () => void
+  /** Category hue; omitted for the "all" pill, which stays neutral navy */
+  color?: string
   children: ReactNode
 }) {
+  const neutral = active
+    ? 'bg-navy text-white'
+    : 'border border-line bg-white text-muted hover:border-navy hover:text-navy'
+
   return (
     <button
       type="button"
       onClick={onClick}
       className={
-        'rounded-full px-3 py-1 text-xs font-medium transition-colors ' +
-        (active
-          ? 'bg-navy text-white'
-          : 'border border-line bg-white text-muted hover:border-navy hover:text-navy')
+        'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ' +
+        (color ? 'border ' + (active ? 'text-navy' : 'text-muted hover:text-navy') : neutral)
+      }
+      style={
+        color
+          ? {
+              borderColor: active ? color : 'var(--color-line)',
+              backgroundColor: active ? color + '1f' : '#fff',
+            }
+          : undefined
       }
     >
+      {color && (
+        <span
+          aria-hidden="true"
+          className="h-2 w-2 shrink-0 rounded-sm"
+          style={{ backgroundColor: color }}
+        />
+      )}
       {children}
     </button>
   )
