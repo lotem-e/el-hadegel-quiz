@@ -166,17 +166,28 @@ left is that an empty quiz (all quotas 0) cannot be published.
 
 ## Gendered address (עברית/ה) - since 2026-08-11
 
-Hebrew forces a gender in almost every sentence addressed to a reader, and the
-usual shortcut is to write masculine and call it neutral. Instead **every
-visitor-facing string is written in the slash form** (`'כמה קרובים/ות אתם/ן'`)
-and rendered through `g()` from `src/lib/gender.tsx`, which wraps Ivrita's pure
-`genderize()`. Three modes - `neutral` (keeps the slashes, the default),
-`male`, `female` - chosen with `<GenderSwitch />` and remembered in
-localStorage under `elhadegel-gender-v1`.
+Three ways to address a visitor (Lotem's scheme, 2026-08-11):
+
+| mode | form | example |
+|---|---|---|
+| `neutral` (default) | masculine PLURAL | כמה קרובים אתם |
+| `male` | masculine SINGULAR | כמה קרוב אתה |
+| `female` | feminine SINGULAR | כמה קרובה את |
+
+**No slashes ever reach a visitor.** Ivrita cannot do this alone - it swaps
+gender within a number but cannot turn a plural into a singular - so each
+phrase is authored TWICE via `p(plural, singular)` from `src/lib/gender.tsx`:
+the plural is what neutral shows, and Ivrita splits the singular for male and
+female. The singular carries a slash only where the two genders differ in
+writing, and in Hebrew they often do not ("עברת", "התחברת", "שלך", "רוצה" are
+identical), so most singular copy needs no slash at all. Chosen with
+`<GenderSwitch />`, remembered in localStorage under `elhadegel-gender-v1`.
 
 Rules when touching visitor copy:
 
-- A new string that addresses the reader goes in slash form and through `g()`.
+- A new string that addresses the reader is authored with `p(plural, singular)`
+  and passed to `g()`. A plain string still works and passes straight through -
+  that is how database content flows.
 - Plural imperatives (דרגו, נסו, הצטרפו, גלו) are already gender-neutral -
   leave them alone. Participles used as CTAs (מתחילים/ות, נועצים/ות) are not.
 - **Database content goes through `g()` too**, including the statements, the

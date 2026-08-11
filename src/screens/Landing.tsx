@@ -3,7 +3,7 @@
 // material live on the results screen, where the visitor has a reason to
 // follow them.
 import Logo from '../components/Logo'
-import { useGender } from '../lib/gender'
+import { p, useGender } from '../lib/gender'
 import { getContent } from '../store/contentStore'
 
 /** Roughly twelve seconds a statement, rounded to a friendly number */
@@ -18,11 +18,16 @@ export default function Landing({ onStart, busy = false }: { onStart: () => void
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 py-12 text-center">
       <Logo className="w-64 text-navy sm:w-72" />
       <h1 className="mt-10 text-3xl font-extrabold leading-tight text-navy sm:text-4xl">
-        {g('כמה קרובים/ות אתם/ן לדרך של אל הדגל?')}
+        {g(p('כמה קרובים אתם לדרך של אל הדגל?', 'כמה קרוב/ה את/ה לדרך של אל הדגל?'))}
       </h1>
       <p className="mt-4 max-w-md leading-relaxed text-muted">
         {quizLength} היגדים קצרים מתוך חזון התנועה.{' '}
-        {g('דרגו עד כמה אתם/ן מסכימים/ות עם כל אחד מהם, וגלו בסוף את אחוז ההתאמה שלכם/ן.')}
+        {g(
+          p(
+            'דרגו עד כמה אתם מסכימים עם כל אחד מהם, וגלו בסוף את אחוז ההתאמה שלכם.',
+            'דרג/י עד כמה את/ה מסכים/ה עם כל אחד מהם, וגלה/י בסוף את אחוז ההתאמה שלך.',
+          )
+        )}
       </p>
       <button
         type="button"
@@ -30,7 +35,7 @@ export default function Landing({ onStart, busy = false }: { onStart: () => void
         disabled={busy}
         className="mt-8 rounded-lg bg-navy px-12 py-3.5 text-lg font-bold text-white transition-colors hover:bg-navy-dark disabled:opacity-70"
       >
-        {busy ? 'רק רגע...' : g('מתחילים/ות')}
+        {busy ? 'רק רגע...' : g(p('מתחילים', 'מתחיל/ה'))}
       </button>
       <p className="mt-3 text-sm text-muted">
         {quizLength} היגדים · כ-{estimateMinutes(quizLength)} דקות

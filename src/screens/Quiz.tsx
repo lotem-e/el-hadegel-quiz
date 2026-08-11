@@ -10,7 +10,7 @@ import LikertScale, { LIKERT_OPTIONS } from '../components/LikertScale'
 import ProgressBar from '../components/ProgressBar'
 import type { Question } from '../content/types'
 import type { Answer } from '../engine/scoring'
-import { useGender } from '../lib/gender'
+import { p, useGender } from '../lib/gender'
 
 interface QuizProps {
   questions: Question[]
@@ -37,7 +37,7 @@ export default function Quiz({ questions, onFinish }: QuizProps) {
       <>
         <Header />
         <main className="mx-auto max-w-xl px-4 py-16 text-center text-muted">
-          {g('השאלון אינו זמין כרגע. נסו שוב מאוחר יותר.')}
+          {g(p('השאלון אינו זמין כרגע. נסו שוב מאוחר יותר.', 'השאלון אינו זמין כרגע. נסה/י שוב מאוחר יותר.'))}
         </main>
       </>
     )

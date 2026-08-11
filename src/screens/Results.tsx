@@ -11,7 +11,7 @@ import { PLATFORM_PDF_URL, VISION_URL } from '../content/pillars'
 import { scoreAnswers } from '../engine/scoring'
 import type { Answer } from '../engine/scoring'
 import { categoryColor } from '../lib/categoryColors'
-import { useGender } from '../lib/gender'
+import { p, useGender } from '../lib/gender'
 import { getContent } from '../store/contentStore'
 
 interface ResultsProps {
@@ -31,25 +31,34 @@ const PARTIAL_FLOOR = 55
 function tier(percent: number, flagThreshold: number) {
   if (percent >= flagThreshold) {
     return {
-      headline: 'אתם/ן אל הדגל.',
-      body: 'מקומכם/ן איתנו על המפה.',
+      headline: p('אתם אל הדגל.', 'את/ה אל הדגל.'),
+      body: p('מקומכם איתנו על המפה.', 'מקומך איתנו על המפה.'),
     }
   }
   if (percent >= ANOTHER_ROUND_FLOOR) {
     return {
-      headline: 'קרובים/ות מאוד לדרך שלנו.',
-      body: 'סבב נוסף יביא היגדים שעוד לא ראיתם/ן, ויחדד את התמונה.',
+      headline: p('קרובים מאוד לדרך שלנו.', 'קרוב/ה מאוד לדרך שלנו.'),
+      body: p(
+        'סבב נוסף יביא היגדים שעוד לא ראיתם, ויחדד את התמונה.',
+        'סבב נוסף יביא היגדים שעוד לא ראית, ויחדד את התמונה.',
+      ),
     }
   }
   if (percent >= PARTIAL_FLOOR) {
     return {
-      headline: 'יש בינינו לא מעט מן המשותף.',
-      body: 'וגם מקומות שבהם אתם/ן חושבים/ות אחרת. שווה לקרוא מאיפה הדברים באים.',
+      headline: p('יש בינינו לא מעט מן המשותף.', 'יש בינינו לא מעט מן המשותף.'),
+      body: p(
+        'וגם מקומות שבהם אתם חושבים אחרת. שווה לקרוא מאיפה הדברים באים.',
+        'וגם מקומות שבהם את/ה חושב/ת אחרת. שווה לקרוא מאיפה הדברים באים.',
+      ),
     }
   }
   return {
-    headline: 'נסכים לא להסכים.',
-    body: 'הדרך שלנו פחות מדברת אליכם/ן, וגם זו תשובה. הדלת פתוחה אם תרצו להכיר אותה מקרוב.',
+    headline: p('נסכים לא להסכים.', 'נסכים לא להסכים.'),
+    body: p(
+      'הדרך שלנו פחות מדברת אליכם, וגם זו תשובה. הדלת פתוחה אם תרצו להכיר אותה מקרוב.',
+      'הדרך שלנו פחות מדברת אליך, וגם זו תשובה. הדלת פתוחה אם תרצה/י להכיר אותה מקרוב.',
+    ),
   }
 }
 
@@ -77,7 +86,7 @@ export default function Results({ answers, onRestart }: ResultsProps) {
       <main className="mx-auto max-w-xl px-4 py-6 sm:py-8">
         {/* Hero number */}
         <section className="rounded-xl border border-line bg-white p-6 text-center shadow-sm sm:p-8">
-          <p className="text-sm text-muted">{g('אחוז ההתאמה שלכם/ן לדרך של אל הדגל')}</p>
+          <p className="text-sm text-muted">{g(p('אחוז ההתאמה שלכם לדרך של אל הדגל', 'אחוז ההתאמה שלך לדרך של אל הדגל'))}</p>
           <p className="mt-2 text-5xl font-extrabold tabular-nums text-navy sm:text-6xl">
             {score.totalPercent}%
           </p>
@@ -89,11 +98,16 @@ export default function Results({ answers, onRestart }: ResultsProps) {
         {passedThreshold && (
           <section className="mt-4 rounded-xl bg-navy p-6 text-center text-white">
             <h2 className="text-lg font-bold">
-              {g('עברתם/ן את רף ה-')}
+              {g(p('עברתם את רף ה-', 'עברת את רף ה-'))}
               {content.pinFlagThreshold}%
             </h2>
             <p className="mt-1 text-sm text-white/80">
-              {g('הצטרפו לפרויקט ה-150,000 ונעצו את הדגל שלכם/ן על המפה.')}
+              {g(
+                p(
+                  'הצטרפו לפרויקט ה-150,000 ונעצו את הדגל שלכם על המפה.',
+                  'הצטרף/י לפרויקט ה-150,000 ונעץ/י את הדגל שלך על המפה.',
+                )
+              )}
             </p>
             <a
               href={content.pinFlagUrl}
@@ -101,19 +115,19 @@ export default function Results({ answers, onRestart }: ResultsProps) {
               rel="noopener noreferrer"
               className="mt-4 inline-block rounded-lg bg-white px-8 py-2.5 font-bold text-navy transition-colors hover:bg-cream"
             >
-              {g('נועצים/ות את הדגל ↗')}
+              {g(p('נועצים את הדגל ↗', 'נועץ/ת את הדגל ↗'))}
             </a>
           </section>
         )}
 
         {/* Per-category breakdown */}
         <section className="mt-4 rounded-xl border border-line bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="font-bold text-navy">{g('איפה התחברתם/ן, ואיפה פחות')}</h2>
+          <h2 className="font-bold text-navy">{g(p('איפה התחברתם, ואיפה פחות', 'איפה התחברת, ואיפה פחות'))}</h2>
 
           {showExtremes && (
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <div className="rounded-lg bg-cream p-3">
-                <p className="text-xs text-muted">{g('הכי התחברתם/ן')}</p>
+                <p className="text-xs text-muted">{g(p('הכי התחברתם', 'הכי התחברת'))}</p>
                 <p className="mt-0.5 flex items-center gap-2 text-sm font-bold text-navy">
                   <span
                     aria-hidden="true"
@@ -198,7 +212,7 @@ export default function Results({ answers, onRestart }: ResultsProps) {
 
         {/* The two whole documents, for anyone who wants the full picture */}
         <section className="mt-4 rounded-xl border border-line bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="font-bold text-navy">{g('רוצים/ות לקרוא את המקור המלא?')}</h2>
+          <h2 className="font-bold text-navy">{g(p('רוצים לקרוא את המקור המלא?', 'רוצה לקרוא את המקור המלא?'))}</h2>
           <ul className="mt-2 space-y-1.5">
             <li>
               <a

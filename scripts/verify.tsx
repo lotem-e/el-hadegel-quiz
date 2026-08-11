@@ -26,7 +26,9 @@ import { BASE_QUESTIONS } from '../src/content/questions'
 import { DEFAULT_QUOTAS } from '../src/content/quizConfig'
 import { PILLARS } from '../src/content/pillars'
 import { categoryColor } from '../src/lib/categoryColors'
-import { genderize, MALE, FEMALE, NEUTRAL } from 'ivrita/src/ivrita'
+import { genderize, MALE, FEMALE } from 'ivrita/src/ivrita'
+import { p, renderPhrase } from '../src/lib/gender'
+import type { Phrase } from '../src/lib/gender'
 
 const QUIZ_LENGTH = Object.values(DEFAULT_QUOTAS).reduce((a, b) => a + b, 0)
 
@@ -136,23 +138,23 @@ console.log('screens render')
 
 // Landing (via App with empty hash)
 const landing = renderToString(createElement(App))
-expectContains('Landing', landing, ['מתחילים', 'כמה קרובים/ות אתם/ן', 'אל הדגל', 'היגדים · כ-'])
+expectContains('Landing', landing, ['מתחילים', 'כמה קרובים אתם', 'אל הדגל', 'היגדים · כ-'])
 // the source links belong on the results screen now, not on the doorstep
 check('landing carries no outbound links', !landing.includes('elhadegel.co.il/about-us'))
 
 // Quiz with a real random selection
 const questions = selectQuizQuestions(BASE_QUESTIONS, DEFAULT_QUOTAS)
 const quiz = renderToString(createElement(Quiz, { questions, onFinish: () => {} }))
-expectContains('Quiz', quiz, ['היגד 1 מתוך 13', 'מסכים/ה מאוד', 'כלל לא מסכים/ה', questions[0].text])
+expectContains('Quiz', quiz, ['היגד 1 מתוך 13', 'מסכימים מאוד', 'כלל לא מסכימים', questions[0].text])
 
 // Results: high score (pin CTA must appear) and low score (must not)
 const high: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pillarId, value: 5 }))
 const highHtml = renderToString(createElement(Results, { answers: high, onRestart: () => {} }))
 expectContains('Results-high', highHtml, [
   '100%',
-  'נועצים/ות את הדגל',
-  'איפה התחברתם/ן, ואיפה פחות',
-  'רוצים/ות לקרוא את המקור המלא?',
+  'נועצים את הדגל',
+  'איפה התחברתם, ואיפה פחות',
+  'רוצים לקרוא את המקור המלא?',
   'הצטרפו אלינו',
   'לקריאה נוספת',
 ])
@@ -166,8 +168,8 @@ check('no confetti below the threshold', !lowHtml.includes('canvas'))
 // the band just under the flag offers another round instead of a plain restart
 const nearAnswers: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pillarId, value: 4 }))
 const nearHtml = renderToString(createElement(Results, { answers: nearAnswers, onRestart: () => {} }))
-expectContains('Results-near', nearHtml, ['75%', 'קרובים/ות מאוד', 'לסבב נוסף'])
-if (lowHtml.includes('נועצים/ות את הדגל')) {
+expectContains('Results-near', nearHtml, ['75%', 'קרובים מאוד', 'לסבב נוסף'])
+if (lowHtml.includes('נועצים את הדגל')) {
   failures++
   console.error('FAIL: pin CTA shown below threshold')
 }
@@ -219,39 +221,50 @@ check('every statement belongs to a real category',
   BASE_QUESTIONS.every((q) => PILLARS.some((p) => p.id === q.pillarId)))
 
 console.log('gendered address')
-// Every visitor-facing string is written in slash form and rendered through
-// Ivrita. These check the forms the copy actually relies on.
+// Three addresses, Lotem's scheme: neutral is masculine PLURAL, male is
+// masculine SINGULAR, female is feminine SINGULAR.
 {
-  const cases: Array<[string, string, string]> = [
-    ['כמה קרובים/ות אתם/ן לדרך של אל הדגל?', 'כמה קרובים אתם לדרך של אל הדגל?', 'כמה קרובות אתן לדרך של אל הדגל?'],
-    ['מסכים/ה מאוד', 'מסכים מאוד', 'מסכימה מאוד'],
-    ['ניטרלי/ת', 'ניטרלי', 'ניטרלית'],
-    ['עברתם/ן את רף ה-', 'עברתם את רף ה-', 'עברתן את רף ה-'],
-    ['הכי התחברתם/ן', 'הכי התחברתם', 'הכי התחברתן'],
-    ['מקומכם/ן איתנו על המפה.', 'מקומכם איתנו על המפה.', 'מקומכן איתנו על המפה.'],
-    ['רוצים/ות לקרוא את המקור המלא?', 'רוצים לקרוא את המקור המלא?', 'רוצות לקרוא את המקור המלא?'],
+  const cases: Array<[Phrase, string, string, string]> = [
+    [p('כמה קרובים אתם לדרך של אל הדגל?', 'כמה קרוב/ה את/ה לדרך של אל הדגל?'),
+      'כמה קרובים אתם לדרך של אל הדגל?', 'כמה קרוב אתה לדרך של אל הדגל?', 'כמה קרובה את לדרך של אל הדגל?'],
+    [p('מסכימים מאוד', 'מסכים/ה מאוד'), 'מסכימים מאוד', 'מסכים מאוד', 'מסכימה מאוד'],
+    [p('ניטרליים', 'ניטרלי/ת'), 'ניטרליים', 'ניטרלי', 'ניטרלית'],
+    [p('עברתם את רף ה-', 'עברת את רף ה-'), 'עברתם את רף ה-', 'עברת את רף ה-', 'עברת את רף ה-'],
+    [p('הכי התחברתם', 'הכי התחברת'), 'הכי התחברתם', 'הכי התחברת', 'הכי התחברת'],
+    [p('מקומכם איתנו על המפה.', 'מקומך איתנו על המפה.'),
+      'מקומכם איתנו על המפה.', 'מקומך איתנו על המפה.', 'מקומך איתנו על המפה.'],
+    [p('רוצים לקרוא את המקור המלא?', 'רוצה לקרוא את המקור המלא?'),
+      'רוצים לקרוא את המקור המלא?', 'רוצה לקרוא את המקור המלא?', 'רוצה לקרוא את המקור המלא?'],
+    [p('מתחילים', 'מתחיל/ה'), 'מתחילים', 'מתחיל', 'מתחילה'],
+    [p('נועצים את הדגל', 'נועץ/ת את הדגל'), 'נועצים את הדגל', 'נועץ את הדגל', 'נועצת את הדגל'],
   ]
-  for (const [slashed, male, female] of cases) {
-    check(`male: ${slashed.slice(0, 22)}`, genderize(slashed, MALE) === male)
-    check(`female: ${slashed.slice(0, 22)}`, genderize(slashed, FEMALE) === female)
-    check(`neutral keeps the slashes: ${slashed.slice(0, 18)}`, genderize(slashed, NEUTRAL) === slashed)
+  for (const [phrase, neutral, male, female] of cases) {
+    check(`neutral is masculine plural: ${neutral.slice(0, 20)}`, renderPhrase(phrase, 'neutral') === neutral)
+    check(`male is masculine singular: ${male.slice(0, 20)}`, renderPhrase(phrase, 'male') === male)
+    check(`female is feminine singular: ${female.slice(0, 20)}`, renderPhrase(phrase, 'female') === female)
   }
-  // Ivrita must be incapable of touching plain text, because the statements
-  // now flow through it too. This is the check that makes that safe.
+  // No slash may survive into any of the three - that was the whole point.
+  for (const [phrase] of cases) {
+    for (const mode of ['neutral', 'male', 'female'] as const) {
+      check(`no slash left in ${mode}: ${phrase.plural.slice(0, 16)}`,
+        !renderPhrase(phrase, mode).includes('/'))
+    }
+  }
+
+  // Ivrita must still be incapable of touching plain text, because the
+  // statements now flow through it too.
   for (const q of BASE_QUESTIONS) {
     check(`statement untouched: ${q.id}`,
       genderize(q.text, MALE) === q.text && genderize(q.text, FEMALE) === q.text)
   }
-  // A slash form Lotem writes herself in the admin IS honoured.
-  check('an authored slash form is genderized',
-    genderize('אני מסכים/ה', FEMALE) === 'אני מסכימה')
   // And Ivrita never guesses: plain masculine stays plain masculine.
   check('plain masculine is never inferred',
     genderize('אתם מסכימים', FEMALE) === 'אתם מסכימים')
 
-  // The screens must not ship a bare masculine address any more.
-  const landingNeutral = renderToString(createElement(App))
-  check('landing addresses both by default', landingNeutral.includes('קרובים/ות'))
+  // The screens must open in masculine plural, with no slashes anywhere.
+  const landing = renderToString(createElement(App)).replace(/<!--.*?-->/g, '')
+  check('landing opens in masculine plural', landing.includes('כמה קרובים אתם'))
+  check('landing shows no slash forms', !/[\u0590-\u05FF]+\/[\u0590-\u05FF]+/.test(landing))
 }
 
 console.log('new statement form')

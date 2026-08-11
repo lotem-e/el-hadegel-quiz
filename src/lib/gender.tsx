@@ -1,9 +1,13 @@
 // gender.tsx - who the quiz is speaking to.
 //
-// Hebrew forces a choice of gender in almost every sentence addressed to a
-// reader, and the usual shortcut is to write masculine and call it neutral.
-// Instead every visitor-facing string is written in the slash form
-// ("קרובים/ות אתם/ן"), and Ivrita turns it into the form the visitor picked.
+// Three ways to address a visitor, Lotem's scheme:
+//   neutral - masculine PLURAL ("כמה קרובים אתם"), the default
+//   male    - masculine SINGULAR ("כמה קרוב אתה")
+//   female  - feminine SINGULAR ("כמה קרובה את")
+//
+// Ivrita cannot produce this on its own: it swaps gender within a number, but
+// it cannot turn a plural into a singular. So each phrase is authored twice -
+// see Phrase below - and Ivrita splits only the singular.
 //
 // Ivrita is AGPL-3.0, which is why this project carries the same licence.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
@@ -33,11 +37,43 @@ function loadPreference(): GenderMode {
   return 'neutral'
 }
 
+/**
+ * A phrase in the two forms we have to author.
+ *
+ * `plural` is masculine plural, exactly as neutral mode shows it.
+ * `singular` is the singular, with a slash ONLY where the two genders differ
+ * in writing - and in Hebrew they often do not: "עברת", "התחברת", "שלך" and
+ * "רוצה" are already the same for both, so most singular copy needs no slash.
+ */
+export interface Phrase {
+  plural: string
+  singular: string
+}
+
 interface GenderContextValue {
   mode: GenderMode
   setMode: (mode: GenderMode) => void
-  /** Render a slash-form string in the chosen gender */
-  g: (text: string) => string
+  /**
+   * Render copy in the chosen address. A Phrase picks the plural for neutral
+   * and lets Ivrita split the singular. A plain string is content that is
+   * already gender-free (a statement, a category name) and passes through.
+   */
+  g: (text: string | Phrase) => string
+}
+
+/** Shorthand for authoring: p('כמה קרובים אתם', 'כמה קרוב/ה את/ה') */
+export function p(plural: string, singular: string): Phrase {
+  return { plural, singular }
+}
+
+export function renderPhrase(text: string | Phrase, mode: GenderMode): string {
+  if (typeof text === 'string') {
+    // Plain content. Nothing to choose, and genderize leaves slash-free text
+    // untouched, so this is a pass-through in practice.
+    return genderize(text, IVRITA_MODE[mode])
+  }
+  if (mode === 'neutral') return text.plural
+  return genderize(text.singular, IVRITA_MODE[mode])
 }
 
 const GenderContext = createContext<GenderContextValue | null>(null)
@@ -53,7 +89,7 @@ export function GenderProvider({ children }: { children: ReactNode }) {
     }
   }, [mode])
 
-  const g = useCallback((text: string) => genderize(text, IVRITA_MODE[mode]), [mode])
+  const g = useCallback((text: string | Phrase) => renderPhrase(text, mode), [mode])
   const value = useMemo(() => ({ mode, setMode: setModeState, g }), [mode, g])
 
   return <GenderContext.Provider value={value}>{children}</GenderContext.Provider>
@@ -64,7 +100,7 @@ export function useGender(): GenderContextValue {
   // Outside a provider (tests, isolated rendering) behave as neutral rather
   // than throwing - the slash form is readable on its own.
   if (!value) {
-    return { mode: 'neutral', setMode: () => {}, g: (text) => genderize(text, NEUTRAL) }
+    return { mode: 'neutral', setMode: () => {}, g: (text) => renderPhrase(text, 'neutral') }
   }
   return value
 }
