@@ -160,7 +160,7 @@ expectContains('Results-high', highHtml, [
   // every category row carries its sources as chips
   'המצע · עמ׳ 3-9',
   'נוסח החוק המלא',
-  'הצטרפו אלינו',
+  'elhadegel.co.il',
   'נסו שאלון חדש',
 ])
 check('confetti only above the flag threshold', highHtml.includes('canvas'))
@@ -175,7 +175,7 @@ expectContains('Results-low', lowHtml, [
   'אם בכל זאת הסתקרנתם',
   'המצע המלא',
   'החזון שלנו',
-  'הצטרפו אלינו',
+  'elhadegel.co.il',
 ])
 check('no confetti below the threshold', !lowHtml.includes('canvas'))
 // the lowest band offers the source, not a conversation

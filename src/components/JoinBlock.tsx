@@ -51,8 +51,8 @@ export default function JoinBlock() {
           className="h-24 w-24 shrink-0 rounded-lg"
         />
         <div className="min-w-0 sm:flex-1">
-          <h2 className="text-lg font-extrabold">הצטרפו אלינו</h2>
-          <ul className="mt-3 flex flex-wrap justify-center gap-2 sm:justify-start">
+          {/* No heading (Lotem, 2026-08-11) - the QR and the icons say it */}
+          <ul className="flex flex-wrap justify-center gap-2 sm:justify-start">
             {SOCIALS.map((social) => (
               <li key={social.name}>
                 <a
