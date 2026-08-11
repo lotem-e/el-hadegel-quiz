@@ -36,11 +36,11 @@ export default function Landing({ onStart, busy = false }: { onStart: () => void
       >
         {busy ? 'רק רגע...' : g(p('בואו נגלה', 'בוא/י נגלה'))}
       </button>
-      <p className="mt-3 text-sm text-muted">
+      {/* The movement's own pill, from the campaign badge on their site */}
+      <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-1.5 text-sm text-navy shadow-sm">
+        <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-navy" />
         {quizLength} היגדים · כ-{estimateMinutes(quizLength)} דקות
       </p>
-      <div className="mt-10">
-      </div>
     </main>
   )
 }

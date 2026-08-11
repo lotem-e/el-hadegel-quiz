@@ -1,8 +1,52 @@
 // Header.tsx - sticky top bar, same recipe as the reference site:
 // semi-transparent white + backdrop blur + thin bottom border.
-// When onSignOut is provided (admin screens), a sign-out button sits next
-// to the badge - session actions live in the header, content actions below.
+// When onSignOut is provided (admin screens), the session actions sit beside
+// the badge - going to see the quiz, and leaving.
 import Logo from './Logo'
+
+const iconClass = 'h-3.5 w-3.5 shrink-0'
+
+/** Door with an arrow leaving it - the usual sign-out mark */
+function SignOutIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={iconClass}
+      aria-hidden="true"
+    >
+      <path d="M15 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10" />
+      <path d="M18 16l4-4-4-4" />
+      <path d="M22 12H9" />
+    </svg>
+  )
+}
+
+/** An eye - going to look at the quiz the way a visitor sees it */
+function ViewIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={iconClass}
+      aria-hidden="true"
+    >
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+const actionClass =
+  'flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1 text-xs font-medium text-muted transition-colors hover:border-navy hover:text-navy'
 
 export default function Header({ badge, onSignOut }: { badge?: string; onSignOut?: () => void }) {
   const hasActions = Boolean(badge || onSignOut)
@@ -25,13 +69,19 @@ export default function Header({ badge, onSignOut }: { badge?: string; onSignOut
               </span>
             )}
             {onSignOut && (
-              <button
-                type="button"
-                onClick={onSignOut}
-                className="rounded-full border border-line bg-white px-3 py-1 text-xs font-medium text-muted transition-colors hover:border-navy hover:text-navy"
-              >
-                התנתקות
-              </button>
+              <>
+                {/* Leaves the admin route, so the quiz renders in this same
+                    tab. The admin session is untouched - coming back to
+                    #/admin does not ask for the password again. */}
+                <a href="#/" className={actionClass}>
+                  <ViewIcon />
+                  לשאלון
+                </a>
+                <button type="button" onClick={onSignOut} className={actionClass}>
+                  <SignOutIcon />
+                  התנתקות
+                </button>
+              </>
             )}
           </div>
         )}
