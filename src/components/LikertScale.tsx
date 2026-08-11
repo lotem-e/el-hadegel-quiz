@@ -2,6 +2,7 @@
 // Vertical buttons work well on both mobile and desktop and keep the
 // labels fully readable (no cramped 5-column row).
 import { useEffect } from 'react'
+import { useGender } from '../lib/gender'
 
 export const LIKERT_OPTIONS = [
   { value: 1, label: 'כלל לא מסכים/ה' },
@@ -25,6 +26,8 @@ export default function LikertScale({
   disabled = false,
   enableKeyboard = false,
 }: LikertScaleProps) {
+  const { g } = useGender()
+
   useEffect(() => {
     if (!enableKeyboard || disabled) return
     const onKeyDown = (event: KeyboardEvent) => {
@@ -43,7 +46,7 @@ export default function LikertScale({
   }, [enableKeyboard, disabled, onSelect])
 
   return (
-    <div className="flex flex-col gap-2" role="radiogroup" aria-label="עד כמה אתם מסכימים?">
+    <div className="flex flex-col gap-2" role="radiogroup" aria-label={g('עד כמה אתם/ן מסכימים/ות?')}>
       {LIKERT_OPTIONS.map((option) => {
         const selected = value === option.value
         return (
@@ -70,7 +73,7 @@ export default function LikertScale({
             >
               {option.value}
             </span>
-            {option.label}
+            {g(option.label)}
           </button>
         )
       })}

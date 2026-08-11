@@ -2,6 +2,7 @@
   "name": "el-hadegel",
   "private": true,
   "version": "0.1.0",
+  "license": "AGPL-3.0-or-later",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,6 +13,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.2",
+    "ivrita": "^1.0.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

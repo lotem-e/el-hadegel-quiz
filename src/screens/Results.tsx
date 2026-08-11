@@ -11,6 +11,7 @@ import { PLATFORM_PDF_URL, VISION_URL } from '../content/pillars'
 import { scoreAnswers } from '../engine/scoring'
 import type { Answer } from '../engine/scoring'
 import { categoryColor } from '../lib/categoryColors'
+import { GenderSwitch, useGender } from '../lib/gender'
 import { getContent } from '../store/contentStore'
 
 interface ResultsProps {
@@ -30,29 +31,30 @@ const PARTIAL_FLOOR = 55
 function tier(percent: number, flagThreshold: number) {
   if (percent >= flagThreshold) {
     return {
-      headline: 'אתם אל הדגל.',
-      body: 'מקומכם איתנו על המפה.',
+      headline: 'אתם/ן אל הדגל.',
+      body: 'מקומכם/ן איתנו על המפה.',
     }
   }
   if (percent >= ANOTHER_ROUND_FLOOR) {
     return {
-      headline: 'קרובים מאוד לדרך שלנו.',
-      body: 'סבב נוסף יביא היגדים שעוד לא ראיתם, ויחדד את התמונה.',
+      headline: 'קרובים/ות מאוד לדרך שלנו.',
+      body: 'סבב נוסף יביא היגדים שעוד לא ראיתם/ן, ויחדד את התמונה.',
     }
   }
   if (percent >= PARTIAL_FLOOR) {
     return {
       headline: 'יש בינינו לא מעט מן המשותף.',
-      body: 'וגם מקומות שבהם אתם חושבים אחרת. שווה לקרוא מאיפה הדברים באים.',
+      body: 'וגם מקומות שבהם אתם/ן חושבים/ות אחרת. שווה לקרוא מאיפה הדברים באים.',
     }
   }
   return {
     headline: 'נסכים לא להסכים.',
-    body: 'הדרך שלנו פחות מדברת אליכם, וגם זו תשובה. הדלת פתוחה אם תרצו להכיר אותה מקרוב.',
+    body: 'הדרך שלנו פחות מדברת אליכם/ן, וגם זו תשובה. הדלת פתוחה אם תרצו להכיר אותה מקרוב.',
   }
 }
 
 export default function Results({ answers, onRestart }: ResultsProps) {
+  const { g } = useGender()
   const content = getContent()
   const score = scoreAnswers(answers)
   const passedThreshold = score.totalPercent >= content.pinFlagThreshold
@@ -75,20 +77,23 @@ export default function Results({ answers, onRestart }: ResultsProps) {
       <main className="mx-auto max-w-xl px-4 py-6 sm:py-8">
         {/* Hero number */}
         <section className="rounded-xl border border-line bg-white p-6 text-center shadow-sm sm:p-8">
-          <p className="text-sm text-muted">אחוז ההתאמה שלכם לדרך של אל הדגל</p>
+          <p className="text-sm text-muted">{g('אחוז ההתאמה שלכם/ן לדרך של אל הדגל')}</p>
           <p className="mt-2 text-5xl font-extrabold tabular-nums text-navy sm:text-6xl">
             {score.totalPercent}%
           </p>
-          <p className="mt-3 font-bold text-navy">{message.headline}</p>
-          <p className="mt-1 text-sm leading-relaxed text-muted">{message.body}</p>
+          <p className="mt-3 font-bold text-navy">{g(message.headline)}</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted">{g(message.body)}</p>
         </section>
 
         {/* Pin-the-flag invitation, only above the threshold */}
         {passedThreshold && (
           <section className="mt-4 rounded-xl bg-navy p-6 text-center text-white">
-            <h2 className="text-lg font-bold">עברתם את רף ה-{content.pinFlagThreshold}%</h2>
+            <h2 className="text-lg font-bold">
+              {g('עברתם/ן את רף ה-')}
+              {content.pinFlagThreshold}%
+            </h2>
             <p className="mt-1 text-sm text-white/80">
-              הצטרפו לפרויקט ה-150,000 ונעצו את הדגל שלכם על המפה.
+              {g('הצטרפו לפרויקט ה-150,000 ונעצו את הדגל שלכם/ן על המפה.')}
             </p>
             <a
               href={content.pinFlagUrl}
@@ -96,19 +101,19 @@ export default function Results({ answers, onRestart }: ResultsProps) {
               rel="noopener noreferrer"
               className="mt-4 inline-block rounded-lg bg-white px-8 py-2.5 font-bold text-navy transition-colors hover:bg-cream"
             >
-              נועצים את הדגל ↗
+              {g('נועצים/ות את הדגל ↗')}
             </a>
           </section>
         )}
 
         {/* Per-category breakdown */}
         <section className="mt-4 rounded-xl border border-line bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="font-bold text-navy">איפה התחברתם, ואיפה פחות</h2>
+          <h2 className="font-bold text-navy">{g('איפה התחברתם/ן, ואיפה פחות')}</h2>
 
           {showExtremes && (
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               <div className="rounded-lg bg-cream p-3">
-                <p className="text-xs text-muted">הכי התחברתם</p>
+                <p className="text-xs text-muted">{g('הכי התחברתם/ן')}</p>
                 <p className="mt-0.5 flex items-center gap-2 text-sm font-bold text-navy">
                   <span
                     aria-hidden="true"
@@ -193,7 +198,7 @@ export default function Results({ answers, onRestart }: ResultsProps) {
 
         {/* The two whole documents, for anyone who wants the full picture */}
         <section className="mt-4 rounded-xl border border-line bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="font-bold text-navy">רוצים לקרוא את המקור המלא?</h2>
+          <h2 className="font-bold text-navy">{g('רוצים/ות לקרוא את המקור המלא?')}</h2>
           <ul className="mt-2 space-y-1.5">
             <li>
               <a
@@ -230,6 +235,10 @@ export default function Results({ answers, onRestart }: ResultsProps) {
         >
           {suggestAnotherRound ? 'לסבב נוסף' : 'שאלון חדש'}
         </button>
+
+        <div className="mt-6 flex justify-center">
+          <GenderSwitch compact />
+        </div>
 
         <div className="mt-6">
           <JoinBlock />

@@ -19,7 +19,9 @@ ids never change.
 ## Stack
 
 Vite + React 19 + TypeScript + Tailwind CSS v4. No router library - a tiny
-hash router in `App.tsx` (`#/admin` = backoffice). No backend yet.
+hash router in `App.tsx` (`#/admin` = backoffice). Supabase for the backend
+(see below). Plus `ivrita` for gendered Hebrew, which is why the project is
+AGPL-3.0 (`LICENSE`, and the `license` field in `package.json`).
 
 ## Commands
 
@@ -161,6 +163,32 @@ the admin sets it by editing the mix. `contentStore.deriveQuizLength` counts
 visitors is what they will really be asked. `quiz_config.quiz_length` still
 exists in the database but nothing reads it. The only publish restriction
 left is that an empty quiz (all quotas 0) cannot be published.
+
+## Gendered address (עברית/ה) - since 2026-08-11
+
+Hebrew forces a gender in almost every sentence addressed to a reader, and the
+usual shortcut is to write masculine and call it neutral. Instead **every
+visitor-facing string is written in the slash form** (`'כמה קרובים/ות אתם/ן'`)
+and rendered through `g()` from `src/lib/gender.tsx`, which wraps Ivrita's pure
+`genderize()`. Three modes - `neutral` (keeps the slashes, the default),
+`male`, `female` - chosen with `<GenderSwitch />` and remembered in
+localStorage under `elhadegel-gender-v1`.
+
+Rules when touching visitor copy:
+
+- A new string that addresses the reader goes in slash form and through `g()`.
+- Plural imperatives (דרגו, נסו, הצטרפו, גלו) are already gender-neutral -
+  leave them alone. Participles used as CTAs (מתחילים/ות, נועצים/ות) are not.
+- **Never pass database content through `g()`.** The statements are Lotem's
+  editorial content and must never be rewritten at runtime - `g()` is only for
+  hardcoded UI copy.
+- The import is the deep path `ivrita/src/ivrita`, not `ivrita`. The package's
+  `browser` field points at `src/element.js` (a DOM wrapper that rewrites the
+  page in place) which does not export `genderize`, so a plain `import` builds
+  fine under Node and fails under Vite. `src/types/ivrita.d.ts` declares that
+  same path.
+- `npm run verify` checks the exact forms the copy relies on, and that the
+  screens still address both genders by default.
 
 ## Known limitations / next
 

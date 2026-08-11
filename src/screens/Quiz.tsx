@@ -10,6 +10,7 @@ import LikertScale, { LIKERT_OPTIONS } from '../components/LikertScale'
 import ProgressBar from '../components/ProgressBar'
 import type { Question } from '../content/types'
 import type { Answer } from '../engine/scoring'
+import { useGender } from '../lib/gender'
 
 interface QuizProps {
   questions: Question[]
@@ -17,6 +18,7 @@ interface QuizProps {
 }
 
 export default function Quiz({ questions, onFinish }: QuizProps) {
+  const { g } = useGender()
   const [index, setIndex] = useState(0)
   // One slot per statement; null = not answered yet.
   const [answers, setAnswers] = useState<(number | null)[]>(() => questions.map(() => null))
@@ -35,7 +37,7 @@ export default function Quiz({ questions, onFinish }: QuizProps) {
       <>
         <Header />
         <main className="mx-auto max-w-xl px-4 py-16 text-center text-muted">
-          השאלון אינו זמין כרגע. נסו שוב מאוחר יותר.
+          {g('השאלון אינו זמין כרגע. נסו שוב מאוחר יותר.')}
         </main>
       </>
     )

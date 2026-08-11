@@ -26,6 +26,7 @@ import { BASE_QUESTIONS } from '../src/content/questions'
 import { DEFAULT_QUOTAS } from '../src/content/quizConfig'
 import { PILLARS } from '../src/content/pillars'
 import { categoryColor } from '../src/lib/categoryColors'
+import { genderize, MALE, FEMALE, NEUTRAL } from 'ivrita/src/ivrita'
 
 const QUIZ_LENGTH = Object.values(DEFAULT_QUOTAS).reduce((a, b) => a + b, 0)
 
@@ -135,7 +136,7 @@ console.log('screens render')
 
 // Landing (via App with empty hash)
 const landing = renderToString(createElement(App))
-expectContains('Landing', landing, ['מתחילים', 'כמה קרובים אתם', 'אל הדגל', 'היגדים · כ-'])
+expectContains('Landing', landing, ['מתחילים', 'כמה קרובים/ות אתם/ן', 'אל הדגל', 'היגדים · כ-'])
 // the source links belong on the results screen now, not on the doorstep
 check('landing carries no outbound links', !landing.includes('elhadegel.co.il/about-us'))
 
@@ -149,9 +150,9 @@ const high: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pil
 const highHtml = renderToString(createElement(Results, { answers: high, onRestart: () => {} }))
 expectContains('Results-high', highHtml, [
   '100%',
-  'נועצים את הדגל',
-  'איפה התחברתם, ואיפה פחות',
-  'רוצים לקרוא את המקור המלא?',
+  'נועצים/ות את הדגל',
+  'איפה התחברתם/ן, ואיפה פחות',
+  'רוצים/ות לקרוא את המקור המלא?',
   'הצטרפו אלינו',
   'לקריאה נוספת',
 ])
@@ -165,8 +166,8 @@ check('no confetti below the threshold', !lowHtml.includes('canvas'))
 // the band just under the flag offers another round instead of a plain restart
 const nearAnswers: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pillarId, value: 4 }))
 const nearHtml = renderToString(createElement(Results, { answers: nearAnswers, onRestart: () => {} }))
-expectContains('Results-near', nearHtml, ['75%', 'קרובים מאוד', 'לסבב נוסף'])
-if (lowHtml.includes('נועצים את הדגל')) {
+expectContains('Results-near', nearHtml, ['75%', 'קרובים/ות מאוד', 'לסבב נוסף'])
+if (lowHtml.includes('נועצים/ות את הדגל')) {
   failures++
   console.error('FAIL: pin CTA shown below threshold')
 }
@@ -216,6 +217,29 @@ check('every source link is absolute',
   PILLARS.every((p) => p.sources.every((s) => s.url.startsWith('https://'))))
 check('every statement belongs to a real category',
   BASE_QUESTIONS.every((q) => PILLARS.some((p) => p.id === q.pillarId)))
+
+console.log('gendered address')
+// Every visitor-facing string is written in slash form and rendered through
+// Ivrita. These check the forms the copy actually relies on.
+{
+  const cases: Array<[string, string, string]> = [
+    ['כמה קרובים/ות אתם/ן לדרך של אל הדגל?', 'כמה קרובים אתם לדרך של אל הדגל?', 'כמה קרובות אתן לדרך של אל הדגל?'],
+    ['מסכים/ה מאוד', 'מסכים מאוד', 'מסכימה מאוד'],
+    ['ניטרלי/ת', 'ניטרלי', 'ניטרלית'],
+    ['עברתם/ן את רף ה-', 'עברתם את רף ה-', 'עברתן את רף ה-'],
+    ['הכי התחברתם/ן', 'הכי התחברתם', 'הכי התחברתן'],
+    ['מקומכם/ן איתנו על המפה.', 'מקומכם איתנו על המפה.', 'מקומכן איתנו על המפה.'],
+    ['רוצים/ות לקרוא את המקור המלא?', 'רוצים לקרוא את המקור המלא?', 'רוצות לקרוא את המקור המלא?'],
+  ]
+  for (const [slashed, male, female] of cases) {
+    check(`male: ${slashed.slice(0, 22)}`, genderize(slashed, MALE) === male)
+    check(`female: ${slashed.slice(0, 22)}`, genderize(slashed, FEMALE) === female)
+    check(`neutral keeps the slashes: ${slashed.slice(0, 18)}`, genderize(slashed, NEUTRAL) === slashed)
+  }
+  // The screens must not ship a bare masculine address any more.
+  const landingNeutral = renderToString(createElement(App))
+  check('landing addresses both by default', landingNeutral.includes('קרובים/ות'))
+}
 
 console.log('unpublished-changes logic')
 const snapshot = {
