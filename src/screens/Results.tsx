@@ -128,6 +128,26 @@ export default function Results({ answers, onRestart }: ResultsProps) {
               {threshold}%
             </span>
           </div>
+
+          {/* Why another quiz is a different quiz - part of understanding
+              the number, so it lives with the number (Lotem's call). */}
+          <p className="mt-5 text-xs leading-relaxed text-muted">
+            ההיגדים נבחרים אקראית מתוך מאגר גדול יותר - כל שאלון מעט שונה.
+            <br />
+            {g(
+              p(
+                'רוצים לראות היגדים נוספים המשקפים את אל הדגל?',
+                'רוצה לראות היגדים נוספים המשקפים את אל הדגל?',
+              )
+            )}{' '}
+            <button
+              type="button"
+              onClick={onRestart}
+              className="font-medium text-navy underline underline-offset-2 transition-colors hover:text-navy-dark"
+            >
+              {g(p('נסו שאלון חדש', 'נסה/י שאלון חדש'))}
+            </button>
+          </p>
         </section>
 
         {/* The verdict, and the action it justifies */}
@@ -250,24 +270,6 @@ export default function Results({ answers, onRestart }: ResultsProps) {
           </div>
         </section>
 
-        {/* Why another quiz is a different quiz, and the way to take one */}
-        <p className="mt-4 text-center text-xs leading-relaxed text-muted">
-          ההיגדים נבחרים אקראית מתוך מאגר גדול יותר - כל שאלון מעט שונה.
-          <br />
-          {g(
-            p(
-              'רוצים לראות היגדים נוספים המשקפים את אל הדגל?',
-              'רוצה לראות היגדים נוספים המשקפים את אל הדגל?',
-            )
-          )}{' '}
-          <button
-            type="button"
-            onClick={onRestart}
-            className="font-medium text-navy underline underline-offset-2 transition-colors hover:text-navy-dark"
-          >
-            {g(p('נסו שאלון חדש', 'נסה/י שאלון חדש'))}
-          </button>
-        </p>
 
         <div className="mt-5">
           <JoinBlock />
