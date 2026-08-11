@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import Header from '../components/Header'
-import IconButton, { EditIcon, PinIcon, TrashIcon } from '../components/IconButton'
+import IconButton, { EditIcon, PinIcon, PinOffIcon, TrashIcon } from '../components/IconButton'
 import MixChart, { pillarSlices } from '../components/MixChart'
 import { PILLARS as BAKED_PILLARS } from '../content/pillars'
 import { BASE_QUESTIONS } from '../content/questions'
@@ -401,16 +401,17 @@ export default function Admin() {
           <span className="grow" />
           {!offline && !isEditing && (
             <span className="flex items-center gap-1">
+              {/* The icon shows the action the button performs, not the
+                  current state - the section grouping carries the state. */}
               <IconButton
                 label={
                   question.pinned
                     ? 'ביטול נעיצה - השאלה תחזור להגרלה הרגילה'
                     : 'נעיצה - השאלה תיכלל בכל שאלון, בלי הגרלה'
                 }
-                tone={question.pinned ? 'active' : 'default'}
                 onClick={() => void handleTogglePin(question)}
               >
-                <PinIcon filled={question.pinned} />
+                {question.pinned ? <PinOffIcon /> : <PinIcon />}
               </IconButton>
               <IconButton label="עריכת נוסח השאלה" onClick={() => startEdit(question)}>
                 <EditIcon />
