@@ -59,14 +59,15 @@ export default function MixChart({ slices }: { slices: MixSlice[] }) {
         <p className="mt-3 text-xs text-muted">כל הקטגוריות על 0 - כרגע אין היגדים בשאלון.</p>
       ) : (
         <div className="mt-4 flex flex-col items-center gap-6 sm:flex-row sm:items-center">
-          {/* The ring. Mirrored so it fills counter-clockwise, matching the
-              right-to-left reading order of the legend beside it. */}
+          {/* The ring starts at 12 and sweeps clockwise, so the FIRST
+              categories land on the RIGHT half - the fill begins where
+              Hebrew reading begins. (An earlier version mirrored the ring
+              leftward; Lotem caught that it read backwards.) */}
           <div className="relative shrink-0" style={{ width: SIZE, height: SIZE }}>
             <svg
               width={SIZE}
               height={SIZE}
               viewBox={`0 0 ${SIZE} ${SIZE}`}
-              style={{ transform: 'scaleX(-1)' }}
               role="img"
               aria-label={`תמהיל השאלון: ${total} היגדים`}
             >
