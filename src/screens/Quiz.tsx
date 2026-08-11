@@ -69,15 +69,25 @@ export default function Quiz({ questions, onFinish }: QuizProps) {
     <>
       <Header />
       <main className="mx-auto max-w-xl px-4 py-6 sm:py-8">
-        <ProgressBar current={index + 1} total={questions.length} />
+        <ProgressBar
+          current={index + 1}
+          total={questions.length}
+          onBack={() => setIndex(index - 1)}
+          canGoBack={index > 0}
+        />
         {/* key on the index restarts the entrance animation per statement */}
         <div
           key={index}
           className="slide-in mt-5 rounded-xl border border-line bg-white p-5 shadow-sm sm:mt-6 sm:p-8"
         >
-          <p className="min-h-20 text-lg font-bold leading-snug text-navy sm:min-h-24 sm:text-2xl">
-            {g(question.text)}
-          </p>
+          {/* Fixed height, sized to the longest statement in the pool, so the
+              card and the answers below it never move between statements.
+              Short statements sit centred rather than clinging to the top. */}
+          <div className="flex h-48 items-center overflow-y-auto">
+            <p className="text-base font-bold leading-relaxed text-navy sm:text-xl">
+              {g(question.text)}
+            </p>
+          </div>
           <div className="mt-5 sm:mt-6">
             <LikertScale
               value={answers[index]}
@@ -87,15 +97,6 @@ export default function Quiz({ questions, onFinish }: QuizProps) {
             />
           </div>
         </div>
-        {index > 0 && (
-          <button
-            type="button"
-            onClick={() => setIndex(index - 1)}
-            className="mt-4 text-sm text-muted transition-colors hover:text-navy"
-          >
-            חזרה להיגד הקודם
-          </button>
-        )}
         <p className="mt-6 hidden text-center text-xs text-muted sm:block">
           אפשר גם במקלדת: {LIKERT_OPTIONS.length}-1
         </p>

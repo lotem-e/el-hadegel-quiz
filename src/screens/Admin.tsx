@@ -194,15 +194,18 @@ export default function Admin() {
 
   useEffect(() => () => window.clearTimeout(toastTimerRef.current), [])
 
-  // Close the modal on Escape while it is open.
+  // Close whichever modal is open on Escape. Not while a save is in flight,
+  // so a stray keypress cannot hide a form that is still writing.
   useEffect(() => {
-    if (!confirmDeleteId) return
+    if (!confirmDeleteId && !creating) return
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setConfirmDeleteId(null)
+      if (event.key !== 'Escape') return
+      if (confirmDeleteId && !deleting) setConfirmDeleteId(null)
+      if (creating && !savingNew) setCreating(false)
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [confirmDeleteId])
+  }, [confirmDeleteId, creating, deleting, savingNew])
 
   useEffect(() => {
     if (!offline) void loadAll()
@@ -712,7 +715,9 @@ export default function Admin() {
                 type="button"
                 onClick={() => void handlePublish()}
                 disabled={!dirty || publishing || migrationMissing || publishBlocked}
-                className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark disabled:cursor-not-allowed disabled:opacity-40"
+                // The movement's olive. Dark navy text rather than white:
+                // white on this olive is 2.3:1, dark navy is 7.3:1.
+                className="rounded-lg bg-star-olive px-4 py-2 text-sm font-bold text-navy-dark transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {publishing ? 'מפרסם...' : 'פרסום לשאלון החי'}
               </button>
@@ -784,84 +789,7 @@ export default function Admin() {
 
         {tab === 'questions' && (
           <section className="mt-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs text-muted">
-                היגד חדש נכנס לטיוטה, ומגיע למבקרים רק אחרי הפרסום הבא.
-              </p>
-              {!offline && !creating && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    // If a category is filtered, that is almost certainly the
-                    // one she means - so it starts selected.
-                    setNewPillarId(filter === 'all' ? '' : filter)
-                    setNewText('')
-                    setCreating(true)
-                  }}
-                  className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark"
-                >
-                  + היגד חדש
-                </button>
-              )}
-            </div>
-
-            {creating && (
-              <div className="mt-4 rounded-xl border border-navy bg-white p-4">
-                <h2 className="text-sm font-bold text-navy">היגד חדש</h2>
-                <label className="mt-3 block text-xs font-medium text-muted" htmlFor="new-text">
-                  נוסח ההיגד
-                </label>
-                <textarea
-                  id="new-text"
-                  value={newText}
-                  onChange={(event) => setNewText(event.target.value)}
-                  rows={3}
-                  autoFocus
-                  className="mt-1 w-full rounded-lg border border-line p-3 text-sm leading-relaxed focus:border-navy focus:outline-none"
-                  placeholder="מה המבקרים ידרגו מ-1 עד 5"
-                />
-                <label className="mt-3 block text-xs font-medium text-muted" htmlFor="new-pillar">
-                  קטגוריה
-                </label>
-                <select
-                  id="new-pillar"
-                  value={newPillarId}
-                  onChange={(event) => setNewPillarId(event.target.value as PillarId | '')}
-                  className="mt-1 w-full rounded-lg border border-line bg-white p-2.5 text-sm focus:border-navy focus:outline-none"
-                >
-                  <option value="">בחרי קטגוריה</option>
-                  {pillars.map((pillar) => (
-                    <option key={pillar.id} value={pillar.id}>
-                      {pillar.short}
-                    </option>
-                  ))}
-                </select>
-                <div className="mt-4 flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => void handleCreate()}
-                    disabled={savingNew || !newText.trim() || !newPillarId}
-                    className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {savingNew ? 'שומרת...' : 'הוספה למאגר'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCreating(false)
-                      setNewText('')
-                      setNewPillarId('')
-                    }}
-                    disabled={savingNew}
-                    className="rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:text-navy disabled:opacity-40"
-                  >
-                    ביטול
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>
                 הכול ({questions.length})
               </FilterChip>
@@ -875,6 +803,25 @@ export default function Admin() {
                   {pillar.short} ({questions.filter((q) => q.pillarId === pillar.id).length})
                 </FilterChip>
               ))}
+              {!offline && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    // A filtered category is almost certainly the one she
+                    // means, so it starts selected.
+                    setNewPillarId(filter === 'all' ? '' : filter)
+                    setNewText('')
+                    setCreating(true)
+                  }}
+                  // Deliberately NOT a filled navy pill: the selected filter
+                  // chip is already that, and two of them side by side would
+                  // read as another filter rather than an action. The dashed
+                  // border is the convention for "add one more".
+                  className="ms-1 rounded-full border border-dashed border-navy px-3 py-1 text-xs font-bold text-navy transition-colors hover:bg-navy hover:text-white"
+                >
+                  היגד חדש
+                </button>
+              )}
             </div>
 
             {/* Pinned questions lead the list, under their own explanation */}
@@ -1021,6 +968,69 @@ export default function Admin() {
             }
           >
             {toast.text}
+          </div>
+        </div>
+      )}
+
+      {creating && (
+        <div
+          className="fixed inset-0 z-40 flex items-center justify-center bg-navy-dark/40 px-6"
+          onClick={() => !savingNew && setCreating(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="היגד חדש"
+            className="toast-pop w-full max-w-lg rounded-xl bg-white p-6 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 className="font-bold text-navy">היגד חדש</h2>
+            <label className="mt-4 block text-xs font-medium text-muted" htmlFor="new-text">
+              נוסח ההיגד
+            </label>
+            <textarea
+              id="new-text"
+              value={newText}
+              onChange={(event) => setNewText(event.target.value)}
+              rows={4}
+              autoFocus
+              className="mt-1 w-full rounded-lg border border-line p-3 text-sm leading-relaxed focus:border-navy focus:outline-none"
+              placeholder="מה המבקרים ידרגו מ-1 עד 5"
+            />
+            <label className="mt-3 block text-xs font-medium text-muted" htmlFor="new-pillar">
+              קטגוריה
+            </label>
+            <select
+              id="new-pillar"
+              value={newPillarId}
+              onChange={(event) => setNewPillarId(event.target.value as PillarId | '')}
+              className="mt-1 w-full rounded-lg border border-line bg-white p-2.5 text-sm focus:border-navy focus:outline-none"
+            >
+              <option value="">בחרי קטגוריה</option>
+              {pillars.map((pillar) => (
+                <option key={pillar.id} value={pillar.id}>
+                  {pillar.short}
+                </option>
+              ))}
+            </select>
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => void handleCreate()}
+                disabled={savingNew || !newText.trim() || !newPillarId}
+                className="rounded-lg bg-navy px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {savingNew ? 'שומרת...' : 'הוספה למאגר'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCreating(false)}
+                disabled={savingNew}
+                className="rounded-lg border border-line px-5 py-2 text-sm font-medium text-muted transition-colors hover:border-navy hover:text-navy disabled:opacity-40"
+              >
+                ביטול
+              </button>
+            </div>
           </div>
         </div>
       )}
