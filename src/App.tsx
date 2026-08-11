@@ -47,6 +47,13 @@ export default function App() {
     void refreshContent()
   }, [])
 
+  // The browser tab should say which of the two screens you are on.
+  useEffect(() => {
+    document.title = route.startsWith('#/admin')
+      ? 'אל הדגל | שאלון ההתאמה | ממשק ניהול'
+      : 'אל הדגל | שאלון ההתאמה'
+  }, [route])
+
   if (route.startsWith('#/admin')) {
     return (
       <AuthGate>

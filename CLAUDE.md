@@ -106,6 +106,33 @@ Claude never knows the password). The admin writes straight to the DB.
 Anonymous visitors can read content and insert results only - verified by
 direct REST probes.
 
+## Writing a migration (the template)
+
+Content changes made in SQL land in the DRAFT, so without this envelope they
+surface in the admin as "unpublished changes" Lotem never made. Every content
+migration must be wrapped:
+
+```sql
+begin;
+select public.system_change_begin();
+-- ... the updates ...
+select public.system_change_publish();
+commit;
+```
+
+`system_change_publish()` publishes only if her draft was already fully
+published when the migration started; otherwise it returns `deferred` and the
+change rides along with her next publish, so her unfinished work is never
+pushed live behind her back. It raises if the two calls end up in different
+transactions, so the `begin/commit` is load-bearing - tell her to run the file
+in one go.
+
+**Do not wrap a migration that changes question text.** Category copy is only
+ever seen by her in the admin; statements are what visitors read, so those stay
+hers to approve.
+
+Structural migrations (new tables, functions, grants) need no envelope.
+
 ## Content backups
 
 Automatic: `.github/workflows/backup-published.yml` runs daily (and on

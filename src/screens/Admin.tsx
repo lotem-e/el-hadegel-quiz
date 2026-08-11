@@ -20,39 +20,85 @@ interface PillarRow extends Pillar {
   quota: number
 }
 
-/** The latest published snapshot, reduced to the fields the admin can edit -
- *  used to decide whether there are unpublished changes. */
-interface PublishedSnapshot {
-  publishedAt: string
-  questionState: Map<string, { text: string; active: boolean; pinned: boolean }>
-  /** Everything publish_content() snapshots per pillar, so the dirty check
-   *  cannot miss a field (quota, description, sources). */
-  pillarState: Map<string, PillarFingerprint>
+/** A content snapshot, exactly as publish_content() stores it */
+interface Snapshot {
+  pillars?: Array<Record<string, unknown>>
+  questions?: Array<Record<string, unknown>>
+  config?: Record<string, unknown>
 }
 
-interface PillarFingerprint {
-  quota: number
-  title: string
-  short: string
-  description: string
-  sources: string
-}
-
-/** Every pillar field the snapshot carries, so the dirty check cannot miss one */
-function pillarFingerprint(pillar: {
-  quota: number
-  title?: string
-  short?: string
-  description?: string
-  sources?: unknown
-}): PillarFingerprint {
-  return {
-    quota: pillar.quota,
-    title: pillar.title ?? '',
-    short: pillar.short ?? '',
-    description: pillar.description ?? '',
-    sources: JSON.stringify(pillar.sources ?? []),
+/**
+ * Order-independent JSON, so two snapshots are compared by their content
+ * rather than by the order Postgres happened to serialise keys in.
+ */
+export function canonical(value: unknown): string {
+  const sort = (v: unknown): unknown => {
+    if (Array.isArray(v)) return v.map(sort)
+    if (v && typeof v === 'object') {
+      const source = v as Record<string, unknown>
+      return Object.keys(source)
+        .sort()
+        .reduce<Record<string, unknown>>((out, key) => {
+          out[key] = sort(source[key])
+          return out
+        }, {})
+    }
+    return v
   }
+  return JSON.stringify(sort(value))
+}
+
+/**
+ * What differs between the draft and what is published, in her words.
+ * Derived from the two snapshots themselves, so a newly added field can
+ * never slip past it the way a hand-written field list did.
+ */
+export function summarizeDiff(draft: Snapshot, published: Snapshot): string[] {
+  const byId = (rows: Array<Record<string, unknown>> = []) =>
+    new Map(rows.map((row) => [row.id as string, row]))
+  const dq = byId(draft.questions)
+  const pq = byId(published.questions)
+  const dp = byId(draft.pillars)
+  const pp = byId(published.pillars)
+
+  const added = [...dq.keys()].filter((id) => !pq.has(id)).length
+  const removed = [...pq.keys()].filter((id) => !dq.has(id)).length
+  let reworded = 0
+  let pinChanged = 0
+  for (const [id, q] of dq) {
+    const before = pq.get(id)
+    if (!before) continue
+    if (before.text !== q.text) reworded++
+    if ((before.pinned ?? false) !== (q.pinned ?? false)) pinChanged++
+  }
+
+  let quotaChanged = 0
+  let categoryChanged = 0
+  for (const [id, p] of dp) {
+    const before = pp.get(id)
+    if (!before) continue
+    if (before.quota !== p.quota) quotaChanged++
+    const strip = (row: Record<string, unknown>) => {
+      const { quota: _quota, ...rest } = row
+      return canonical(rest)
+    }
+    if (strip(before) !== strip(p)) categoryChanged++
+  }
+  const newCategories = [...dp.keys()].filter((id) => !pp.has(id)).length
+  const configChanged = canonical(draft.config ?? {}) !== canonical(published.config ?? {})
+
+  const parts: string[] = []
+  if (added) parts.push(added === 1 ? 'היגד חדש' : `${added} היגדים חדשים`)
+  if (removed) parts.push(removed === 1 ? 'היגד שנמחק' : `${removed} היגדים שנמחקו`)
+  if (reworded) parts.push(reworded === 1 ? 'ניסוח של היגד' : `ניסוח של ${reworded} היגדים`)
+  if (pinChanged) parts.push(pinChanged === 1 ? 'נעיצה של היגד' : `נעיצה של ${pinChanged} היגדים`)
+  if (quotaChanged)
+    parts.push(quotaChanged === 1 ? 'תמהיל של קטגוריה' : `תמהיל של ${quotaChanged} קטגוריות`)
+  if (categoryChanged)
+    parts.push(categoryChanged === 1 ? 'פרטים של קטגוריה' : `פרטים של ${categoryChanged} קטגוריות`)
+  if (newCategories) parts.push(`${newCategories} קטגוריות חדשות`)
+  if (configChanged) parts.push('הגדרות השאלון')
+  return parts
 }
 
 function formatPublishedAt(iso: string): string {
@@ -79,11 +125,17 @@ export default function Admin() {
   const [filter, setFilter] = useState<PillarId | 'all'>('all')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
-  const [published, setPublished] = useState<PublishedSnapshot | null>(null)
+  const [published, setPublished] = useState<{ publishedAt: string; content: Snapshot } | null>(
+    null,
+  )
+  // What publishing would produce right now, straight from the database.
+  const [draftSnapshot, setDraftSnapshot] = useState<Snapshot | null>(null)
   const [migrationMissing, setMigrationMissing] = useState(false)
   // Set when the published state could not be read for a transient reason -
   // publishing stays available, we just cannot show what is in sync.
   const [publishInfoError, setPublishInfoError] = useState(false)
+  // True until migration 11 installs build_snapshot()
+  const [snapshotFnMissing, setSnapshotFnMissing] = useState(false)
   const [publishing, setPublishing] = useState(false)
   // Short-lived feedback toast (publish confirmation / pin warnings).
   const [toast, setToast] = useState<{ text: string; tone: 'ok' | 'warn' } | null>(null)
@@ -153,7 +205,7 @@ export default function Admin() {
         sourceLabel: row.source_label,
       })),
     )
-    await loadPublished()
+    await Promise.all([loadPublished(), refreshDraftSnapshot()])
     setLoading(false)
   }
 
@@ -181,36 +233,27 @@ export default function Admin() {
       setPublished(null)
       return
     }
-    const content = data.content as {
-      pillars?: Array<Record<string, unknown>>
-      questions?: Array<Record<string, unknown>>
+    setPublished({ publishedAt: data.published_at, content: data.content as Snapshot })
+  }
+
+  /**
+   * Ask the database what publishing would produce right now. Comparing
+   * that against the published snapshot is what decides whether there are
+   * unpublished changes - no field list to keep in sync.
+   */
+  async function refreshDraftSnapshot() {
+    if (!supabase) return
+    const { data, error } = await supabase.rpc('build_snapshot')
+    if (error) {
+      // PGRST202 = the function does not exist, i.e. migration 11 has not
+      // been run. Either way we cannot tell what is unpublished, so we say
+      // so and leave publishing available.
+      setSnapshotFnMissing(error.code === 'PGRST202')
+      setPublishInfoError(true)
+      return
     }
-    setPublished({
-      publishedAt: data.published_at,
-      questionState: new Map(
-        (content.questions ?? []).map((q) => [
-          q.id as string,
-          {
-            text: q.text as string,
-            active: q.active as boolean,
-            // Snapshots published before the pinned feature lack this field.
-            pinned: (q.pinned as boolean | undefined) ?? false,
-          },
-        ]),
-      ),
-      pillarState: new Map(
-        (content.pillars ?? []).map((p) => [
-          p.id as string,
-          pillarFingerprint({
-            quota: p.quota as number,
-            title: p.title as string,
-            short: p.short as string,
-            description: p.description as string,
-            sources: p.sources,
-          }),
-        ]),
-      ),
-    })
+    setSnapshotFnMissing(false)
+    setDraftSnapshot(data as Snapshot)
   }
 
   async function handlePublish() {
@@ -221,7 +264,7 @@ export default function Admin() {
     if (error) {
       setSaveError(true)
     } else {
-      await loadPublished()
+      await Promise.all([loadPublished(), refreshDraftSnapshot()])
       showToast('כל השינויים פורסמו ✓')
     }
     setPublishing(false)
@@ -245,6 +288,7 @@ export default function Admin() {
     setQuestions((current) =>
       current.map((question) => (question.id === id ? { ...question, ...patch } : question)),
     )
+    void refreshDraftSnapshot()
     return true
   }
 
@@ -286,6 +330,7 @@ export default function Admin() {
     setPillars((current) =>
       current.map((pillar) => (pillar.id === pillarId ? { ...pillar, quota: clamped } : pillar)),
     )
+    void refreshDraftSnapshot()
   }
 
   function startEdit(question: Question) {
@@ -329,6 +374,7 @@ export default function Admin() {
     }
     setQuestions((current) => current.filter((question) => question.id !== confirmDeleteId))
     setConfirmDeleteId(null)
+    void refreshDraftSnapshot()
   }
 
   async function saveEdit() {
@@ -355,88 +401,29 @@ export default function Admin() {
   const quotaSum = pillars.reduce((sum, pillar) => sum + pillar.quota, 0)
   const activeCount = (pillarId: PillarId) =>
     questions.filter((q) => q.pillarId === pillarId && q.active).length
-  // Unpublished changes exist when any editable field differs from the
-  // latest published snapshot (or when nothing was ever published).
+  // Unpublished changes = the snapshot publishing would produce right now
+  // differs from the one that is live. Asking the database rather than
+  // reproducing its rules here is what keeps this from missing a field.
   const dirty =
     !offline &&
     !migrationMissing &&
-    // If the published state is unknown, allow publishing rather than
-    // locking her out on a transient read failure.
+    // If either side is unknown, allow publishing rather than locking her
+    // out on a transient read failure.
     (publishInfoError ||
       published === null ||
-      questions.length !== published.questionState.size ||
-      questions.some((question) => {
-        const snap = published.questionState.get(question.id)
-        return (
-          !snap ||
-          snap.text !== question.text ||
-          snap.active !== question.active ||
-          snap.pinned !== question.pinned
-        )
-      }) ||
-      pillars.length !== published.pillarState.size ||
-      pillars.some((pillar) => {
-        const snap = published.pillarState.get(pillar.id)
-        const now = pillarFingerprint(pillar)
-        return (
-          !snap ||
-          snap.quota !== now.quota ||
-          snap.title !== now.title ||
-          snap.short !== now.short ||
-          snap.description !== now.description ||
-          snap.sources !== now.sources
-        )
-      }))
+      draftSnapshot === null ||
+      canonical(draftSnapshot) !== canonical(published.content))
+
   // The quiz length is simply what the mix yields, so there is nothing to
   // validate it against - any mix is publishable. The single exception is an
   // empty quiz, which would leave visitors with nothing to answer.
   const publishBlocked = !offline && !loading && quotaSum === 0
 
-  // Spell out WHAT is unpublished. Without this the admin only knows that
-  // something differs from the live version - including changes made
-  // straight in the database, which never passed through this screen.
-  const changeSummary: string[] = []
-  if (dirty && published) {
-    const publishedIds = new Set(published.questionState.keys())
-    const added = questions.filter((q) => !publishedIds.has(q.id)).length
-    const removed = [...publishedIds].filter((id) => !questions.some((q) => q.id === id)).length
-    const reworded = questions.filter((q) => {
-      const snap = published.questionState.get(q.id)
-      return snap && snap.text !== q.text
-    }).length
-    const pinChanged = questions.filter((q) => {
-      const snap = published.questionState.get(q.id)
-      return snap && snap.pinned !== q.pinned
-    }).length
-    const quotaChanged = pillars.filter((p) => {
-      const snap = published.pillarState.get(p.id)
-      return snap && snap.quota !== p.quota
-    }).length
-    const categoryChanged = pillars.filter((p) => {
-      const snap = published.pillarState.get(p.id)
-      if (!snap) return false
-      const now = pillarFingerprint(p)
-      return (
-        snap.title !== now.title ||
-        snap.short !== now.short ||
-        snap.description !== now.description ||
-        snap.sources !== now.sources
-      )
-    }).length
-    const newCategories = pillars.filter((p) => !published.pillarState.has(p.id)).length
+  // Spell out WHAT is unpublished, so a difference that arrived through a
+  // database migration is legible rather than mysterious.
+  const changeSummary =
+    dirty && published && draftSnapshot ? summarizeDiff(draftSnapshot, published.content) : []
 
-    if (added) changeSummary.push(added === 1 ? 'היגד חדש' : `${added} היגדים חדשים`)
-    if (removed) changeSummary.push(removed === 1 ? 'היגד שנמחק' : `${removed} היגדים שנמחקו`)
-    if (reworded) changeSummary.push(reworded === 1 ? 'ניסוח של היגד' : `ניסוח של ${reworded} היגדים`)
-    if (pinChanged) changeSummary.push(pinChanged === 1 ? 'נעיצה של היגד' : `נעיצה של ${pinChanged} היגדים`)
-    if (quotaChanged)
-      changeSummary.push(quotaChanged === 1 ? 'תמהיל של קטגוריה' : `תמהיל של ${quotaChanged} קטגוריות`)
-    if (categoryChanged)
-      changeSummary.push(
-        categoryChanged === 1 ? 'פרטים של קטגוריה' : `פרטים של ${categoryChanged} קטגוריות`,
-      )
-    if (newCategories) changeSummary.push(`${newCategories} קטגוריות חדשות`)
-  }
   const pinnedVisible = visibleQuestions.filter((question) => question.pinned)
   const restVisible = visibleQuestions.filter((question) => !question.pinned)
 
@@ -592,10 +579,12 @@ export default function Admin() {
         )}
         {!offline && !migrationMissing && publishInfoError && (
           <p className="mt-2 flex items-center gap-2 text-xs text-amber-600">
-            לא הצלחתי לבדוק מה כבר פורסם. אפשר לפרסם בכל מקרה.
+            {snapshotFnMissing
+              ? 'כדי לזהות מה טרם פורסם יש להריץ את supabase/migration-11-publish-plumbing.sql. אפשר לפרסם בכל מקרה.'
+              : 'לא הצלחתי לבדוק מה כבר פורסם. אפשר לפרסם בכל מקרה.'}
             <button
               type="button"
-              onClick={() => void loadPublished()}
+              onClick={() => void Promise.all([loadPublished(), refreshDraftSnapshot()])}
               className="underline underline-offset-2 hover:text-navy"
             >
               ניסיון נוסף
