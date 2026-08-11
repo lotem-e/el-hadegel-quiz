@@ -17,24 +17,39 @@ export default function ProgressBar({ current, total, onBack, canGoBack }: Progr
   return (
     <div>
       <div className="mb-2 flex items-center justify-between text-sm">
-        {/* First child sits at the right in RTL */}
+        {/* First child sits at the right in RTL. The design is the back
+            button from elhadegel-friends.com/welcome, measured live: 44px
+            tall, rounded-xl, transparent until hover tints it navy/5, and a
+            lucide arrow-right that slides 4px rightward on hover (rightward
+            IS back, in RTL). Kept in the layout when disabled so the row
+            never shifts between the first statement and the rest. */}
         <button
           type="button"
           onClick={onBack}
           disabled={!canGoBack}
-          // Kept in the layout even when it cannot be used, so the row never
-          // shifts between the first statement and the rest.
-          className={
-            'rounded px-1 py-0.5 transition-colors ' +
-            (canGoBack
-              ? 'text-muted hover:text-navy'
-              : 'cursor-not-allowed text-muted/35')
-          }
+          className="group inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-transparent px-6 text-sm font-semibold text-muted transition-all hover:bg-navy/5 hover:text-navy focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/30 disabled:pointer-events-none disabled:opacity-50"
         >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5 transition-transform group-hover:translate-x-1"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
           חזרה
         </button>
-        <span className="text-muted">
-          <span className="tabular-nums">{current}</span> מתוך{' '}
+        {/* Flex, not bidi text: three separate boxes flow right-to-left on
+            their own, so the current number always sits on the right and no
+            bidi reordering can flip "1 / 14" into "14 / 1". */}
+        <span className="flex items-baseline gap-1 text-muted">
+          <span className="text-base font-bold tabular-nums text-navy">{current}</span>
+          <span className="text-xs">/</span>
           <span className="tabular-nums">{total}</span>
         </span>
       </div>
