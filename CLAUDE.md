@@ -189,7 +189,14 @@ Three ways to address a visitor (Lotem's scheme, 2026-08-11):
 | `male` | masculine SINGULAR | כמה קרוב אתה |
 | `female` | feminine SINGULAR | כמה קרובה את |
 
-**No slashes ever reach a visitor.** Ivrita cannot do this alone - it swaps
+**One exception, and only one:** the Likert answers keep the slash form in
+neutral ("מסכים/ה"). Everywhere else the quiz ADDRESSES the visitor, where
+masculine plural is a natural way to address a room; the answers are the
+visitor's own words about themselves, where a plural would have them answering
+for a group. `npm run verify` asserts both halves - the answers keep their
+slash in neutral, and every phrase that addresses the visitor does not.
+
+**Otherwise no slashes reach a visitor.** Ivrita cannot do this alone - it swaps
 gender within a number but cannot turn a plural into a singular - so each
 phrase is authored TWICE via `p(plural, singular)` from `src/lib/gender.tsx`:
 the plural is what neutral shows, and Ivrita splits the singular for male and

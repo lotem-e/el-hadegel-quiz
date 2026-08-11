@@ -5,12 +5,21 @@ import { useEffect } from 'react'
 import { p } from '../lib/gender'
 import { useGender } from '../lib/gender'
 
+/**
+ * The one place that keeps the slash form in neutral, at Lotem's request.
+ *
+ * Everywhere else the quiz ADDRESSES the visitor, and masculine plural is a
+ * natural way to address a room. These are the visitor's own words about
+ * themselves - "I agree" - and a plural there would have them answering on
+ * behalf of a group. So neutral shows the singular slash form: both genders
+ * at once, still first person singular. Male and female split it as usual.
+ */
 export const LIKERT_OPTIONS = [
-  { value: 1, label: p('כלל לא מסכימים', 'כלל לא מסכים/ה') },
-  { value: 2, label: p('לא מסכימים', 'לא מסכים/ה') },
-  { value: 3, label: p('ניטרליים', 'ניטרלי/ת') },
-  { value: 4, label: p('מסכימים', 'מסכים/ה') },
-  { value: 5, label: p('מסכימים מאוד', 'מסכים/ה מאוד') },
+  { value: 1, label: p('כלל לא מסכים/ה', 'כלל לא מסכים/ה') },
+  { value: 2, label: p('לא מסכים/ה', 'לא מסכים/ה') },
+  { value: 3, label: p('ניטרלי/ת', 'ניטרלי/ת') },
+  { value: 4, label: p('מסכים/ה', 'מסכים/ה') },
+  { value: 5, label: p('מסכים/ה מאוד', 'מסכים/ה מאוד') },
 ]
 
 interface LikertScaleProps {

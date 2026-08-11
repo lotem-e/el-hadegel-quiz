@@ -27,6 +27,7 @@ import { DEFAULT_QUOTAS } from '../src/content/quizConfig'
 import { PILLARS } from '../src/content/pillars'
 import { categoryColor } from '../src/lib/categoryColors'
 import { genderize, MALE, FEMALE } from 'ivrita/src/ivrita'
+import { LIKERT_OPTIONS } from '../src/components/LikertScale'
 import { p, renderPhrase } from '../src/lib/gender'
 import type { Phrase } from '../src/lib/gender'
 
@@ -145,7 +146,7 @@ check('landing carries no outbound links', !landing.includes('elhadegel.co.il/ab
 // Quiz with a real random selection
 const questions = selectQuizQuestions(BASE_QUESTIONS, DEFAULT_QUOTAS)
 const quiz = renderToString(createElement(Quiz, { questions, onFinish: () => {} }))
-expectContains('Quiz', quiz, ['היגד 1 מתוך 13', 'מסכימים מאוד', 'כלל לא מסכימים', questions[0].text])
+expectContains('Quiz', quiz, ['היגד 1 מתוך 13', 'מסכים/ה מאוד', 'כלל לא מסכים/ה', questions[0].text])
 
 // Results: high score (pin CTA must appear) and low score (must not)
 const high: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pillarId, value: 5 }))
@@ -227,8 +228,10 @@ console.log('gendered address')
   const cases: Array<[Phrase, string, string, string]> = [
     [p('כמה קרובים אתם לדרך של אל הדגל?', 'כמה קרוב/ה את/ה לדרך של אל הדגל?'),
       'כמה קרובים אתם לדרך של אל הדגל?', 'כמה קרוב אתה לדרך של אל הדגל?', 'כמה קרובה את לדרך של אל הדגל?'],
-    [p('מסכימים מאוד', 'מסכים/ה מאוד'), 'מסכימים מאוד', 'מסכים מאוד', 'מסכימה מאוד'],
-    [p('ניטרליים', 'ניטרלי/ת'), 'ניטרליים', 'ניטרלי', 'ניטרלית'],
+    // The answers are the ONE place neutral keeps its slashes (Lotem's call):
+    // they are the visitor's own words, not a form of address.
+    [p('מסכים/ה מאוד', 'מסכים/ה מאוד'), 'מסכים/ה מאוד', 'מסכים מאוד', 'מסכימה מאוד'],
+    [p('ניטרלי/ת', 'ניטרלי/ת'), 'ניטרלי/ת', 'ניטרלי', 'ניטרלית'],
     [p('עברתם את רף ה-', 'עברת את רף ה-'), 'עברתם את רף ה-', 'עברת את רף ה-', 'עברת את רף ה-'],
     [p('הכי התחברתם', 'הכי התחברת'), 'הכי התחברתם', 'הכי התחברת', 'הכי התחברת'],
     [p('מקומכם איתנו על המפה.', 'מקומך איתנו על המפה.'),
@@ -243,12 +246,30 @@ console.log('gendered address')
     check(`male is masculine singular: ${male.slice(0, 20)}`, renderPhrase(phrase, 'male') === male)
     check(`female is feminine singular: ${female.slice(0, 20)}`, renderPhrase(phrase, 'female') === female)
   }
-  // No slash may survive into any of the three - that was the whole point.
+  // A slash must never survive into male or female, anywhere.
   for (const [phrase] of cases) {
-    for (const mode of ['neutral', 'male', 'female'] as const) {
+    for (const mode of ['male', 'female'] as const) {
       check(`no slash left in ${mode}: ${phrase.plural.slice(0, 16)}`,
         !renderPhrase(phrase, mode).includes('/'))
     }
+  }
+  // In neutral a slash survives in exactly one place: the answers. Everything
+  // that ADDRESSES the visitor must be clean.
+  for (const option of LIKERT_OPTIONS) {
+    check(`the answers keep their slash in neutral: ${option.label.plural}`,
+      renderPhrase(option.label, 'neutral').includes('/'))
+    check(`the answers still split for female: ${option.label.plural}`,
+      !renderPhrase(option.label, 'female').includes('/'))
+  }
+  const addressing = [
+    p('כמה קרובים אתם לדרך של אל הדגל?', 'כמה קרוב/ה את/ה לדרך של אל הדגל?'),
+    p('בואו נגלה', 'בוא/י נגלה'),
+    p('עברתם את רף ה-', 'עברת את רף ה-'),
+    p('רוצים לקרוא את המקור המלא?', 'רוצה לקרוא את המקור המלא?'),
+  ]
+  for (const phrase of addressing) {
+    check(`address is slash-free in neutral: ${phrase.plural.slice(0, 18)}`,
+      !renderPhrase(phrase, 'neutral').includes('/'))
   }
 
   // Ivrita must still be incapable of touching plain text, because the
