@@ -715,9 +715,7 @@ export default function Admin() {
                 type="button"
                 onClick={() => void handlePublish()}
                 disabled={!dirty || publishing || migrationMissing || publishBlocked}
-                // The movement's olive. Dark navy text rather than white:
-                // white on this olive is 2.3:1, dark navy is 7.3:1.
-                className="rounded-lg bg-star-olive px-4 py-2 text-sm font-bold text-navy-dark transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {publishing ? 'מפרסם...' : 'פרסום לשאלון החי'}
               </button>
@@ -817,7 +815,7 @@ export default function Admin() {
                     setNewText('')
                     setCreating(true)
                   }}
-                  className="shrink-0 rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark"
+                  className="shrink-0 rounded-lg border border-navy px-4 py-2 text-sm font-bold text-navy transition-colors hover:bg-navy hover:text-white"
                 >
                   היגד חדש
                 </button>
