@@ -789,20 +789,24 @@ export default function Admin() {
 
         {tab === 'questions' && (
           <section className="mt-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>
-                הכול ({questions.length})
-              </FilterChip>
-              {pillars.map((pillar) => (
-                <FilterChip
-                  key={pillar.id}
-                  active={filter === pillar.id}
-                  color={categoryColor(pillar.id)}
-                  onClick={() => setFilter(pillar.id)}
-                >
-                  {pillar.short} ({questions.filter((q) => q.pillarId === pillar.id).length})
+            {/* Filters on one side, the one action on the other. The chips
+                wrap among themselves without ever pushing the button away. */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>
+                  הכול ({questions.length})
                 </FilterChip>
-              ))}
+                {pillars.map((pillar) => (
+                  <FilterChip
+                    key={pillar.id}
+                    active={filter === pillar.id}
+                    color={categoryColor(pillar.id)}
+                    onClick={() => setFilter(pillar.id)}
+                  >
+                    {pillar.short} ({questions.filter((q) => q.pillarId === pillar.id).length})
+                  </FilterChip>
+                ))}
+              </div>
               {!offline && (
                 <button
                   type="button"
@@ -813,11 +817,7 @@ export default function Admin() {
                     setNewText('')
                     setCreating(true)
                   }}
-                  // Deliberately NOT a filled navy pill: the selected filter
-                  // chip is already that, and two of them side by side would
-                  // read as another filter rather than an action. The dashed
-                  // border is the convention for "add one more".
-                  className="ms-1 rounded-full border border-dashed border-navy px-3 py-1 text-xs font-bold text-navy transition-colors hover:bg-navy hover:text-white"
+                  className="shrink-0 rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark"
                 >
                   היגד חדש
                 </button>
