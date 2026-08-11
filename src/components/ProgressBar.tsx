@@ -6,7 +6,7 @@ export default function ProgressBar({ current, total }: { current: number; total
     <div>
       <div className="mb-2 flex items-center justify-between text-sm text-muted">
         <span>
-          שאלה {current} מתוך {total}
+          היגד {current} מתוך {total}
         </span>
         <span className="tabular-nums">{percent}%</span>
       </div>

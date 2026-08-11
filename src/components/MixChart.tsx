@@ -56,7 +56,7 @@ export default function MixChart({ slices }: { slices: MixSlice[] }) {
       <h2 className="text-sm font-bold text-navy">תמהיל השאלון</h2>
 
       {total === 0 ? (
-        <p className="mt-3 text-xs text-muted">כל הקטגוריות על 0 - כרגע אין שאלות בשאלון.</p>
+        <p className="mt-3 text-xs text-muted">כל הקטגוריות על 0 - כרגע אין היגדים בשאלון.</p>
       ) : (
         <div className="mt-4 flex flex-col items-center gap-6 sm:flex-row sm:items-center">
           {/* The ring. Mirrored so it fills counter-clockwise, matching the
@@ -68,7 +68,7 @@ export default function MixChart({ slices }: { slices: MixSlice[] }) {
               viewBox={`0 0 ${SIZE} ${SIZE}`}
               style={{ transform: 'scaleX(-1)' }}
               role="img"
-              aria-label={`תמהיל השאלון: ${total} שאלות`}
+              aria-label={`תמהיל השאלון: ${total} היגדים`}
             >
               <g transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}>
                 {drawn.map((arc) => {
@@ -96,7 +96,7 @@ export default function MixChart({ slices }: { slices: MixSlice[] }) {
               <span className="text-2xl font-extrabold leading-none tabular-nums text-navy">
                 {total}
               </span>
-              <span className="mt-1 text-[10px] leading-none text-muted">שאלות בשאלון</span>
+              <span className="mt-1 text-[10px] leading-none text-muted">היגדים בשאלון</span>
             </div>
           </div>
 

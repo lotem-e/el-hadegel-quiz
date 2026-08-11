@@ -79,7 +79,7 @@ export default function Quiz({ questions, onFinish }: QuizProps) {
             onClick={() => setIndex(index - 1)}
             className="mt-4 text-sm text-muted transition-colors hover:text-navy"
           >
-            חזרה לשאלה הקודמת
+            חזרה להיגד הקודם
           </button>
         )}
       </main>

@@ -61,8 +61,8 @@ export default function Results({ answers, onRestart }: ResultsProps) {
               const pillar = content.pillars.find((p) => p.id === pillarScore.pillarId)
               const countLabel =
                 pillarScore.questionCount === 1
-                  ? 'שאלה אחת בשאלון הזה'
-                  : `${pillarScore.questionCount} שאלות בשאלון הזה`
+                  ? 'היגד אחד בשאלון הזה'
+                  : `${pillarScore.questionCount} היגדים בשאלון הזה`
               return (
                 <div key={pillarScore.pillarId} title={countLabel}>
                   <div className="flex items-baseline justify-between text-sm">
@@ -80,7 +80,7 @@ export default function Results({ answers, onRestart }: ResultsProps) {
             })}
           </div>
           <p className="mt-4 text-xs text-muted">
-            השאלות נבחרות אקראית מתוך מאגר גדול יותר - כל שאלון מעט שונה.
+            ההיגדים נבחרים אקראית מתוך מאגר גדול יותר - כל שאלון מעט שונה.
           </p>
         </section>
 

@@ -15,7 +15,7 @@ export const PILLARS: Pillar[] = [
     id: 'vision-victory',
     title: 'צו השעה - חזון והנהגה',
     short: 'צו השעה - חזון והנהגה',
-    description: 'בקטגוריה זו ישנן שאלות העוסקות בשתי ההבנות של ה-7 באוקטובר: חובת העוצמה, והנהגה מהדור שנלחם.',
+    description: 'בקטגוריה זו ישנם היגדים העוסקים בשתי ההבנות של ה-7 באוקטובר: חובת העוצמה, והנהגה מהדור שנלחם.',
     sourceUrl: VISION_URL,
     sources: [
       { label: 'החזון שלנו - חזון ציוני למדינת ישראל', url: 'https://www.elhadegel.co.il/about-us#principe-0' },
@@ -27,7 +27,7 @@ export const PILLARS: Pillar[] = [
     id: 'zionist-unity',
     title: 'שבירת הגושים וכפיית ממשלה רחבה וציונית',
     short: 'שבירת הגושים וכפיית ממשלה רחבה וציונית',
-    description: 'בקטגוריה זו ישנן שאלות העוסקות בציונות שמעל מחנות: מה נכון לפני מי צודק, אחדות שאינה אחידות, וגוש ציוני רחב.',
+    description: 'בקטגוריה זו ישנם היגדים העוסקים בציונות שמעל מחנות: מה נכון לפני מי צודק, אחדות שאינה אחידות, וגוש ציוני רחב.',
     sourceUrl: VISION_URL,
     sources: [
       { label: 'החזון שלנו - ימין ושמאל Out | ציונות In', url: 'https://www.elhadegel.co.il/about-us#principe-5' },
@@ -39,7 +39,7 @@ export const PILLARS: Pillar[] = [
     id: 'winning-iron-wall',
     title: 'דגל הביטחון',
     short: 'דגל הביטחון',
-    description: 'בקטגוריה זו ישנן שאלות העוסקות בתפיסת הביטחון: הכרעה במקום סבבים, הסברה כחזית, יוזמה, ותנאי השלום.',
+    description: 'בקטגוריה זו ישנם היגדים העוסקים בתפיסת הביטחון: הכרעה במקום סבבים, הסברה כחזית, יוזמה, ותנאי השלום.',
     sourceUrl: VISION_URL,
     sources: [
       { label: 'החזון שלנו - איך מדינת ישראל מתחילה לנצח?', url: 'https://www.elhadegel.co.il/about-us#principe-2' },
@@ -51,19 +51,20 @@ export const PILLARS: Pillar[] = [
     id: 'service-integration',
     title: 'חוק יסוד השירות',
     short: 'חוק יסוד השירות',
-    description: 'בקטגוריה זו ישנן שאלות העוסקות בשוויון בנטל ובשילוב: שירות לכל אזרח, שירות תמורת זכויות, ושותפות כלל החברה.',
+    description: 'בקטגוריה זו ישנם היגדים העוסקים בשוויון בנטל ובשילוב: שירות לכל אזרח, שירות תמורת זכויות, ושותפות כלל החברה.',
     sourceUrl: VISION_URL,
     sources: [
       { label: 'החזון שלנו - חוק יסוד: שירות אל הדגל', url: 'https://www.elhadegel.co.il/about-us#principe-4' },
       { label: 'החזון שלנו - מנצחים את הסכנה הדמוגרפית', url: 'https://www.elhadegel.co.il/about-us#principe-10' },
       { label: 'המצע המלא - לכידות חברתית ( עמ׳ 4 )', url: 'https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=4' },
+      { label: 'הצעת חוק יסוד: שירות חובה למען המדינה ( נוסח מלא )', url: 'https://lotem-e.github.io/el-hadegel-quiz/docs/service-law-bill.pdf' },
     ],
   },
   {
     id: 'education-revolution',
     title: 'דגל החינוך והלכידות',
     short: 'דגל החינוך והלכידות',
-    description: 'בקטגוריה זו ישנן שאלות העוסקות בחינוך ציוני משותף: ליבה אחת לכל הזרמים, מצוינות מורים, ודור גאה בציונותו.',
+    description: 'בקטגוריה זו ישנם היגדים העוסקים בחינוך ציוני משותף: ליבה אחת לכל הזרמים, מצוינות מורים, ודור גאה בציונותו.',
     sourceUrl: VISION_URL,
     sources: [
       { label: 'החזון שלנו - מהפכת החינוך הציוני', url: 'https://www.elhadegel.co.il/about-us#principe-8' },
@@ -74,7 +75,7 @@ export const PILLARS: Pillar[] = [
     id: 'legal-reform',
     title: 'דגל הממשל',
     short: 'דגל הממשל',
-    description: 'בקטגוריה זו ישנן שאלות העוסקות בתיקון מאוזן של המשפט והממשל: חוקה מוסכמת, איזון רשויות, וממשלה מצומצמת.',
+    description: 'בקטגוריה זו ישנם היגדים העוסקים בתיקון מאוזן של המשפט והממשל: חוקה מוסכמת, איזון רשויות, וממשלה מצומצמת.',
     sourceUrl: VISION_URL,
     sources: [
       { label: 'החזון שלנו - הרפורמה המשפטית של ״אל הדגל״', url: 'https://www.elhadegel.co.il/about-us#principe-9' },
@@ -85,7 +86,7 @@ export const PILLARS: Pillar[] = [
     id: 'zionist-economy',
     title: 'דגל הכלכלה',
     short: 'דגל הכלכלה',
-    description: 'בקטגוריה זו ישנן שאלות העוסקות בכלכלה שמתגמלת תרומה: המעמד המשרת במרכז, יוקר המחיה, ועבודה שמשתלמת.',
+    description: 'בקטגוריה זו ישנם היגדים העוסקים בכלכלה שמתגמלת תרומה: המעמד המשרת במרכז, יוקר המחיה, ועבודה שמשתלמת.',
     sourceUrl: VISION_URL,
     sources: [
       { label: 'החזון שלנו - כלכלה ציונית', url: 'https://www.elhadegel.co.il/about-us#principe-6' },

@@ -259,14 +259,14 @@ export default function Admin() {
       (question) => question.pillarId === pillar.id && question.pinned,
     ).length
     if (clamped > available) {
-      showToast(`אי אפשר לקבוע מכסה גבוהה ממספר השאלות שיש בקטגוריה ( ${available} )`, 'warn')
+      showToast(`אי אפשר לקבוע מכסה גבוהה ממספר ההיגדים שיש בקטגוריה ( ${available} )`, 'warn')
       return
     }
     if (clamped < pinnedCount) {
       showToast(
         pinnedCount === 1
-          ? 'אי אפשר לרדת מתחת לשאלה הנעוצה - בטלו את הנעיצה קודם'
-          : `אי אפשר לרדת מתחת ל-${pinnedCount} השאלות הנעוצות - בטלו נעיצות קודם`,
+          ? 'אי אפשר לרדת מתחת להיגד הנעוץ - בטלו את הנעיצה קודם'
+          : `אי אפשר לרדת מתחת ל-${pinnedCount} ההיגדים הנעוצים - בטלו נעיצות קודם`,
         'warn',
       )
       return
@@ -306,8 +306,8 @@ export default function Admin() {
       if (pinnedCount + 1 > quota) {
         showToast(
           quota === 1
-            ? 'אי אפשר לנעוץ יותר משאלה אחת בקטגוריה הזאת - זו המכסה שלה בתמהיל'
-            : `אי אפשר לנעוץ יותר מ-${quota} שאלות בקטגוריה הזאת - זו המכסה שלה בתמהיל`,
+            ? 'אי אפשר לנעוץ יותר מהיגד אחד בקטגוריה הזאת - זו המכסה שלה בתמהיל'
+            : `אי אפשר לנעוץ יותר מ-${quota} היגדים בקטגוריה הזאת - זו המכסה שלה בתמהיל`,
           'warn',
         )
         return
@@ -334,7 +334,7 @@ export default function Admin() {
   async function saveEdit() {
     if (!editingId) return
     if (draft.trim().length === 0) {
-      showToast('אי אפשר לשמור שאלה ריקה', 'warn')
+      showToast('אי אפשר לשמור היגד ריק', 'warn')
       return
     }
     const saved = await saveQuestionPatch(editingId, { text: draft.trim() })
@@ -425,10 +425,10 @@ export default function Admin() {
     }).length
     const newCategories = pillars.filter((p) => !published.pillarState.has(p.id)).length
 
-    if (added) changeSummary.push(added === 1 ? 'שאלה חדשה' : `${added} שאלות חדשות`)
-    if (removed) changeSummary.push(removed === 1 ? 'שאלה שנמחקה' : `${removed} שאלות שנמחקו`)
-    if (reworded) changeSummary.push(reworded === 1 ? 'ניסוח של שאלה' : `ניסוח של ${reworded} שאלות`)
-    if (pinChanged) changeSummary.push(pinChanged === 1 ? 'נעיצה של שאלה' : `נעיצה של ${pinChanged} שאלות`)
+    if (added) changeSummary.push(added === 1 ? 'היגד חדש' : `${added} היגדים חדשים`)
+    if (removed) changeSummary.push(removed === 1 ? 'היגד שנמחק' : `${removed} היגדים שנמחקו`)
+    if (reworded) changeSummary.push(reworded === 1 ? 'ניסוח של היגד' : `ניסוח של ${reworded} היגדים`)
+    if (pinChanged) changeSummary.push(pinChanged === 1 ? 'נעיצה של היגד' : `נעיצה של ${pinChanged} היגדים`)
     if (quotaChanged)
       changeSummary.push(quotaChanged === 1 ? 'תמהיל של קטגוריה' : `תמהיל של ${quotaChanged} קטגוריות`)
     if (categoryChanged)
@@ -477,18 +477,18 @@ export default function Admin() {
               <IconButton
                 label={
                   question.pinned
-                    ? 'ביטול נעיצה - השאלה תחזור להגרלה הרגילה'
-                    : 'נעיצה - השאלה תיכלל בכל שאלון, בלי הגרלה'
+                    ? 'ביטול נעיצה - ההיגד יחזור להגרלה הרגילה'
+                    : 'נעיצה - ההיגד ייכלל בכל שאלון, בלי הגרלה'
                 }
                 onClick={() => void handleTogglePin(question)}
               >
                 {question.pinned ? <PinOffIcon /> : <PinIcon />}
               </IconButton>
-              <IconButton label="עריכת נוסח השאלה" onClick={() => startEdit(question)}>
+              <IconButton label="עריכת נוסח ההיגד" onClick={() => startEdit(question)}>
                 <EditIcon />
               </IconButton>
               <IconButton
-                label="מחיקת השאלה מהמאגר"
+                label="מחיקת ההיגד מהמאגר"
                 tone="danger"
                 onClick={() => setConfirmDeleteId(question.id)}
               >
@@ -615,7 +615,7 @@ export default function Admin() {
         )}
         {!offline && !migrationMissing && publishBlocked && (
           <p className="mt-2 rounded-lg border border-red-300 bg-red-600/5 p-3 text-xs leading-relaxed text-red-600">
-            אי אפשר לפרסם שאלון ריק - יש לקבוע לפחות שאלה אחת באחת הקטגוריות.
+            אי אפשר לפרסם שאלון ריק - יש לקבוע לפחות היגד אחד באחת הקטגוריות.
           </p>
         )}
         {saveError && (
@@ -632,7 +632,7 @@ export default function Admin() {
             onClick={() => setTab('questions')}
             count={questions.length}
           >
-            ניהול מאגר השאלות
+            ניהול מאגר ההיגדים
           </TabButton>
           <TabButton active={tab === 'mix'} onClick={() => setTab('mix')} count={quotaSum}>
             ניהול אורך ותמהיל השאלון
@@ -664,11 +664,11 @@ export default function Admin() {
                   <span className="text-navy">
                     <PinIcon filled />
                   </span>
-                  שאלות נעוצות ({pinnedVisible.length})
+                  היגדים נעוצים ({pinnedVisible.length})
                 </h2>
                 <p className="mt-1 text-xs leading-relaxed text-muted">
-                  שאלה נעוצה נכללת בכל שאלון ואינה תלויה בהגרלה. מיקומה בתוך השאלון עדיין
-                  אקראי, והיא תופסת מקום מתוך המכסה של הקטגוריה שלה.
+                  היגד נעוץ נכלל בכל שאלון ואינו תלוי בהגרלה. מיקומו בתוך השאלון עדיין
+                  אקראי, והוא תופס מקום מתוך המכסה של הקטגוריה שלו.
                 </p>
                 <div className="mt-3 space-y-3">{pinnedVisible.map(renderQuestionCard)}</div>
               </div>
@@ -697,7 +697,10 @@ export default function Admin() {
                 return (
                   <div
                     key={pillar.id}
-                    className="flex items-center justify-between gap-4 rounded-xl border border-line bg-white p-4 shadow-sm"
+                    // items-start: the quota control sits at the TOP of the
+                    // card, level with the category name, instead of floating
+                    // in the middle of a tall block of text.
+                    className="flex items-start justify-between gap-4 rounded-xl border border-line bg-white p-4 shadow-sm"
                   >
                     <div className="min-w-0">
                       <p className="flex items-center gap-2 font-medium">
@@ -717,7 +720,7 @@ export default function Admin() {
                       {pillar.sources.length > 0 && (
                         <div className="mt-2">
                           <p className="text-xs font-bold text-navy">
-                            השאלות צריכות להתבסס על המקורות הבאים:
+                            ההיגדים צריכים להתבסס על המקורות הבאים:
                           </p>
                           <ul className="mt-1 space-y-0.5">
                             {pillar.sources.map((source) => (
@@ -735,24 +738,13 @@ export default function Admin() {
                           </ul>
                         </div>
                       )}
-                      {pinnedInPillar > 0 && (
-                        <p className="mt-1 text-xs text-muted">
-                          {pinnedInPillar === 1 ? 'נעוצה אחת' : `${pinnedInPillar} נעוצות`}
-                        </p>
-                      )}
-                      {pillar.quota > available && (
-                        <p className="mt-1 text-xs font-medium text-red-600">
-                          אין מספיק שאלות במאגר לקטגוריה הזאת
-                        </p>
-                      )}
-                      {pinnedInPillar > pillar.quota && (
-                        <p className="mt-1 text-xs font-medium text-red-600">
-                          יש יותר שאלות נעוצות מהמכסה - רק חלק מהנעוצות ייכנסו לכל שאלון
-                        </p>
-                      )}
                     </div>
-                    {/* dir="ltr" so it always reads "quota / total" like a fraction */}
-                    <div dir="ltr" className="flex shrink-0 items-center gap-1.5">
+                    {/* The quota control, and directly under it the notes that
+                        belong to it: how many statements are pinned here, and
+                        anything that makes this number impossible. */}
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      {/* dir="ltr" so it always reads "quota / total" like a fraction */}
+                      <div dir="ltr" className="flex items-center gap-1.5">
                       <input
                         type="number"
                         min={pinnedInPillar}
@@ -763,16 +755,34 @@ export default function Admin() {
                           void handleQuotaChange(pillar, Number.parseInt(event.target.value, 10) || 0)
                         }
                         className="w-14 rounded-lg border border-line p-2 text-center tabular-nums focus:border-navy focus:outline-none"
-                        aria-label={`מספר שאלות בשאלון: ${pillar.title}`}
+                        aria-label={`מספר היגדים בשאלון: ${pillar.title}`}
                       />
                       <span className="text-lg font-bold text-muted">/</span>
                       {/* The pillar's full pool size - controlled in the questions tab */}
                       <span
-                        title="סך השאלות בקטגוריה - נקבע בטאב ניהול מאגר השאלות"
+                        title="סך ההיגדים בקטגוריה - נקבע בטאב ניהול מאגר ההיגדים"
                         className="w-8 text-center text-lg font-semibold tabular-nums text-muted/60"
                       >
                         {available}
                       </span>
+                      </div>
+
+                      {/* Notes that explain or constrain the number above */}
+                      {pinnedInPillar > 0 && (
+                        <p className="text-xs text-muted">
+                          {pinnedInPillar === 1 ? 'היגד אחד נעוץ' : `${pinnedInPillar} היגדים נעוצים`}
+                        </p>
+                      )}
+                      {pillar.quota > available && (
+                        <p className="max-w-40 text-end text-xs font-medium text-red-600">
+                          אין מספיק היגדים במאגר לקטגוריה הזאת
+                        </p>
+                      )}
+                      {pinnedInPillar > pillar.quota && (
+                        <p className="max-w-40 text-end text-xs font-medium text-red-600">
+                          יש יותר היגדים נעוצים מהמכסה - רק חלקם ייכנסו לכל שאלון
+                        </p>
+                      )}
                     </div>
                   </div>
                 )
@@ -807,7 +817,7 @@ export default function Admin() {
             className="toast-pop w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2 className="font-bold text-navy">למחוק את השאלה?</h2>
+            <h2 className="font-bold text-navy">למחוק את ההיגד?</h2>
             <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">
               ״{questions.find((question) => question.id === confirmDeleteId)?.text}״
             </p>

@@ -23,7 +23,7 @@ export default function Landing({ onStart, busy = false }: { onStart: () => void
       >
         {busy ? 'רק רגע...' : 'מתחילים'}
       </button>
-      <p className="mt-3 text-sm text-muted">{quizLength} שאלות · כ-3 דקות</p>
+      <p className="mt-3 text-sm text-muted">{quizLength} היגדים · כ-3 דקות</p>
       <a
         href={VISION_URL}
         target="_blank"
