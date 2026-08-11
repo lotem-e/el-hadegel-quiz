@@ -37,7 +37,9 @@ const CONTACT_MAILTO = 'mailto:info@elhadegel.com'
 function tier(percent: number): { headline: Phrase; body: Phrase; contact: boolean } {
   if (percent >= ANOTHER_ROUND_FLOOR) {
     return {
-      headline: p('קרובים מאוד.', 'קרוב/ה מאוד.'),
+      // Lotem's wording, reaffirmed. First person plural, so it needs no
+      // gender split at all.
+      headline: p('אנחנו מחזיקים בדעות קרובות מאוד.', 'אנחנו מחזיקים בדעות קרובות מאוד.'),
       body: p(
         'שווה לחקור ולראות במו עיניכם על מה המחלוקת, וגם לאתגר אותנו.',
         'שווה לחקור ולראות במו עיניך על מה המחלוקת, וגם לאתגר אותנו.',

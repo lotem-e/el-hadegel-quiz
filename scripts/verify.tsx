@@ -184,7 +184,7 @@ check('no contact link in the far band', !lowHtml.includes('mailto:'))
 // the band just under the flag: verdict + reading buttons + the contact link
 const nearAnswers: Answer[] = questions.map((q) => ({ questionId: q.id, pillarId: q.pillarId, value: 4 }))
 const nearHtml = renderToString(createElement(Results, { answers: nearAnswers, onRestart: () => {} }))
-expectContains('Results-near', nearHtml, ['75%', 'קרובים מאוד', 'צרו קשר', 'mailto:info@elhadegel.com', 'המצע המלא'])
+expectContains('Results-near', nearHtml, ['75%', 'אנחנו מחזיקים בדעות קרובות מאוד', 'צרו קשר', 'mailto:info@elhadegel.com', 'המצע המלא'])
 if (lowHtml.includes('נועצים את הדגל')) {
   failures++
   console.error('FAIL: pin CTA shown below threshold')
