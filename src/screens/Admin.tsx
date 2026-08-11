@@ -1,0 +1,547 @@
+// Admin.tsx - the backoffice, now backed by Supabase.
+// Every edit here writes straight to the database and reaches all visitors
+// immediately - no rebuild, no redeploy. Access is enforced by AuthGate +
+// Row Level Security (only an authenticated session may write).
+// Without a configured Supabase connection the screen falls back to a
+// read-only view of the baked-in content.
+import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
+import Header from '../components/Header'
+import { PILLARS as BAKED_PILLARS } from '../content/pillars'
+import { BASE_QUESTIONS } from '../content/questions'
+import { DEFAULT_QUOTAS, QUIZ_LENGTH } from '../content/quizConfig'
+import type { Pillar, PillarId, Question } from '../content/types'
+import { supabase } from '../lib/supabaseClient'
+
+interface PillarRow extends Pillar {
+  quota: number
+}
+
+/** The latest published snapshot, reduced to the fields the admin can edit -
+ *  used to decide whether there are unpublished changes. */
+interface PublishedSnapshot {
+  publishedAt: string
+  questionState: Map<string, { text: string; active: boolean }>
+  quotaState: Map<string, number>
+}
+
+function formatPublishedAt(iso: string): string {
+  return new Intl.DateTimeFormat('he-IL', { dateStyle: 'short', timeStyle: 'short' }).format(
+    new Date(iso),
+  )
+}
+
+type Tab = 'questions' | 'mix'
+
+function bakedPillarRows(): PillarRow[] {
+  return BAKED_PILLARS.map((pillar) => ({ ...pillar, quota: DEFAULT_QUOTAS[pillar.id] }))
+}
+
+export default function Admin() {
+  // Offline mode (no Supabase configured): show baked content, block edits.
+  const offline = !supabase
+  const [tab, setTab] = useState<Tab>('questions')
+  const [pillars, setPillars] = useState<PillarRow[]>(() => (offline ? bakedPillarRows() : []))
+  const [questions, setQuestions] = useState<Question[]>(() => (offline ? BASE_QUESTIONS : []))
+  const [quizLength, setQuizLength] = useState(QUIZ_LENGTH)
+  const [loading, setLoading] = useState(() => !offline)
+  const [loadError, setLoadError] = useState(false)
+  const [saveError, setSaveError] = useState(false)
+  const [filter, setFilter] = useState<PillarId | 'all'>('all')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+  const [published, setPublished] = useState<PublishedSnapshot | null>(null)
+  const [migrationMissing, setMigrationMissing] = useState(false)
+  const [publishing, setPublishing] = useState(false)
+
+  useEffect(() => {
+    if (!offline) void loadAll()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function loadAll() {
+    if (!supabase) return
+    setLoading(true)
+    setLoadError(false)
+    const [pillarsRes, questionsRes, configRes] = await Promise.all([
+      supabase.from('pillars').select('*').order('sort_order'),
+      supabase.from('questions').select('*').order('sort_order'),
+      supabase.from('quiz_config').select('*').limit(1).single(),
+    ])
+    if (pillarsRes.error || questionsRes.error || configRes.error) {
+      setLoading(false)
+      setLoadError(true)
+      return
+    }
+    setPillars(
+      (pillarsRes.data ?? []).map((row) => ({
+        id: row.id,
+        title: row.title,
+        short: row.short,
+        description: row.description,
+        sourceUrl: row.source_url,
+        quota: row.quota,
+      })),
+    )
+    setQuestions(
+      (questionsRes.data ?? []).map((row) => ({
+        id: row.id,
+        pillarId: row.pillar_id,
+        text: row.text,
+        active: row.active,
+        sourceUrl: row.source_url,
+        sourceLabel: row.source_label,
+      })),
+    )
+    setQuizLength(configRes.data.quiz_length)
+    await loadPublished()
+    setLoading(false)
+  }
+
+  async function loadPublished() {
+    if (!supabase) return
+    const { data, error } = await supabase
+      .from('published_content')
+      .select('content, published_at')
+      .order('published_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (error) {
+      // Table missing = the publish migration was not run yet.
+      setMigrationMissing(true)
+      return
+    }
+    setMigrationMissing(false)
+    if (!data) {
+      setPublished(null)
+      return
+    }
+    const content = data.content as {
+      pillars?: Array<Record<string, unknown>>
+      questions?: Array<Record<string, unknown>>
+    }
+    setPublished({
+      publishedAt: data.published_at,
+      questionState: new Map(
+        (content.questions ?? []).map((q) => [
+          q.id as string,
+          { text: q.text as string, active: q.active as boolean },
+        ]),
+      ),
+      quotaState: new Map((content.pillars ?? []).map((p) => [p.id as string, p.quota as number])),
+    })
+  }
+
+  async function handlePublish() {
+    if (!supabase) return
+    setPublishing(true)
+    setSaveError(false)
+    const { error } = await supabase.rpc('publish_content')
+    if (error) {
+      setSaveError(true)
+    } else {
+      await loadPublished()
+    }
+    setPublishing(false)
+  }
+
+  // DB-first save: only update the screen after the database accepted the
+  // change, so what you see is always what visitors get.
+  async function saveQuestionPatch(id: string, patch: { text?: string; active?: boolean }) {
+    if (!supabase) return
+    setSaveError(false)
+    const { error } = await supabase.from('questions').update(patch).eq('id', id)
+    if (error) {
+      setSaveError(true)
+      return
+    }
+    setQuestions((current) =>
+      current.map((question) => (question.id === id ? { ...question, ...patch } : question)),
+    )
+  }
+
+  async function saveQuota(pillarId: PillarId, quota: number) {
+    if (!supabase) return
+    setSaveError(false)
+    const clamped = Math.max(0, Math.min(99, Math.round(quota)))
+    const { error } = await supabase.from('pillars').update({ quota: clamped }).eq('id', pillarId)
+    if (error) {
+      setSaveError(true)
+      return
+    }
+    setPillars((current) =>
+      current.map((pillar) => (pillar.id === pillarId ? { ...pillar, quota: clamped } : pillar)),
+    )
+  }
+
+  function startEdit(question: Question) {
+    setEditingId(question.id)
+    setDraft(question.text)
+  }
+
+  async function saveEdit() {
+    if (editingId && draft.trim().length > 0) {
+      await saveQuestionPatch(editingId, { text: draft.trim() })
+    }
+    setEditingId(null)
+  }
+
+  function handleExport() {
+    const payload = {
+      quizLength,
+      quotas: Object.fromEntries(pillars.map((pillar) => [pillar.id, pillar.quota])),
+      questions,
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'elhadegel-questions.json'
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function handleSignOut() {
+    if (supabase) await supabase.auth.signOut()
+  }
+
+  const visibleQuestions = filter === 'all' ? questions : questions.filter((q) => q.pillarId === filter)
+  const quotaSum = pillars.reduce((sum, pillar) => sum + pillar.quota, 0)
+  // Unpublished changes exist when any editable field differs from the
+  // latest published snapshot (or when nothing was ever published).
+  const dirty =
+    !offline &&
+    !migrationMissing &&
+    (published === null ||
+      questions.length !== published.questionState.size ||
+      questions.some((question) => {
+        const snap = published.questionState.get(question.id)
+        return !snap || snap.text !== question.text || snap.active !== question.active
+      }) ||
+      pillars.some((pillar) => published.quotaState.get(pillar.id) !== pillar.quota))
+  const activeCount = (pillarId: PillarId) =>
+    questions.filter((q) => q.pillarId === pillarId && q.active).length
+
+  if (loading) {
+    return (
+      <>
+        <Header badge="ממשק ניהול" onSignOut={offline ? undefined : () => void handleSignOut()} />
+        <main className="mx-auto max-w-3xl px-4 py-16 text-center text-muted">טוען את המאגר...</main>
+      </>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <>
+        <Header badge="ממשק ניהול" onSignOut={offline ? undefined : () => void handleSignOut()} />
+        <main className="mx-auto max-w-3xl px-4 py-16 text-center">
+          <p className="text-muted">לא הצלחתי לטעון את המאגר מהמסד.</p>
+          <button
+            type="button"
+            onClick={() => void loadAll()}
+            className="mt-4 rounded-lg border border-navy px-6 py-2 font-medium text-navy hover:bg-navy hover:text-white"
+          >
+            ניסיון נוסף
+          </button>
+        </main>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <Header badge="ממשק ניהול" onSignOut={offline ? undefined : () => void handleSignOut()} />
+      <main className="mx-auto max-w-3xl px-4 py-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-extrabold text-navy">ניהול השאלון</h1>
+          <div className="flex gap-2">
+            {!offline && (
+              <button
+                type="button"
+                onClick={() => void handlePublish()}
+                disabled={!dirty || publishing || migrationMissing}
+                className="rounded-lg bg-navy px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-navy-dark disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {publishing ? 'מפרסם...' : 'פרסום לאתר'}
+              </button>
+            )}
+            <span className="group relative">
+              <button
+                type="button"
+                onClick={handleExport}
+                className="rounded-lg border border-navy px-4 py-2 text-sm font-medium text-navy transition-colors hover:bg-navy hover:text-white"
+              >
+                גיבוי JSON
+              </button>
+              {/* Styled tooltip: appears on hover and on keyboard focus */}
+              <span
+                role="tooltip"
+                className="pointer-events-none absolute end-0 top-full z-20 mt-2 hidden w-64 rounded-lg bg-navy-dark p-3 text-xs leading-relaxed text-white shadow-lg group-hover:block group-focus-within:block"
+              >
+                מוריד קובץ עם כל המאגר הנוכחי. במסד הנתונים החינמי אין גיבוי
+                אוטומטי - מומלץ להוריד אחרי כל סבב עריכות משמעותי.
+              </span>
+            </span>
+          </div>
+        </div>
+
+        {offline ? (
+          <p className="mt-3 rounded-lg border border-line bg-white p-3 text-xs leading-relaxed text-muted">
+            אין חיבור למסד הנתונים - מוצג התוכן המובנה לקריאה בלבד.
+          </p>
+        ) : (
+          <p className="mt-3 rounded-lg border border-line bg-white p-3 text-xs leading-relaxed text-muted">
+            העריכות נשמרות כטיוטה פרטית. לחיצה על ״פרסום לאתר״ מעלה את הגרסה
+            הנוכחית לכל המבקרים.
+          </p>
+        )}
+        {migrationMissing && (
+          <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs leading-relaxed text-amber-700">
+            מנגנון הפרסום עוד לא הותקן במסד - יש להריץ את supabase/migration-2-publish.sql
+            ב-SQL Editor.
+          </p>
+        )}
+        {!offline && !migrationMissing && (
+          <p className={'mt-2 text-xs ' + (dirty ? 'font-medium text-amber-600' : 'text-muted')}>
+            {dirty
+              ? 'יש שינויים שעדיין לא פורסמו'
+              : published
+                ? 'כל השינויים פורסמו · פרסום אחרון: ' + formatPublishedAt(published.publishedAt)
+                : 'עדיין לא פורסמה גרסה ראשונה'}
+          </p>
+        )}
+        {saveError && (
+          <p className="mt-2 rounded-lg border border-red-300 bg-red-600/5 p-3 text-xs text-red-600">
+            השמירה האחרונה נכשלה - בדקו את החיבור ונסו שוב.
+          </p>
+        )}
+
+        {/* Tabs */}
+        <div className="mt-5 flex gap-2">
+          <TabButton active={tab === 'questions'} onClick={() => setTab('questions')}>
+            מאגר השאלות ({questions.length})
+          </TabButton>
+          <TabButton active={tab === 'mix'} onClick={() => setTab('mix')}>
+            תמהיל הפילרים
+          </TabButton>
+        </div>
+
+        {tab === 'questions' && (
+          <section className="mt-5">
+            <div className="flex flex-wrap gap-2">
+              <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>
+                הכול ({questions.length})
+              </FilterChip>
+              {pillars.map((pillar) => (
+                <FilterChip
+                  key={pillar.id}
+                  active={filter === pillar.id}
+                  onClick={() => setFilter(pillar.id)}
+                >
+                  {pillar.short} ({questions.filter((q) => q.pillarId === pillar.id).length})
+                </FilterChip>
+              ))}
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {visibleQuestions.map((question) => {
+                const pillar = pillars.find((p) => p.id === question.pillarId)
+                const isEditing = editingId === question.id
+                return (
+                  <div
+                    key={question.id}
+                    className={
+                      'rounded-xl border border-line bg-white p-4 shadow-sm ' +
+                      (question.active ? '' : 'opacity-60')
+                    }
+                  >
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="rounded-full border border-line bg-cream px-2.5 py-0.5 font-medium text-navy">
+                        {pillar?.short}
+                      </span>
+                      {!question.active && (
+                        <span className="rounded-full bg-red-600/10 px-2.5 py-0.5 font-medium text-red-600">
+                          כבויה
+                        </span>
+                      )}
+                      <span className="grow" />
+                      <a
+                        href={question.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={question.sourceLabel}
+                        className="text-navy underline underline-offset-2 hover:text-navy-dark"
+                      >
+                        מקור ↗
+                      </a>
+                      <label className="flex cursor-pointer items-center gap-1.5 text-muted">
+                        <input
+                          type="checkbox"
+                          checked={question.active}
+                          disabled={offline}
+                          onChange={() => void saveQuestionPatch(question.id, { active: !question.active })}
+                          className="accent-navy"
+                        />
+                        פעילה
+                      </label>
+                    </div>
+
+                    {isEditing ? (
+                      <div className="mt-3">
+                        <textarea
+                          value={draft}
+                          onChange={(event) => setDraft(event.target.value)}
+                          rows={3}
+                          className="w-full rounded-lg border border-line p-3 text-sm leading-relaxed focus:border-navy focus:outline-none"
+                        />
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => void saveEdit()}
+                            className="rounded-lg bg-navy px-4 py-1.5 text-sm font-medium text-white hover:bg-navy-dark"
+                          >
+                            שמירה
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingId(null)}
+                            className="rounded-lg border border-line px-4 py-1.5 text-sm text-muted hover:border-navy hover:text-navy"
+                          >
+                            ביטול
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-2 flex items-start justify-between gap-3">
+                        <p className="text-sm leading-relaxed">{question.text}</p>
+                        {!offline && (
+                          <button
+                            type="button"
+                            onClick={() => startEdit(question)}
+                            className="shrink-0 text-xs text-muted underline underline-offset-2 hover:text-navy"
+                          >
+                            עריכה
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {tab === 'mix' && (
+          <section className="mt-5">
+            <p className="text-sm text-muted">
+              כמה שאלות מכל עמוד חזון נכנסות לכל שאלון. הכמויות לא חייבות להיות
+              זהות, אבל הסכום חייב להיות בדיוק {quizLength}.
+            </p>
+            <div className="mt-4 space-y-3">
+              {pillars.map((pillar) => {
+                const available = activeCount(pillar.id)
+                return (
+                  <div
+                    key={pillar.id}
+                    className="flex items-center justify-between gap-4 rounded-xl border border-line bg-white p-4 shadow-sm"
+                  >
+                    <div>
+                      <p className="font-medium">{pillar.title}</p>
+                      <p className="mt-0.5 text-xs text-muted">{pillar.description}</p>
+                      <p className="mt-0.5 text-xs text-muted">{available} שאלות פעילות במאגר</p>
+                      {pillar.quota > available && (
+                        <p className="mt-1 text-xs font-medium text-red-600">
+                          אין מספיק שאלות פעילות לפילר הזה
+                        </p>
+                      )}
+                    </div>
+                    <input
+                      type="number"
+                      min={0}
+                      max={9}
+                      value={pillar.quota}
+                      disabled={offline}
+                      onChange={(event) =>
+                        void saveQuota(pillar.id, Number.parseInt(event.target.value, 10) || 0)
+                      }
+                      className="w-16 rounded-lg border border-line p-2 text-center tabular-nums focus:border-navy focus:outline-none"
+                      aria-label={`מספר שאלות: ${pillar.title}`}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+            <div
+              className={
+                'mt-4 flex items-center justify-between rounded-xl border p-4 font-bold ' +
+                (quotaSum === quizLength
+                  ? 'border-line bg-white text-green-700'
+                  : 'border-red-300 bg-red-600/5 text-red-600')
+              }
+            >
+              <span>סה״כ בשאלון</span>
+              <span className="tabular-nums">
+                {quotaSum} / {quizLength}
+              </span>
+            </div>
+            {quotaSum !== quizLength && (
+              <p className="mt-2 text-xs text-red-600">
+                יש להגיע בדיוק ל-{quizLength} כדי שהשאלון יעבוד כמתוכנן.
+              </p>
+            )}
+          </section>
+        )}
+      </main>
+    </>
+  )
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        'rounded-lg px-4 py-2 text-sm font-medium transition-colors ' +
+        (active ? 'bg-navy text-white' : 'border border-line bg-white text-muted hover:text-navy')
+      }
+    >
+      {children}
+    </button>
+  )
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        'rounded-full px-3 py-1 text-xs font-medium transition-colors ' +
+        (active
+          ? 'bg-navy text-white'
+          : 'border border-line bg-white text-muted hover:border-navy hover:text-navy')
+      }
+    >
+      {children}
+    </button>
+  )
+}

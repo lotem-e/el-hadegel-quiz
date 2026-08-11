@@ -1,0 +1,31 @@
+/* index.css - global styles + design tokens.
+   The tokens below were extracted 1:1 from elhadegel-friends.com (the design reference):
+   Heebo font, navy #1B2D52, dark navy #0F1B36, warm off-white #FAFAF7.
+   Tailwind v4 reads the @theme block and generates utility classes from it,
+   e.g. --color-navy becomes bg-navy / text-navy / border-navy. */
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Heebo", system-ui, -apple-system, sans-serif;
+
+  /* Brand palette (reference site) */
+  --color-navy: #1b2d52;
+  --color-navy-dark: #0f1b36;
+  --color-cream: #fafaf7;
+
+  /* Text + border grays (also from the reference CSS) */
+  --color-ink: #333333;
+  --color-muted: #777777;
+  --color-line: #e5e7eb;
+
+  /* Official logo mark colors (from the main Webflow site) */
+  --color-star-blue: #0058ff;
+  --color-star-olive: #a3b06e;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
