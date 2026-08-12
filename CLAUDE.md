@@ -36,6 +36,8 @@ AGPL-3.0 (`LICENSE`, and the `license` field in `package.json`).
 
 - `docs/admin-guide.md` - the admin interface spec, in Hebrew, written for
   Lotem rather than for a developer
+- `docs/quiz-guide.md` - the visitor-side spec, same language and audience:
+  every screen, the scoring, the four verdict bands, what is stored
 - `supabase/README.md` - what each migration did, and how to write the next
 
 ## Structure
