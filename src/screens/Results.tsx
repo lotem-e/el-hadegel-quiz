@@ -26,8 +26,8 @@ interface ResultsProps {
 // own meaning: 65-79 is "very close" and contains the person who agreed with
 // everything without enthusiasm (all-אסכים = 75); 50 is the Likert midpoint,
 // above it you lean toward us more than away; below it we part as friends.
-const ANOTHER_ROUND_FLOOR = 65
-const PARTIAL_FLOOR = 50
+export const ANOTHER_ROUND_FLOOR = 65
+export const PARTIAL_FLOOR = 50
 
 // The movement's inbox. Both elhadegel.com and elhadegel.co.il receive mail
 // (checked via their MX records) - but this exact mailbox still owes Lotem

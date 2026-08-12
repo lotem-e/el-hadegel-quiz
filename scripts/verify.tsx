@@ -16,7 +16,7 @@
 import { renderToString } from 'react-dom/server'
 import { createElement } from 'react'
 import App from '../src/App'
-import Admin, { aggregateAgreement, canonical, computeNextQuestionId, orderByCategory, summarizeDiff } from '../src/screens/Admin'
+import Admin, { aggregateAgreement, bandCounts, canonical, computeNextQuestionId, orderByCategory, summarizeDiff } from '../src/screens/Admin'
 import Quiz from '../src/screens/Quiz'
 import Results, { shortSourceLabel } from '../src/screens/Results'
 import { selectQuizQuestions } from '../src/engine/selectQuestions'
@@ -363,6 +363,17 @@ console.log('admin sorting')
     agg.q1.dist.join(',') === '0,0,0,1,1' && agg.q2.dist.join(',') === '0,0,1,0,0')
   check('the distribution sums to the count',
     agg.q1.dist.reduce((a, b) => a + b, 0) === agg.q1.count)
+}
+
+console.log('result bands')
+{
+  // The statistics tab counts by the verdict the visitor actually saw:
+  // the live pin threshold, then the same floors the results screen uses.
+  const counts = bandCounts([100, 80, 79, 65, 64, 50, 49, 0], 80)
+  check('each score lands in its verdict band', counts.join(',') === '2,2,2,2')
+  check('an empty run is four zeros', bandCounts([], 80).join(',') === '0,0,0,0')
+  // the threshold is live, not hardcoded - at 90 the same scores regroup
+  check('the pin threshold moves the top edge', bandCounts([85], 90).join(',') === '0,1,0,0')
 }
 
 console.log('new statement ids')

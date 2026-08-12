@@ -13,6 +13,8 @@ import { categoryColor } from '../lib/categoryColors'
 import { PILLARS as BAKED_PILLARS } from '../content/pillars'
 import { BASE_QUESTIONS } from '../content/questions'
 import { DEFAULT_QUOTAS } from '../content/quizConfig'
+import { PIN_FLAG_THRESHOLD } from '../content/quizConfig'
+import { ANOTHER_ROUND_FLOOR, PARTIAL_FLOOR } from './Results'
 import type { Pillar, PillarId, Question } from '../content/types'
 import { supabase } from '../lib/supabaseClient'
 
@@ -107,7 +109,7 @@ function formatPublishedAt(iso: string): string {
   )
 }
 
-type Tab = 'questions' | 'mix'
+type Tab = 'questions' | 'mix' | 'stats'
 
 function bakedPillarRows(): PillarRow[] {
   return BAKED_PILLARS.map((pillar) => ({ ...pillar, quota: DEFAULT_QUOTAS[pillar.id] }))
@@ -210,6 +212,26 @@ export function aggregateAgreement(
  */
 export const LIKERT_COLORS = ['#a01414', '#e08f8f', '#e7e7ea', '#7d94c4', '#1b2d52'] as const
 
+/**
+ * How many results landed in each verdict band. The edges are the ones the
+ * visitor experiences: the live pin threshold above, then the same floors
+ * the results screen uses - so the statistics answer "how many saw which
+ * closing message", not an arbitrary bucketing.
+ */
+export function bandCounts(
+  percents: number[],
+  threshold: number,
+): [number, number, number, number] {
+  const counts: [number, number, number, number] = [0, 0, 0, 0]
+  for (const percent of percents) {
+    if (percent >= threshold) counts[0] += 1
+    else if (percent >= ANOTHER_ROUND_FLOOR) counts[1] += 1
+    else if (percent >= PARTIAL_FLOOR) counts[2] += 1
+    else counts[3] += 1
+  }
+  return counts
+}
+
 const LIKERT_LEGEND = ['כלל לא מסכים/ה', 'לא מסכים/ה', 'ניטרלי/ת', 'מסכים/ה', 'מסכים/ה מאוד']
 
 
@@ -265,6 +287,8 @@ export default function Admin() {
   // two). Loaded with everything else; if it fails, the list quietly falls
   // back to category order and the cards simply show no figures.
   const [agreement, setAgreement] = useState<Record<string, QuestionAgreement> | null>(null)
+  // Every recorded total score, for the statistics tab.
+  const [resultPercents, setResultPercents] = useState<number[] | null>(null)
 
   useEffect(() => () => window.clearTimeout(toastTimerRef.current), [])
 
@@ -630,9 +654,10 @@ export default function Admin() {
 
   async function loadAgreement() {
     if (!supabase) return
-    const { data, error } = await supabase.from('results').select('answers')
+    const { data, error } = await supabase.from('results').select('answers,total_percent')
     if (error || !data) return
     setAgreement(aggregateAgreement(data))
+    setResultPercents(data.map((row) => Number(row.total_percent)).filter(Number.isFinite))
   }
 
   // One order: by public agreement, highest first. The stable sort on top
@@ -912,6 +937,13 @@ export default function Admin() {
           <TabButton active={tab === 'mix'} onClick={() => setTab('mix')} count={quotaSum}>
             ניהול אורך ותמהיל השאלון
           </TabButton>
+          <TabButton
+            active={tab === 'stats'}
+            onClick={() => setTab('stats')}
+            count={resultPercents?.length ?? 0}
+          >
+            סטטיסטיקות
+          </TabButton>
         </div>
 
         {tab === 'questions' && (
@@ -1097,6 +1129,84 @@ export default function Admin() {
                 )
               })}
             </div>
+          </section>
+        )}
+
+        {tab === 'stats' && (
+          <section className="mt-5">
+            {resultPercents === null ? (
+              <p className="text-sm text-muted">לא הצלחתי לטעון את התוצאות. רעננו את העמוד.</p>
+            ) : resultPercents.length === 0 ? (
+              <p className="text-sm text-muted">
+                עוד אין תוצאות - השאלונים הראשונים שימולאו יופיעו כאן.
+              </p>
+            ) : (
+              (() => {
+                const liveThreshold =
+                  Number(
+                    (published?.content.config as Record<string, unknown> | undefined)?.[
+                      'pin_flag_threshold'
+                    ],
+                  ) || PIN_FLAG_THRESHOLD
+                const counts = bandCounts(resultPercents, liveThreshold)
+                const total = resultPercents.length
+                const mean = Math.round(
+                  resultPercents.reduce((a, b) => a + b, 0) / total,
+                )
+                const sortedPercents = [...resultPercents].sort((a, b) => a - b)
+                const median = sortedPercents[Math.floor((total - 1) / 2)]
+                const bands = [
+                  { label: 'הדגל הזה גם שלכם', range: `${liveThreshold}% ומעלה`, tone: 'bg-navy' },
+                  { label: 'אנחנו מחזיקים בדעות קרובות מאוד', range: `${ANOTHER_ROUND_FLOOR}-${liveThreshold - 1}%`, tone: 'bg-navy/70' },
+                  { label: 'יש בינינו הרבה מן המשותף', range: `${PARTIAL_FLOOR}-${ANOTHER_ROUND_FLOOR - 1}%`, tone: 'bg-navy/45' },
+                  { label: 'נסכים שלא להסכים', range: `עד ${PARTIAL_FLOOR - 1}%`, tone: 'bg-navy/25' },
+                ]
+                const max = Math.max(...counts, 1)
+                return (
+                  <>
+                    <div className="flex flex-wrap gap-2 text-sm">
+                      <span className="rounded-full bg-navy/5 px-4 py-1.5 text-xs font-semibold tracking-wide text-navy ring-1 ring-navy/10">
+                        {total} שאלונים מולאו
+                      </span>
+                      <span className="rounded-full bg-navy/5 px-4 py-1.5 text-xs font-semibold tracking-wide text-navy ring-1 ring-navy/10">
+                        ממוצע {mean}%
+                      </span>
+                      <span className="rounded-full bg-navy/5 px-4 py-1.5 text-xs font-semibold tracking-wide text-navy ring-1 ring-navy/10">
+                        חציון {median}%
+                      </span>
+                    </div>
+
+                    {/* One bar per closing message, in the visitor's own
+                        words - "how many saw which verdict". Bars scale to
+                        the largest band; the count and share are written
+                        out, so nothing rests on length alone. */}
+                    <div className="mt-4 rounded-xl border border-line bg-white p-5 shadow-sm">
+                      <div className="divide-y divide-line">
+                        {bands.map((band, index) => (
+                          <div key={band.label} className="py-3">
+                            <div className="flex items-baseline justify-between gap-3 text-sm">
+                              <span className="font-medium text-navy">
+                                {band.label}
+                                <span className="ms-2 text-xs font-normal text-muted">{band.range}</span>
+                              </span>
+                              <span className="shrink-0 tabular-nums text-muted">
+                                {counts[index]} · {Math.round((counts[index] / total) * 100)}%
+                              </span>
+                            </div>
+                            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-line">
+                              <div
+                                className={`h-full rounded-full ${band.tone}`}
+                                style={{ width: `${(counts[index] / max) * 100}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )
+              })()
+            )}
           </section>
         )}
       </main>
