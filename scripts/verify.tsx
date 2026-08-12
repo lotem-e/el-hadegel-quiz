@@ -191,7 +191,7 @@ if (lowHtml.includes('נועצים את הדגל')) {
 }
 
 // the scale under the number anchors it against the pin threshold
-check('the threshold tick is drawn', highHtml.includes('right:90%') || highHtml.includes('right: 90%'))
+check('the threshold tick is drawn', highHtml.includes('right:80%') || highHtml.includes('right: 80%'))
 
 // source labels shrink to chip length, and unknown labels pass through
 check('platform label shortens', shortSourceLabel('המצע המלא - מצע ביטחון ( עמ׳ 3-9 )') === 'המצע · עמ׳ 3-9')

@@ -22,11 +22,12 @@ interface ResultsProps {
   onRestart: () => void
 }
 
-// Band edges below the pin threshold. Above ANOTHER_ROUND_FLOOR the gap is
-// small enough to point at; above PARTIAL_FLOOR there is real common ground;
-// below it we part as friends.
-const ANOTHER_ROUND_FLOOR = 75
-const PARTIAL_FLOOR = 55
+// Band edges below the pin threshold (80). Each edge leans on the scale's
+// own meaning: 65-79 is "very close" and contains the person who agreed with
+// everything without enthusiasm (all-אסכים = 75); 50 is the Likert midpoint,
+// above it you lean toward us more than away; below it we part as friends.
+const ANOTHER_ROUND_FLOOR = 65
+const PARTIAL_FLOOR = 50
 
 // The movement's inbox. Both elhadegel.com and elhadegel.co.il receive mail
 // (checked via their MX records) - but this exact mailbox still owes Lotem

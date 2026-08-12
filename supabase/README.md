@@ -17,6 +17,7 @@ against the live project.
 | `migration-10-statements-wording.sql` | "שאלות" became "היגדים"; the Basic Law bill joined the service category's sources |
 | `migration-11-publish-plumbing.sql` | `build_snapshot()` split out, plus the self-publishing envelope for future migrations |
 | `migration-12-zionist-unity-rename.sql` | ממשלה ציונית רחבה - the zionist-unity name, reworded |
+| `migration-13-pin-threshold-80.sql` | Pin-flag threshold 90 -> 80 |
 
 ## Writing the next one
 

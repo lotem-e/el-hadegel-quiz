@@ -16,7 +16,7 @@ export const DEFAULT_QUOTAS: Record<PillarId, number> = {
 }
 
 /** Above this total score we invite the visitor to pin their flag */
-export const PIN_FLAG_THRESHOLD = 90
+export const PIN_FLAG_THRESHOLD = 80
 
 /** Where "pin the flag" leads (the 150,000 project map) */
 export const PIN_FLAG_URL = 'https://elhadegel-friends.com'
