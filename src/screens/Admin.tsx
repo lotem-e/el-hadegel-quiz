@@ -812,14 +812,35 @@ export default function Admin() {
               count === 0 ? null : (
                 <div
                   key={index}
-                  className="h-full rounded-[3px] ring-1 ring-inset ring-black/10"
-                  title={`${LIKERT_LEGEND[index]}: ${count} מתוך ${agreement[question.id].count}`}
-                  style={{
-                    backgroundColor: LIKERT_COLORS[index],
-                    flexGrow: count,
-                    flexBasis: 0,
-                  }}
-                />
+                  className="group relative h-full"
+                  style={{ flexGrow: count, flexBasis: 0 }}
+                >
+                  <div
+                    className="h-full rounded-[3px] ring-1 ring-inset ring-black/10"
+                    style={{ backgroundColor: LIKERT_COLORS[index] }}
+                  />
+                  {/* A 2px-tall strip is a mean hover target - this widens
+                      the hit area without widening the mark */}
+                  <div className="absolute -inset-y-2 inset-x-0" />
+                  {/* The app's own tooltip (IconButton's design), instant
+                      instead of the browser's delayed native one. Edge
+                      segments anchor inward so nothing clips at the card;
+                      physical left/right on purpose - the bar's direction
+                      is data order, not text direction. */}
+                  <span
+                    role="tooltip"
+                    className={
+                      'pointer-events-none absolute bottom-full z-30 mb-1.5 hidden w-max whitespace-nowrap rounded-lg bg-navy-dark px-2.5 py-1.5 text-[11px] font-medium leading-snug text-white shadow-lg group-hover:block ' +
+                      (index === 0
+                        ? 'right-0'
+                        : index === agreement[question.id].dist.length - 1
+                          ? 'left-0'
+                          : 'left-1/2 -translate-x-1/2')
+                    }
+                  >
+                    {LIKERT_LEGEND[index]}: {count} מתוך {agreement[question.id].count}
+                  </span>
+                </div>
               ),
             )}
           </div>
