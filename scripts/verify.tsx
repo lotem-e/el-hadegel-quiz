@@ -358,6 +358,10 @@ console.log('admin sorting')
   check('mean agreement on the quiz scale', agg.q1.avg === 88 && agg.q1.count === 2)
   check('a single answer stands alone', agg.q2.avg === 50 && agg.q2.count === 1)
   check('malformed rows are skipped, not crashed on', Object.keys(agg).length === 2)
+  check('the distribution counts each answer where it belongs',
+    agg.q1.dist.join(',') === '0,0,0,1,1' && agg.q2.dist.join(',') === '0,0,1,0,0')
+  check('the distribution sums to the count',
+    agg.q1.dist.reduce((a, b) => a + b, 0) === agg.q1.count)
 }
 
 console.log('new statement ids')

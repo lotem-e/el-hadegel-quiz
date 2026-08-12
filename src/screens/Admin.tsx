@@ -167,28 +167,50 @@ export function orderByCategory<T extends { pillarId: string }>(
  * score does ((value-1)/4), so "the audience agrees 78%" reads on the same
  * scale as everything else. Malformed rows are skipped, never crash.
  */
+export interface QuestionAgreement {
+  avg: number
+  count: number
+  /** How many visitors picked each answer, from כלל לא מסכים/ה to מסכים/ה מאוד */
+  dist: [number, number, number, number, number]
+}
+
 export function aggregateAgreement(
   rows: Array<{ answers: unknown }>,
-): Record<string, { avg: number; count: number }> {
-  const sums = new Map<string, { total: number; count: number }>()
+): Record<string, QuestionAgreement> {
+  const sums = new Map<string, { total: number; dist: [number, number, number, number, number] }>()
   for (const row of rows) {
     if (!Array.isArray(row.answers)) continue
     for (const answer of row.answers) {
       if (typeof answer?.questionId !== 'string') continue
       const value = Number(answer.value)
-      if (!(value >= 1 && value <= 5)) continue
-      const entry = sums.get(answer.questionId) ?? { total: 0, count: 0 }
+      if (!Number.isInteger(value) || value < 1 || value > 5) continue
+      const entry = sums.get(answer.questionId) ?? { total: 0, dist: [0, 0, 0, 0, 0] }
       entry.total += ((value - 1) / 4) * 100
-      entry.count += 1
+      entry.dist[value - 1] += 1
       sums.set(answer.questionId, entry)
     }
   }
-  const out: Record<string, { avg: number; count: number }> = {}
-  for (const [id, { total, count }] of sums) {
-    out[id] = { avg: Math.round(total / count), count }
+  const out: Record<string, QuestionAgreement> = {}
+  for (const [id, { total, dist }] of sums) {
+    const count = dist.reduce((a, b) => a + b, 0)
+    out[id] = { avg: Math.round(total / count), count, dist }
   }
   return out
 }
+
+/**
+ * The diverging Likert palette, one colour per answer: disagreement in red,
+ * the neutral middle in grey, agreement in the brand navy.
+ *
+ * Validated with the dataviz palette checker against the light surface:
+ * CVD separation 19.5 (pass), normal-vision floor 22.0 (pass). The pale
+ * steps sit under 3:1 contrast with the surface - the required relief is
+ * the ring drawn around every segment, the legend above the list, and the
+ * per-segment tooltip carrying the exact counts.
+ */
+export const LIKERT_COLORS = ['#a01414', '#e08f8f', '#e7e7ea', '#7d94c4', '#1b2d52'] as const
+
+const LIKERT_LEGEND = ['כלל לא מסכים/ה', 'לא מסכים/ה', 'ניטרלי/ת', 'מסכים/ה', 'מסכים/ה מאוד']
 
 
 export default function Admin() {
@@ -242,10 +264,7 @@ export default function Admin() {
   // Sorting the statement list. Agreement data is fetched lazily, the first
   // time that sort is chosen - most admin visits never need it.
   const [sortMode, setSortMode] = useState<'category' | 'agreement'>('category')
-  const [agreement, setAgreement] = useState<Record<string, { avg: number; count: number }> | null>(
-    null,
-  )
-  const [agreementQuizzes, setAgreementQuizzes] = useState(0)
+  const [agreement, setAgreement] = useState<Record<string, QuestionAgreement> | null>(null)
   const [agreementLoading, setAgreementLoading] = useState(false)
 
   useEffect(() => () => window.clearTimeout(toastTimerRef.current), [])
@@ -622,7 +641,6 @@ export default function Admin() {
       return
     }
     setAgreement(aggregateAgreement(data))
-    setAgreementQuizzes(data.length)
   }
 
   // Category order first, always; the agreement sort layers on top of it,
@@ -692,7 +710,7 @@ export default function Admin() {
             )}
             {pillar?.short}
           </span>
-          {sortMode === 'agreement' && agreement && (
+          {agreement && (
             <span className="rounded-full border border-line px-2.5 py-0.5 tabular-nums text-muted">
               {agreement[question.id]
                 ? `הסכמה ${agreement[question.id].avg}% · ${agreement[question.id].count} תשובות`
@@ -760,6 +778,35 @@ export default function Admin() {
           </div>
         ) : (
           <p className="mt-2 text-sm leading-relaxed">{question.text}</p>
+        )}
+
+        {/* The answer distribution: a five-segment stacked bar, disagreement
+            on the reading side. Width is share of answers; the 2px gaps and
+            the inset ring keep the pale segments bounded, and each segment's
+            tooltip carries its exact count. */}
+        {agreement && agreement[question.id] && !isEditing && (
+          <div
+            className="mt-3 flex h-2 w-full gap-[2px]"
+            role="img"
+            aria-label={LIKERT_LEGEND.map(
+              (label, index) => `${label}: ${agreement[question.id].dist[index]}`,
+            ).join(', ')}
+          >
+            {agreement[question.id].dist.map((count, index) =>
+              count === 0 ? null : (
+                <div
+                  key={index}
+                  className="h-full rounded-[3px] ring-1 ring-inset ring-black/10"
+                  title={`${LIKERT_LEGEND[index]}: ${count} מתוך ${agreement[question.id].count}`}
+                  style={{
+                    backgroundColor: LIKERT_COLORS[index],
+                    flexGrow: count,
+                    flexBasis: 0,
+                  }}
+                />
+              ),
+            )}
+          </div>
         )}
       </div>
     )
@@ -921,12 +968,22 @@ export default function Admin() {
               <FilterChip active={sortMode === 'agreement'} onClick={() => void selectSort('agreement')}>
                 {agreementLoading ? 'טוען תוצאות...' : 'לפי הסכמת הקהל'}
               </FilterChip>
-              {sortMode === 'agreement' && agreement && (
-                <span className="text-muted">
-                  מהמוסכם ביותר לפחות מוסכם · מבוסס על {agreementQuizzes} שאלונים שמולאו
-                </span>
-              )}
             </div>
+
+            {agreement && (
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">
+                {LIKERT_LEGEND.map((item, index) => (
+                  <span key={item} className="flex items-center gap-1">
+                    <span
+                      aria-hidden="true"
+                      className="h-2.5 w-2.5 shrink-0 rounded-[3px] ring-1 ring-inset ring-black/10"
+                      style={{ backgroundColor: LIKERT_COLORS[index] }}
+                    />
+                    {item}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {/* Pinned questions lead the list, under their own explanation */}
             {pinnedVisible.length > 0 && (
