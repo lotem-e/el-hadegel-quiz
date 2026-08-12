@@ -261,11 +261,10 @@ export default function Admin() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  // Sorting the statement list. Agreement data is fetched lazily, the first
-  // time that sort is chosen - most admin visits never need it.
-  const [sortMode, setSortMode] = useState<'category' | 'agreement'>('category')
+  // Public agreement per statement - THE list order (Lotem: one sort, not
+  // two). Loaded with everything else; if it fails, the list quietly falls
+  // back to category order and the cards simply show no figures.
   const [agreement, setAgreement] = useState<Record<string, QuestionAgreement> | null>(null)
-  const [agreementLoading, setAgreementLoading] = useState(false)
 
   useEffect(() => () => window.clearTimeout(toastTimerRef.current), [])
 
@@ -324,7 +323,7 @@ export default function Admin() {
         sourceLabel: row.source_label,
       })),
     )
-    await Promise.all([loadPublished(), refreshDraftSnapshot(), loadEverPublishedIds()])
+    await Promise.all([loadPublished(), refreshDraftSnapshot(), loadEverPublishedIds(), loadAgreement()])
     setLoading(false)
   }
 
@@ -629,33 +628,25 @@ export default function Admin() {
     if (supabase) await supabase.auth.signOut()
   }
 
-  async function selectSort(mode: 'category' | 'agreement') {
-    setSortMode(mode)
-    if (mode !== 'agreement' || agreement || !supabase) return
-    setAgreementLoading(true)
+  async function loadAgreement() {
+    if (!supabase) return
     const { data, error } = await supabase.from('results').select('answers')
-    setAgreementLoading(false)
-    if (error || !data) {
-      showToast('לא הצלחתי לטעון את התוצאות - נשארות במיון לפי קטגוריות', 'warn')
-      setSortMode('category')
-      return
-    }
+    if (error || !data) return
     setAgreement(aggregateAgreement(data))
   }
 
-  // Category order first, always; the agreement sort layers on top of it,
-  // and statements nobody has answered yet sink to the end in their
-  // category order rather than scrambling.
+  // One order: by public agreement, highest first. The stable sort on top
+  // of the category grouping means statements nobody has answered yet sink
+  // to the end in category order rather than scrambling.
   const categoryOrdered = orderByCategory(
     questions,
     pillars.map((pillar) => pillar.id),
   )
-  const sorted =
-    sortMode === 'agreement' && agreement
-      ? [...categoryOrdered].sort(
-          (a, b) => (agreement[b.id]?.avg ?? -1) - (agreement[a.id]?.avg ?? -1),
-        )
-      : categoryOrdered
+  const sorted = agreement
+    ? [...categoryOrdered].sort(
+        (a, b) => (agreement[b.id]?.avg ?? -1) - (agreement[a.id]?.avg ?? -1),
+      )
+    : categoryOrdered
   const visibleQuestions = filter === 'all' ? sorted : sorted.filter((q) => q.pillarId === filter)
   const quotaSum = pillars.reduce((sum, pillar) => sum + pillar.quota, 0)
   const activeCount = (pillarId: PillarId) =>
@@ -958,16 +949,6 @@ export default function Admin() {
                   היגד חדש
                 </button>
               )}
-            </div>
-
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-              <span className="text-muted">מיון:</span>
-              <FilterChip active={sortMode === 'category'} onClick={() => void selectSort('category')}>
-                לפי קטגוריות
-              </FilterChip>
-              <FilterChip active={sortMode === 'agreement'} onClick={() => void selectSort('agreement')}>
-                {agreementLoading ? 'טוען תוצאות...' : 'לפי הסכמת הקהל'}
-              </FilterChip>
             </div>
 
             {agreement && (
