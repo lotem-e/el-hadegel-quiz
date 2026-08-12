@@ -1,5 +1,5 @@
 {
-  "published_at": "2026-08-11T07:28:30.166108+00:00",
+  "published_at": "2026-08-11T20:48:31.99262+00:00",
   "content": {
     "config": {
       "id": true,
@@ -11,72 +11,163 @@
       {
         "id": "vision-victory",
         "quota": 1,
-        "short": "חזון והנהגה",
-        "title": "חזון והנהגה",
+        "short": "צו השעה - חזון והנהגה",
+        "title": "צו השעה - חזון והנהגה",
+        "sources": [
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-0",
+            "label": "החזון שלנו - חזון ציוני למדינת ישראל"
+          },
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-12",
+            "label": "החזון שלנו - מחליפים את דור הכישלון בדור הניצחון"
+          },
+          {
+            "url": "https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=1",
+            "label": "המצע המלא - הקדמה ( עמ׳ 1-2 )"
+          }
+        ],
         "sort_order": 0,
         "source_url": "https://www.elhadegel.co.il/about-us",
-        "description": "איחוד של: חזון ציוני למדינת ישראל + מחליפים את דור הכישלון בדור הניצחון."
+        "description": "בקטגוריה זו ישנם היגדים העוסקים בשתי ההבנות של ה-7 באוקטובר: חובת העוצמה, והנהגה מהדור שנלחם."
       },
       {
         "id": "zionist-unity",
-        "quota": 1,
-        "short": "ציונות ואחדות",
-        "title": "ציונות ואחדות",
+        "quota": 2,
+        "short": "שבירת הגושים וכפיית ממשלה ציונית רחבה",
+        "title": "שבירת הגושים וכפיית ממשלה ציונית רחבה",
+        "sources": [
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-5",
+            "label": "החזון שלנו - ימין ושמאל Out | ציונות In"
+          },
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-1",
+            "label": "החזון שלנו - אחדות העם כתנאי לביטחון"
+          },
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-7",
+            "label": "החזון שלנו - קואליציה ציונית רחבה"
+          }
+        ],
         "sort_order": 1,
         "source_url": "https://www.elhadegel.co.il/about-us",
-        "description": "איחוד של: ימין ושמאל Out | ציונות In + אחדות העם כתנאי לביטחון + קואליציה ציונית רחבה."
+        "description": "בקטגוריה זו ישנם היגדים העוסקים בציונות שמעל מחנות: מה נכון לפני מי צודק, אחדות שאינה אחידות, וגוש ציוני רחב."
       },
       {
         "id": "winning-iron-wall",
         "quota": 3,
-        "short": "ניצחון והרתעה",
-        "title": "ניצחון והרתעה",
+        "short": "דגל הביטחון",
+        "title": "דגל הביטחון",
+        "sources": [
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-2",
+            "label": "החזון שלנו - איך מדינת ישראל מתחילה לנצח?"
+          },
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-3",
+            "label": "החזון שלנו - ישראל אחרי עידן התמימות"
+          },
+          {
+            "url": "https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=3",
+            "label": "המצע המלא - מצע ביטחון ( עמ׳ 3-9 )"
+          }
+        ],
         "sort_order": 2,
         "source_url": "https://www.elhadegel.co.il/about-us",
-        "description": "איחוד של: איך מדינת ישראל מתחילה לנצח? + ישראל אחרי עידן התמימות."
+        "description": "בקטגוריה זו ישנם היגדים העוסקים בתפיסת הביטחון: הכרעה במקום סבבים, הסברה כחזית, יוזמה, ותנאי השלום."
       },
       {
         "id": "service-integration",
-        "quota": 2,
-        "short": "שירות ושילוב",
-        "title": "שירות ושילוב",
+        "quota": 3,
+        "short": "חוק יסוד השירות",
+        "title": "חוק יסוד השירות",
+        "sources": [
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-4",
+            "label": "החזון שלנו - חוק יסוד: שירות אל הדגל"
+          },
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-10",
+            "label": "החזון שלנו - מנצחים את הסכנה הדמוגרפית"
+          },
+          {
+            "url": "https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=4",
+            "label": "המצע המלא - לכידות חברתית ( עמ׳ 4 )"
+          },
+          {
+            "url": "https://lotem-e.github.io/el-hadegel-quiz/docs/service-law-bill.pdf",
+            "label": "הצעת חוק יסוד: שירות חובה למען המדינה ( נוסח מלא )"
+          }
+        ],
         "sort_order": 3,
         "source_url": "https://www.elhadegel.co.il/about-us",
-        "description": "איחוד של: חוק יסוד: שירות אל הדגל + מנצחים את הסכנה הדמוגרפית."
+        "description": "בקטגוריה זו ישנם היגדים העוסקים בשוויון בנטל ובשילוב: שירות לכל אזרח, שירות תמורת זכויות, ושותפות כלל החברה."
+      },
+      {
+        "id": "education-revolution",
+        "quota": 3,
+        "short": "דגל החינוך והלכידות",
+        "title": "דגל החינוך והלכידות",
+        "sources": [
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-8",
+            "label": "החזון שלנו - מהפכת החינוך הציוני"
+          },
+          {
+            "url": "https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=10",
+            "label": "המצע המלא - מצע חינוך ( עמ׳ 10-13 )"
+          }
+        ],
+        "sort_order": 4,
+        "source_url": "https://www.elhadegel.co.il/about-us",
+        "description": "בקטגוריה זו ישנם היגדים העוסקים בחינוך ציוני משותף: ליבה אחת לכל הזרמים, מצוינות מורים, ודור גאה בציונותו."
+      },
+      {
+        "id": "legal-reform",
+        "quota": 3,
+        "short": "דגל הממשל",
+        "title": "דגל הממשל",
+        "sources": [
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-9",
+            "label": "החזון שלנו - הרפורמה המשפטית של ״אל הדגל״"
+          },
+          {
+            "url": "https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=14",
+            "label": "המצע המלא - מצע ממשל ומשפט ( עמ׳ 14-19 )"
+          }
+        ],
+        "sort_order": 5,
+        "source_url": "https://www.elhadegel.co.il/about-us",
+        "description": "בקטגוריה זו ישנם היגדים העוסקים בתיקון מאוזן של המשפט והממשל: חוקה מוסכמת, איזון רשויות, וממשלה מצומצמת."
       },
       {
         "id": "zionist-economy",
         "quota": 2,
-        "short": "כלכלה ציונית",
-        "title": "כלכלה ציונית",
-        "sort_order": 4,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "description": "המעמד המשרת במרכז: מתגמלים תרומה למדינה, לא כוח פוליטי וקומבינות."
-      },
-      {
-        "id": "education-revolution",
-        "quota": 2,
-        "short": "מהפכת החינוך",
-        "title": "מהפכת החינוך הציוני",
-        "sort_order": 5,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "description": "ליבה לאומית משותפת - מקצועית וערכית - לכל מוסד מתוקצב, לצד חופש קהילתי."
-      },
-      {
-        "id": "legal-reform",
-        "quota": 2,
-        "short": "הרפורמה המשפטית",
-        "title": "הרפורמה המשפטית של ״אל הדגל״",
+        "short": "דגל הכלכלה",
+        "title": "דגל הכלכלה",
+        "sources": [
+          {
+            "url": "https://www.elhadegel.co.il/about-us#principe-6",
+            "label": "החזון שלנו - כלכלה ציונית"
+          },
+          {
+            "url": "https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=20",
+            "label": "המצע המלא - מצע כלכלה ( עמ׳ 20-25 )"
+          }
+        ],
         "sort_order": 6,
         "source_url": "https://www.elhadegel.co.il/about-us",
-        "description": "תיקון מאוזן של המשפט והממשל: חוקה מוסכמת, איזון בין הרשויות וממשלה רזה."
+        "description": "בקטגוריה זו ישנם היגדים העוסקים בכלכלה שמתגמלת תרומה: המעמד המשרת במרכז, יוקר המחיה, ועבודה שמשתלמת."
       }
     ],
     "questions": [
       {
         "id": "vision-victory-1",
-        "text": "ה-7 באוקטובר הוא הוכחה שאין לנו את הפריווילגיה שלא לשים את הביטחון במקום הראשון. קיומה של ישראל כמדינת לאום של העם היהודי אינו מובן מאליו, ולפני שמתווכחים על אופיה המדויק, קודם צריך שתהיה מדינה.",
+        "text": "ה-7 באוקטובר הוא הוכחה שאין לנו את הפריווילגיה שלא לשים את הביטחון במקום הראשון. קיומה של ישראל כמדינת לאום של העם היהודי אינו מובן מאליו, ולפני שמתווכחים על אופיה המדויק, קודם צריך להבטיח שתהיה מדינה.",
         "active": true,
+        "pinned": false,
         "pillar_id": "vision-victory",
         "sort_order": 0,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -84,116 +175,29 @@
       },
       {
         "id": "vision-victory-2",
-        "text": "הפוליטיקה הישנה הביאה לסיאוב עמוק כל כך, עד שב-7 באוקטובר קרסו כל המערכות. הדור שהכי מתאים להנהיג עכשיו הוא הדור שנקרא אל הדגל - ויצא להילחם כדי להגן עלינו",
+        "text": "הפוליטיקה הישנה הביאה לסיאוב עמוק כל כך, עד שב-7 באוקטובר קרסו כל המערכות. הדור שהכי מתאים להנהיג עכשיו הוא הדור שנקרא אל הדגל - ויצא להילחם כדי להגן עלינו.",
         "active": true,
+        "pinned": false,
         "pillar_id": "vision-victory",
         "sort_order": 1,
         "source_url": "https://www.elhadegel.co.il/about-us",
         "source_label": "המצע המלא - הקדמה: חזון ציוני למדינת ישראל"
       },
       {
-        "id": "zionist-unity-1",
-        "text": "החלוקה לימין ושמאל כבר לא רלוונטית - השאלה האמיתית היא מה נכון למדינה",
-        "active": true,
-        "pillar_id": "zionist-unity",
-        "sort_order": 2,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - ימין ושמאל Out | ציונות In"
-      },
-      {
-        "id": "zionist-unity-2",
-        "text": "ההשתייכות למחנה הפכה אצלנו לזהות, וזה שורש המשבר הפוליטי",
-        "active": true,
-        "pillar_id": "zionist-unity",
-        "sort_order": 3,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - ימין ושמאל Out | ציונות In"
-      },
-      {
-        "id": "zionist-unity-3",
-        "text": "רוב הישראלים הם ציונים שקטים שרוצים מדינה מתוקנת וחזקה - ואין מי שמייצג אותם",
-        "active": true,
-        "pillar_id": "zionist-unity",
-        "sort_order": 4,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - ימין ושמאל Out + קואליציה ציונית"
-      },
-      {
-        "id": "zionist-unity-4",
-        "text": "הפירוד הפנימי מסוכן לישראל לא פחות מהאיומים החיצוניים",
-        "active": true,
-        "pillar_id": "zionist-unity",
-        "sort_order": 5,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - אחדות העם כתנאי לביטחון"
-      },
-      {
-        "id": "zionist-unity-5",
-        "text": "אחדות אינה אחידות - אפשר להיות מאוחדים גם בלי להסכים על הכול",
-        "active": true,
-        "pillar_id": "zionist-unity",
-        "sort_order": 6,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - אחדות העם כתנאי לביטחון"
-      },
-      {
-        "id": "zionist-unity-6",
-        "text": "השאלה ״מה נכון״ חשובה יותר מהשאלה ״מי צודק״",
-        "active": true,
-        "pillar_id": "zionist-unity",
-        "sort_order": 7,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - אחדות העם כתנאי לביטחון"
-      },
-      {
-        "id": "zionist-unity-7",
-        "text": "צבא שנשען על התנדבות ואמון לא ישרוד כשחלקים בעם מרגישים בחוץ",
-        "active": true,
-        "pillar_id": "zionist-unity",
-        "sort_order": 8,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - אחדות העם כתנאי לביטחון"
-      },
-      {
-        "id": "zionist-unity-8",
-        "text": "מחנה ״רק ביבי״ ומחנה ״רק לא ביבי״ שיתקו את המדינה",
-        "active": true,
-        "pillar_id": "zionist-unity",
-        "sort_order": 9,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - קואליציה ציונית רחבה"
-      },
-      {
         "id": "zionist-unity-9",
-        "text": "צריך גוש ציוני חדש שמתאחד סביב ערכים, לא סביב מנהיג",
+        "text": "השיח סביב ״רק ביבי״ ו- ״רק לא ביבי״ הפך את הפוליטיקה לזירת קרב מפלגת. ממשלות קמות ונופלות רק על שאלת זהות ראש הממשלה, ולא מספיק על שאלות של ביטחון, מדיניות, וחזון ארוך טווח - וכך המדינה משותקת.",
         "active": true,
+        "pinned": false,
         "pillar_id": "zionist-unity",
         "sort_order": 10,
         "source_url": "https://www.elhadegel.co.il/about-us",
         "source_label": "החזון שלנו - קואליציה ציונית רחבה"
       },
       {
-        "id": "zionist-unity-10",
-        "text": "ממשלה שנשענת על הסכמה לאומית רחבה עדיפה על קואליציה של דילים פוליטיים",
-        "active": true,
-        "pillar_id": "zionist-unity",
-        "sort_order": 11,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - קואליציה ציונית רחבה"
-      },
-      {
-        "id": "zionist-unity-11",
-        "text": "עדיף לחפש פתרונות מאשר לחפש אשמים",
-        "active": true,
-        "pillar_id": "zionist-unity",
-        "sort_order": 12,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - ימין ושמאל Out | ציונות In"
-      },
-      {
         "id": "winning-iron-wall-1",
-        "text": "ניהול הסכסוך באמצעות סבבי לחימה והפסקות אש הוא בעצם קניית שקט שמשמעותה היא תשלום בריבית בהמשך. ישראל חייבת לסיים כל עימות בהכרעה צבאית ותודעתית ברורה",
+        "text": "ניהול הסכסוך באמצעות סבבי לחימה והפסקות אש הוא בעצם קניית שקט שמשמעותה היא תשלום בריבית בהמשך. ישראל חייבת לסיים כל עימות בהכרעה צבאית ותודעתית ברורה.",
         "active": true,
+        "pinned": false,
         "pillar_id": "winning-iron-wall",
         "sort_order": 13,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -201,8 +205,9 @@
       },
       {
         "id": "winning-iron-wall-3",
-        "text": "ניצחון לא נגמר בשדה הקרב. ישנה גם חזית תודעתית המשפיעה על חופש הפעולה של צה״ל ועל ביטחון אזרחי ישראל, ועלינו, כמדינה, להבין את זה ולהילחם גם שם",
+        "text": "ניצחון לא נגמר בשדה הקרב. ישנה גם חזית תודעתית המשפיעה על חופש הפעולה של צה״ל ועל ביטחון אזרחי ישראל, ועלינו, כמדינה, להבין את זה ולהילחם גם שם.",
         "active": true,
+        "pinned": false,
         "pillar_id": "winning-iron-wall",
         "sort_order": 14,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -210,8 +215,9 @@
       },
       {
         "id": "winning-iron-wall-4",
-        "text": "ההסברה היא חזית ביטחונית לכל דבר: ישראל צריכה מערך הסברה לאומי שפועל כל השנה, ולא רק בזמן מלחמה, בארץ ובעולם, עם אסטרטגיות מוכנות, שיתרגם כל אירוע מבצעי לרצף מסרים שמחזק את הלגיטימציה שלנו",
+        "text": "ההסברה היא חזית ביטחונית לכל דבר: ישראל צריכה מערך הסברה לאומי שפועל כל השנה, ולא רק בזמן מלחמה, בארץ ובעולם, עם אסטרטגיות מוכנות, שיתרגם כל אירוע מבצעי לרצף מסרים שמחזק את הלגיטימציה שלנו.",
         "active": true,
+        "pinned": false,
         "pillar_id": "winning-iron-wall",
         "sort_order": 15,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -219,8 +225,9 @@
       },
       {
         "id": "winning-iron-wall-5",
-        "text": "ההנחה שאם ישראל תוותר על חלק מהאינטרסים הביטחוניים שלה תזכה אותה באהדה ובמעטפת הגנה - התבררה כאשליה. על ישראל לפעול בחוכמה בזירה הדיפלומטית אך היא חייבת לעמוד על תפיסת הביטחון שלה",
+        "text": "ההנחה שאם ישראל תוותר על חלק מהאינטרסים הביטחוניים שלה תזכה אותה באהדה ובמעטפת הגנה - התבררה כאשליה. על ישראל לפעול בחוכמה בזירה הדיפלומטית אך היא חייבת לעמוד על תפיסת הביטחון שלה.",
         "active": true,
+        "pinned": false,
         "pillar_id": "winning-iron-wall",
         "sort_order": 16,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -228,8 +235,9 @@
       },
       {
         "id": "winning-iron-wall-10",
-        "text": "לגבי איו״ש, ישראל צריכה להבהיר, כלפי פנים וכלפי חוץ, שהיא מעוניינת בשלום, ועליה להיות ברורה לחלוטין לגבי התנאים - הפסקה מוחלטת של כל פעילות טרור והסתה, ויתור על טענות ל״זכות שיבה״, ופירוז מוחלט",
+        "text": "מול אויב טרוריסטי אין ”ביניים\" - או שלום, או מלחמה. ברגע שהאויב מחזיק תשתית טרור, מחנך לשנאה ומכוון נשק אל אזרחינו - אנחנו נמצאים במצב מלחמה.",
         "active": true,
+        "pinned": false,
         "pillar_id": "winning-iron-wall",
         "sort_order": 17,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -237,8 +245,9 @@
       },
       {
         "id": "winning-iron-wall-19",
-        "text": "כל עוד התנאים ב״מסלול השלום״ שישראל הציבה אינם מתקיימים לפי לוח הזמנים, יש להחיל בהדרגה ריבונות בשטחי C, תוך כדי שמירה על פרימטר המאפשר לצה״ל הגנה אפקטיבית על היישובים",
+        "text": "כל עוד התנאים שישראל הציבה לקיום חזון השלום אינם מתקיימים לפי לוח הזמנים שהיא תכתיב, היא צריכה להחיל בהדרגה ריבונות בשטחי C, תוך כדי שמירה על פרימטר המאפשר לצה״ל הגנה אפקטיבית על היישובים.",
         "active": true,
+        "pinned": true,
         "pillar_id": "winning-iron-wall",
         "sort_order": 18,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -246,8 +255,9 @@
       },
       {
         "id": "winning-iron-wall-18",
-        "text": "ישראל חייבת לחזור להיות מדינה יוזמת ולא מגיבה: לקבוע בעצמה יעדים ולוחות זמנים - צבאיים, מדיניים ותודעתיים - במקום להמתין למשבר הבא ולפעול לפי הקצב של האויב",
+        "text": "ישראל חייבת לחזור להיות מדינה יוזמת ולא מגיבה: לקבוע בעצמה יעדים ולוחות זמנים - צבאיים, מדיניים ותודעתיים - במקום להמתין למשבר הבא ולפעול לפי הקצב של האויב.",
         "active": true,
+        "pinned": false,
         "pillar_id": "winning-iron-wall",
         "sort_order": 19,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -255,26 +265,19 @@
       },
       {
         "id": "winning-iron-wall-20",
-        "text": "צה״ל חייב להיות גם ״צבא היי-טק״ וגם ״צבא עם״ גדול ומאומן, ובניין הכוח וסדרי העדיפויות התקציביים צריכים להיבחן בשאלה אחת: האם אזרחי ישראל יכולים לישון בשקט",
+        "text": "צה״ל חייב להיות גם ״צבא היי-טק״ וגם ״צבא עם״ גדול ומאומן, ובניין הכוח וסדרי העדיפויות התקציביים צריכים להיבחן בשאלה אחת: האם אזרחי ישראל יכולים לישון בשקט.",
         "active": true,
+        "pinned": false,
         "pillar_id": "winning-iron-wall",
         "sort_order": 20,
         "source_url": "https://www.elhadegel.co.il/about-us",
         "source_label": "המצע המלא - מצע ביטחון: צה״ל גדול, חזק וחכם"
       },
       {
-        "id": "winning-iron-wall-21",
-        "text": "לכידות חברתית היא לא ערך רך אלא הכרח ביטחוני: כשהאמון בין חלקי החברה נשחק - נחלשים גם צה״ל, גם מערך המילואים וגם העורף",
-        "active": true,
-        "pillar_id": "winning-iron-wall",
-        "sort_order": 21,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "המצע המלא - מצע ביטחון: לכידות חברתית כבסיס לחוסן ביטחוני"
-      },
-      {
         "id": "winning-iron-wall-22",
-        "text": "על ישראל לעבור מהגנת ״גדר״ להגנה המתבססת על מניעת איומים בעומק. ישראל צריכה לסכל איומים בעומק עוד לפני שהם קמים, ובוודאי לא לתת להם להתעצם",
+        "text": "על ישראל לעבור מהגנת ״גדר״ להגנה המתבססת על מניעת איומים בעומק. ישראל צריכה לסכל איומים בעומק עוד לפני שהם קמים, ובוודאי לא לתת להם להתעצם.",
         "active": true,
+        "pinned": false,
         "pillar_id": "winning-iron-wall",
         "sort_order": 22,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -282,8 +285,9 @@
       },
       {
         "id": "service-integration-1",
-        "text": "כל אזרח ישראלי - גבר או אישה, יהודי או לא - צריך לשרת: בצבא, בשירות לאומי או אזרחי",
+        "text": "כל אזרח ישראלי - גבר או אישה, יהודי או לא יהודי - צריך לשרת את מדינתו: בצבא, בשירות לאומי או בשירות אזרחי. חובת השירות היא התגלמות של הברית האזרחית והציונית - מי שנהנה מהמדינה נדרש גם להגן עליה.",
         "active": true,
+        "pinned": false,
         "pillar_id": "service-integration",
         "sort_order": 23,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -291,8 +295,9 @@
       },
       {
         "id": "service-integration-2",
-        "text": "אי אפשר להחזיק מדינה לאורך זמן על גבו של מיעוט שנושא את רוב הנטל",
+        "text": "מדינת ישראל מתקיימת בזכות מיעוט שנושא את רוב הנטל: בצבא, במילואים, בעבודה, ובתשלום מיסים. יהיה קשה להחזיק את המדינה ולגרום לה לשגשג ולצמוח תוך כדי התבססות על מודל זה.",
         "active": true,
+        "pinned": false,
         "pillar_id": "service-integration",
         "sort_order": 24,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -300,8 +305,9 @@
       },
       {
         "id": "service-integration-3",
-        "text": "ראוי שמי שמשרת יקבל העדפה בדיור, בתעסוקה ובמלגות, ומי שבוחר שלא לשרת יצטרך לוותר על חלק מההטבות",
+        "text": "ראוי שמי שמשרת יקבל העדפה בדיור, בתעסוקה, במכרזים ציבוריים ובמלגות, ומי שבוחר שלא לשרת - יאלץ לוותר על חלק מההטבות. כך נבנית מערכת שמתגמלת אחריות וערבות הדדית.",
         "active": true,
+        "pinned": false,
         "pillar_id": "service-integration",
         "sort_order": 25,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -309,8 +315,9 @@
       },
       {
         "id": "service-integration-4",
-        "text": "פטור גורף משירות לפי השתייכות מגזרית הוא אפליה בין אזרחים",
+        "text": "פטור גורף משירות לפי השתייכות מגזרית הוא אפליה בין אזרחים וזה כשל מוסרי. אבל קלקול זה מוביל גם לכשל ביטחוני-מהותי: כשחלק גדול מהחברה נשאר מחוץ למאמץ הלאומי, גם צה״ל וגם החברה האזרחית נחלשים.",
         "active": true,
+        "pinned": false,
         "pillar_id": "service-integration",
         "sort_order": 26,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -318,8 +325,9 @@
       },
       {
         "id": "service-integration-5",
-        "text": "מדינה שבה שליש עובדים בשביל שני שלישים שלא נושאים בנטל - לא תחזיק מעמד",
+        "text": "ראוי שחוק שירות הרוצה בשילוב אמיתי יקפיד לכבד את הזהות של כל קהילה. יש לדאוג שהשירות יותאם לאמונותיהם ולאורחות חייהם של בני ובנות הקהילה, אבל עצם ההשתתפות בנטל תהיה חובה. המטרה היא שותפות, לא טשטוש זהויות, לא כור היתוך.",
         "active": true,
+        "pinned": false,
         "pillar_id": "service-integration",
         "sort_order": 27,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -327,8 +335,9 @@
       },
       {
         "id": "service-integration-6",
-        "text": "שילוב חרדים וערבים בשירות ובתעסוקה הוא הכרח ביטחוני ולאומי, לא גחמה חברתית",
+        "text": "שילוב חרדים וערבים בשירות ובתעסוקה הוא הכרח ביטחוני ולאומי, לא גחמה חברתית. הסכנה בחוסר שילוב של אוכלוסיות נרחבות מהחברה היא קריסה פנימית.",
         "active": true,
+        "pinned": false,
         "pillar_id": "service-integration",
         "sort_order": 28,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -336,8 +345,9 @@
       },
       {
         "id": "service-integration-7",
-        "text": "הממשלות קנו שקט בפטורים ובתקציבים במקום לדרוש שותפות - וזה חייב להיגמר",
+        "text": "ממשלות לדורותיהן קנו שקט בפטורים ובתקציבים במקום לדרוש שותפות. חובת השירות חייבת להיות מעוגנת בחוק יסוד שרק רוב של 80 חברי כנסת יוכל לשנות.",
         "active": true,
+        "pinned": false,
         "pillar_id": "service-integration",
         "sort_order": 29,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -345,8 +355,9 @@
       },
       {
         "id": "service-integration-8",
-        "text": "שילוב אמיתי מכבד את הזהות של כל קהילה: המטרה היא שותפות, לא טשטוש",
+        "text": "צה״ל צריך להיות קודם למסלולי שירות אחרים, וההשמה אליו צריכה להיות שוויונית. אף אחד לא יופנה לשירות אזרחי, למסלול מצוינות או ללימוד תורני לפני שצה״ל קיבל את מלוא כוח האדם שהוא זקוק לו, בכמות ובאיכות.",
         "active": true,
+        "pinned": false,
         "pillar_id": "service-integration",
         "sort_order": 30,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -354,8 +365,9 @@
       },
       {
         "id": "zionist-economy-1",
-        "text": "המדינה צריכה לתגמל תרומה, לא קומבינה: מי שתורם - יקבל",
+        "text": "התקציב בישראל מחולק לפי כוח קואליציוני, לא לפי היגיון כלכלי שמתעדף צמיחה. זה לא כישלון של ממשלה אחת אלא של ממשלות לדורותיהן. תקציבים סקטוריאליים שנקבעים בהסכמים פוליטיים צריכים להתבטל, גם כשהמחיר הוא יציבות הקואליציה.",
         "active": true,
+        "pinned": false,
         "pillar_id": "zionist-economy",
         "sort_order": 31,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -363,8 +375,9 @@
       },
       {
         "id": "zionist-economy-2",
-        "text": "המעמד המשרת - מי שעובד, משלם מסים ונושא בנטל - צריך לעמוד במרכז סדרי העדיפויות",
+        "text": "המגזר הציבורי צריך להתנהל כמו ארגון שנמדד על סמך תוצאות: יעדים ברורים, דוחות ביצוע פומביים, ומינויים לפי מקצועיות. בלי זה, כל תוספת תקציב נבלעת בבירוקרטיה במקום להגיע לאזרח.",
         "active": true,
+        "pinned": false,
         "pillar_id": "zionist-economy",
         "sort_order": 32,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -372,8 +385,9 @@
       },
       {
         "id": "zionist-economy-4",
-        "text": "חלוקת תקציבים לפי אינטרסים קואליציוניים היא העיוות המרכזי של הכלכלה הישראלית",
+        "text": "יוקר המחיה אינו גזירת גורל אלא תוצאה של שוק סגור: מכסים, מכסות ותקינה ייחודית שמגנים על יצרנים מקומיים ומייקרים לכולם. צריך לפתוח את השוק ליבוא ולהתאים את התקינה שלנו לזו המקובלת במדינות המפותחות.",
         "active": true,
+        "pinned": false,
         "pillar_id": "zionist-economy",
         "sort_order": 33,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -381,44 +395,19 @@
       },
       {
         "id": "zionist-economy-5",
-        "text": "הדרך להוריד את יוקר המחיה היא ביטול מונופולים, חסמים ומכסים מיותרים",
+        "text": "המדינה מחזיקה ברוב הקרקע בישראל, ולכן משבר הדיור הוא קודם כול כישלון שלה ולא של השוק. צריך לשחרר קרקע לבנייה באזורי הביקוש, לקצוב בזמן כל שלב ברישוי ובתכנון, ולקבוע יעדי בנייה שנתיים שמפורסמים בשקיפות ונמדדים.",
         "active": true,
+        "pinned": false,
         "pillar_id": "zionist-economy",
         "sort_order": 34,
         "source_url": "https://www.elhadegel.co.il/about-us",
         "source_label": "החזון שלנו - כלכלה ציונית"
       },
       {
-        "id": "zionist-economy-6",
-        "text": "מדינה חזקה דואגת לחלשים בלי להפוך תלות לאורח חיים",
-        "active": true,
-        "pillar_id": "zionist-economy",
-        "sort_order": 35,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - כלכלה ציונית"
-      },
-      {
-        "id": "zionist-economy-7",
-        "text": "עבודה צריכה להשתלם תמיד יותר מקצבה, עם תמריצים חיוביים למי שיוצא לעבוד",
-        "active": true,
-        "pillar_id": "zionist-economy",
-        "sort_order": 36,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "המצע המלא - מצע כלכלה: הציונות שבה לעבודה"
-      },
-      {
-        "id": "zionist-economy-8",
-        "text": "הפתרון האמיתי למשבר הדיור הוא הגדלת ההיצע: שחרור קרקעות וקיצוץ בירוקרטיית התכנון",
-        "active": true,
-        "pillar_id": "zionist-economy",
-        "sort_order": 37,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "המצע המלא - מצע כלכלה: טיפול שורש במשבר הדיור"
-      },
-      {
         "id": "zionist-economy-9",
-        "text": "ישראל צריכה להפוך ממדינת אקזיטים שנמכרים לחו״ל למעצמה תעשייתית שמפתחת את הרעיונות אצלה",
+        "text": "מדינת ישראל מוכרת את הרעיונות שלה בשלב האקזיט ומוותרת על התעשייה ועל מקומות העבודה שהיו נבנים סביבם. כלכלה ציונית משמעותה השקעה גם בעבודה יצרנית, בתעשייה, ובחקלאות.",
         "active": true,
+        "pinned": false,
         "pillar_id": "zionist-economy",
         "sort_order": 38,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -426,8 +415,9 @@
       },
       {
         "id": "education-revolution-1",
-        "text": "כל מוסד חינוך מתוקצב חייב ללמד ליבה לאומית משותפת - מקצועית וערכית",
+        "text": "מערכת החינוך הישראלית מפוצלת ליותר מדי מערכות שמספרות סיפורים שונים על אותה מדינה. סל לימודים משותף אחד לכל תלמידי ישראל הוא הכרח, כי בעוד עשר שנים אותם תלמידים יהפכו לאזרחים שיצטרכו להחזיק את המדינה הזאת ביחד.",
         "active": true,
+        "pinned": true,
         "pillar_id": "education-revolution",
         "sort_order": 39,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -435,8 +425,9 @@
       },
       {
         "id": "education-revolution-2",
-        "text": "ארבע מערכות חינוך שמספרות ארבעה סיפורים שונים על המדינה - ככה לא בונים עם",
+        "text": "בכל מוסד חינוך שהמדינה מתקצבת חייב להילמד סל לימודים משותף שעומד על שני יסודות: מקצועי - מתמטיקה, מדעים, אנגלית וחשיבה ביקורתית, וערכי - מורשת יהודית, ציונות, דמוקרטיה ואחריות הדדית. לא חינוך פוליטי, אלא שכבת בסיס שבלעדיה אין חברה אחת.",
         "active": true,
+        "pinned": false,
         "pillar_id": "education-revolution",
         "sort_order": 40,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -444,8 +435,9 @@
       },
       {
         "id": "education-revolution-3",
-        "text": "לצד הליבה המשותפת, לקהילות מגיע חופש להעמיק בחינוך לפי דרכן ואמונתן",
+        "text": "משרד החינוך מנסה לנהל הכול, ולכן לא מצליח להטמיע כמעט כלום. התקציב העצום, הריכוזיות והבירוקרטיה חונקים כל ניסיון של רשות מקומית או של בית ספר לתת מענה שמתאים לילדים שלהם. המשרד צריך להצטמצם לגוף שקובע סטנדרט ובודק תוצאות, הניהול והתקציב צריכים לעבור לרשויות ולמנהלים.",
         "active": true,
+        "pinned": false,
         "pillar_id": "education-revolution",
         "sort_order": 41,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -453,8 +445,9 @@
       },
       {
         "id": "education-revolution-5",
-        "text": "צריך לתגמל מצוינות של מורים ולהשקיע יותר בבתי ספר באזורים מוחלשים",
+        "text": "שוויון בחינוך אינו תקצוב זהה לכולם. ילד באזור מוחלש צריך לקבל יותר משאבים, לא אותם משאבים, אחרת המערכת רק משכפלת את הפערים שהיא אמורה לסגור.",
         "active": true,
+        "pinned": false,
         "pillar_id": "education-revolution",
         "sort_order": 42,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -462,8 +455,9 @@
       },
       {
         "id": "education-revolution-6",
-        "text": "תפקיד החינוך הוא לגדל דור שאומר בטבעיות: אני ציוני",
+        "text": "לכידות לא קורית מעצמה. מפגש מובנה בין תלמידים מזרמים שונים צריך להיות חלק חובה מתכנית הלימודים ולא פרויקט התנדבותי של מנהל אמיץ פה ושם, כי זהות אזרחית משותפת נבנית בחדר, לא בשיעור אזרחות.",
         "active": true,
+        "pinned": false,
         "pillar_id": "education-revolution",
         "sort_order": 43,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -471,8 +465,9 @@
       },
       {
         "id": "education-revolution-7",
-        "text": "תקציב מדינה למוסדות חינוך חייב להיות מותנה בלימוד ליבת הבסיס המשותפת",
+        "text": "מוסד חינוך רשאי לבחור לא ללמד את ליבת הבסיס המשותפת, אבל אז אין סיבה שמשלם המסים יממן אותו. תקצוב ממשלתי חייב להיות מותנה בלימוד הליבה, בלי יוצאים מן הכלל.",
         "active": true,
+        "pinned": false,
         "pillar_id": "education-revolution",
         "sort_order": 44,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -480,26 +475,19 @@
       },
       {
         "id": "education-revolution-8",
-        "text": "כדאי לצמצם את בחינות הבגרות ולהפוך את כיתה י״ב לשנת הכנה לחיים, לחברה ולשירות",
+        "text": "חבילת הבסיס בחינוך צריכה להיקבע בחקיקה שביטולה מחייב רוב מיוחד, כדי שהיא לא תהיה תלויה בגחמות של ממשלה כזו או אחרת ולא תיסחר מחדש בכל משא ומתן קואליציוני.",
         "active": true,
+        "pinned": false,
         "pillar_id": "education-revolution",
         "sort_order": 45,
         "source_url": "https://www.elhadegel.co.il/about-us",
         "source_label": "המצע המלא - מצע חינוך: כיתה י״ב כשנת מכינה"
       },
       {
-        "id": "education-revolution-9",
-        "text": "הוראה צריכה להיות מקצוע עם בחינה, הסמכה ולשכה מקצועית, כמו עריכת דין",
-        "active": true,
-        "pillar_id": "education-revolution",
-        "sort_order": 46,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "המצע המלא - מצע חינוך: שינוי פדגוגי ומעמד המורה"
-      },
-      {
         "id": "legal-reform-1",
-        "text": "מערכת המשפט צריכה תיקון עמוק - לא הרס ולא נקמה",
+        "text": "הוויכוח על מערכת המשפט הפך לקרב בין ״שלטון העם״ ל״שלטון השופטים״, ובדרך שני הצדדים איבדו את אמון הציבור. המאבק האמיתי הוא לא על סמכויות, הוא על אמון, ותיקון שלא מחזיר אותו לשתי הרשויות לא יחזיק מעמד.",
         "active": true,
+        "pinned": false,
         "pillar_id": "legal-reform",
         "sort_order": 47,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -507,8 +495,9 @@
       },
       {
         "id": "legal-reform-2",
-        "text": "חוקי יסוד ייקבעו רק ברוב גדול ומוסכם, וכך יקבלו מעמד חוקתי אמיתי",
+        "text": "מערכת המשפט הרחיבה את סמכויותיה מעבר לגבול הסביר, ומנגד - פוליטיקאים ניסו להסיר את הבלמים בשם ״רצון העם״. רפורמה אמיתית צריכה להגביל את שני הצדדים, ולא ליצר ניצחון של אחד על פני השני.",
         "active": true,
+        "pinned": true,
         "pillar_id": "legal-reform",
         "sort_order": 48,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -516,26 +505,19 @@
       },
       {
         "id": "legal-reform-3",
-        "text": "בג״ץ יפסול חוקים רק בסתירה ישירה לחוק יסוד, לא על סמך עקרונות כלליים",
+        "text": "בית המשפט העליון צריך להמשיך להגן על זכויות האזרח ולפקח על השלטון, אבל בתוך גבולות ברורים: לבטל חוק רק כשהוא סותר ישירות חוק יסוד, ולא על סמך עקרונות כלליים.",
         "active": true,
+        "pinned": false,
         "pillar_id": "legal-reform",
         "sort_order": 49,
         "source_url": "https://www.elhadegel.co.il/about-us",
         "source_label": "החזון שלנו - הרפורמה המשפטית של ״אל הדגל״"
       },
       {
-        "id": "legal-reform-4",
-        "text": "גם מי שרוצה לרסן את בית המשפט חייב לשמור על בלמים: בלי בלמים גם רכב חזק מתרסק",
-        "active": true,
-        "pillar_id": "legal-reform",
-        "sort_order": 50,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "החזון שלנו - הרפורמה המשפטית של ״אל הדגל״"
-      },
-      {
         "id": "legal-reform-5",
-        "text": "צריך להגביל את כהונת ראש הממשלה לשמונה שנים",
+        "text": "ריכוז כוח לאורך זמן פוגע בשיקול הדעת של כל אדם, מוכשר ככל שיהיה. הגבלת כהונת ראש הממשלה לשמונה שנים אינה הצהרה נגד אדם מסוים, היא כלל משחק שנועד למנוע מהשלטון להפוך למטרה בפני עצמה.",
         "active": true,
+        "pinned": false,
         "pillar_id": "legal-reform",
         "sort_order": 51,
         "source_url": "https://www.elhadegel.co.il/about-us",
@@ -543,21 +525,73 @@
       },
       {
         "id": "legal-reform-7",
-        "text": "צריך לקבוע בחוק יסוד: ממשלה של עד 16 שרים ומשרדים בלבד",
+        "text": "ממשלה מנופחת היא לא רק בזבוז כסף, היא דחיית הכרעות. כשמשרדים נולדים כדי לספק שותפים קואליציוניים, האחריות מתפזרת עד שאי אפשר לדעת מי אחראי למה. לכן צריך לקבוע בחוק יסוד תקרה של עד 16 שרים ומשרדים.",
         "active": true,
+        "pinned": false,
         "pillar_id": "legal-reform",
         "sort_order": 52,
         "source_url": "https://www.elhadegel.co.il/about-us",
         "source_label": "המצע המלא - מצע ממשל ומשפט: יעילות ממשלתית"
       },
       {
-        "id": "legal-reform-8",
-        "text": "לכנסת צריכה להיות אפשרות לחוקק מחדש חוק שנפסל, אבל רק ברוב מיוחד ובמגבלות זמן ונושא",
+        "id": "zionist-unity-12",
+        "text": "אחדות אינה אחידות אלא ברית של גורל וייעוד: איש לא נדרש לוותר על דעותיו, אך כולנו נדרשים להסכים על העיקר - בית בטוח ומשגשג לעם היהודי בארצו. על כל השאר מתווכחים בתוך הבית, לא על חורבותיו.",
         "active": true,
-        "pillar_id": "legal-reform",
-        "sort_order": 53,
-        "source_url": "https://www.elhadegel.co.il/about-us",
-        "source_label": "המצע המלא - מצע ממשל ומשפט: מערכת המשפט וחוקי היסוד"
+        "pinned": false,
+        "pillar_id": "zionist-unity",
+        "sort_order": 54,
+        "source_url": "",
+        "source_label": ""
+      },
+      {
+        "id": "zionist-unity-13",
+        "text": "יש צורך אקוטי לשבור את הגושים הישנים באמצעות הקמת גוש חדש, ציוני, בעל כוח ואחריות שמאחד ישראלים מימין ומשמאל סביב מטרה אחת - ישראל חזקה, יהודית ודמוקרטית.",
+        "active": true,
+        "pinned": false,
+        "pillar_id": "zionist-unity",
+        "sort_order": 55,
+        "source_url": "",
+        "source_label": ""
+      },
+      {
+        "id": "zionist-unity-14",
+        "text": "כל שאלה של מדיניות צריכה להיבחן על פי שאלה אחת, והיא לא ״האם זה ימני או שמאלני״ אלא: האם זה מחזק את מדינת ישראל כבית בטוח ומשגשג לעם היהודי.",
+        "active": true,
+        "pinned": false,
+        "pillar_id": "zionist-unity",
+        "sort_order": 56,
+        "source_url": "",
+        "source_label": ""
+      },
+      {
+        "id": "zionist-unity-15",
+        "text": "ממשלה שנשענת על הסכמה לאומית רחבה אינה נאיביות אלא הפרקטיקה האחראית והנחוצה ביותר כרגע. רק לממשלה כזאת יש את הכוח והלגיטימציה להכריע בשאלות הגדולות שאיננו יכולים להתחמק מהן יותר - ביטחון, חינוך, שירות וחוקה.",
+        "active": true,
+        "pinned": false,
+        "pillar_id": "zionist-unity",
+        "sort_order": 57,
+        "source_url": "",
+        "source_label": ""
+      },
+      {
+        "id": "zionist-unity-16",
+        "text": "לכידות חברתית היא לא ערך רך אלא הכרח ביטחוני: כשהאמון בין חלקי החברה נשחק - נחלשים גם צה״ל, גם מערך המילואים וגם העורף.",
+        "active": true,
+        "pinned": false,
+        "pillar_id": "zionist-unity",
+        "sort_order": 58,
+        "source_url": "",
+        "source_label": ""
+      },
+      {
+        "id": "education-revolution-10",
+        "text": "מנהל בית ספר צריך את הסמכות לגייס בעצמו את המורים שלו ולשלם יותר למי שמצטיין, במקום לקבל שיבוץ מלמעלה ולשלם לכולם לפי ותק. מערכת שמתגמלת שנים ולא תוצאות תמשיך לאבד בדיוק את האנשים שהיא הכי צריכה.",
+        "active": true,
+        "pinned": false,
+        "pillar_id": "education-revolution",
+        "sort_order": 59,
+        "source_url": "",
+        "source_label": ""
       }
     ]
   }
