@@ -16,7 +16,7 @@
 import { renderToString } from 'react-dom/server'
 import { createElement } from 'react'
 import App from '../src/App'
-import Admin, { canonical, computeNextQuestionId, summarizeDiff } from '../src/screens/Admin'
+import Admin, { aggregateAgreement, canonical, computeNextQuestionId, orderByCategory, summarizeDiff } from '../src/screens/Admin'
 import Quiz from '../src/screens/Quiz'
 import Results, { shortSourceLabel } from '../src/screens/Results'
 import { selectQuizQuestions } from '../src/engine/selectQuestions'
@@ -331,6 +331,33 @@ console.log('new statement form')
   // there would be nothing to insert into.
   const adminOffline = renderToString(createElement(Admin)).replace(/<!--.*?-->/g, '')
   check('no create button without a database', !adminOffline.includes('היגד חדש'))
+}
+
+console.log('admin sorting')
+{
+  // Category grouping is stable: within a category the arrival order holds,
+  // so a freshly created statement stays last in its own category.
+  const qs = [
+    { id: 'b-1', pillarId: 'b' }, { id: 'a-1', pillarId: 'a' },
+    { id: 'b-2', pillarId: 'b' }, { id: 'a-2', pillarId: 'a' },
+    { id: 'zz-9', pillarId: 'zz' },
+  ]
+  const ordered = orderByCategory(qs, ['a', 'b'])
+  check('grouped in category order, stable within',
+    ordered.map((q) => q.id).join(',') === 'a-1,a-2,b-1,b-2,zz-9')
+  check('the input array is not mutated', qs[0].id === 'b-1')
+
+  // Agreement aggregation: 1-5 maps to 0-100 exactly like the quiz score.
+  const rows = [
+    { answers: [{ questionId: 'q1', value: 5 }, { questionId: 'q2', value: 3 }] },
+    { answers: [{ questionId: 'q1', value: 4 }] },
+    { answers: 'garbage' },
+    { answers: [{ questionId: 'q1', value: 99 }, { value: 5 }] },
+  ]
+  const agg = aggregateAgreement(rows)
+  check('mean agreement on the quiz scale', agg.q1.avg === 88 && agg.q1.count === 2)
+  check('a single answer stands alone', agg.q2.avg === 50 && agg.q2.count === 1)
+  check('malformed rows are skipped, not crashed on', Object.keys(agg).length === 2)
 }
 
 console.log('new statement ids')

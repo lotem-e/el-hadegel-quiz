@@ -143,6 +143,53 @@ export function computeNextQuestionId(
   return `${prefix}${highest + 1}`
 }
 
+/**
+ * The admin list is grouped by category, in the categories' own page order.
+ * The sort is stable, so within a category the statements keep the order
+ * they arrived in - and a statement Lotem just created stays last in its
+ * own category instead of sinking to the bottom of the whole list.
+ */
+export function orderByCategory<T extends { pillarId: string }>(
+  questions: T[],
+  categoryOrder: string[],
+): T[] {
+  const rank = new Map(categoryOrder.map((id, index) => [id, index]))
+  return [...questions].sort(
+    (a, b) => (rank.get(a.pillarId) ?? 99) - (rank.get(b.pillarId) ?? 99),
+  )
+}
+
+/**
+ * Public agreement per statement, from the recorded results.
+ *
+ * Each result row carries the visitor's answers as [{questionId, value}].
+ * value is the 1-5 Likert answer; it maps to 0-100 the same way the quiz
+ * score does ((value-1)/4), so "the audience agrees 78%" reads on the same
+ * scale as everything else. Malformed rows are skipped, never crash.
+ */
+export function aggregateAgreement(
+  rows: Array<{ answers: unknown }>,
+): Record<string, { avg: number; count: number }> {
+  const sums = new Map<string, { total: number; count: number }>()
+  for (const row of rows) {
+    if (!Array.isArray(row.answers)) continue
+    for (const answer of row.answers) {
+      if (typeof answer?.questionId !== 'string') continue
+      const value = Number(answer.value)
+      if (!(value >= 1 && value <= 5)) continue
+      const entry = sums.get(answer.questionId) ?? { total: 0, count: 0 }
+      entry.total += ((value - 1) / 4) * 100
+      entry.count += 1
+      sums.set(answer.questionId, entry)
+    }
+  }
+  const out: Record<string, { avg: number; count: number }> = {}
+  for (const [id, { total, count }] of sums) {
+    out[id] = { avg: Math.round(total / count), count }
+  }
+  return out
+}
+
 
 export default function Admin() {
   // Offline mode (no Supabase configured): show baked content, block edits.
@@ -191,6 +238,15 @@ export default function Admin() {
   // embedded panes, so this is a real in-UI modal).
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  // Sorting the statement list. Agreement data is fetched lazily, the first
+  // time that sort is chosen - most admin visits never need it.
+  const [sortMode, setSortMode] = useState<'category' | 'agreement'>('category')
+  const [agreement, setAgreement] = useState<Record<string, { avg: number; count: number }> | null>(
+    null,
+  )
+  const [agreementQuizzes, setAgreementQuizzes] = useState(0)
+  const [agreementLoading, setAgreementLoading] = useState(false)
 
   useEffect(() => () => window.clearTimeout(toastTimerRef.current), [])
 
@@ -554,7 +610,35 @@ export default function Admin() {
     if (supabase) await supabase.auth.signOut()
   }
 
-  const visibleQuestions = filter === 'all' ? questions : questions.filter((q) => q.pillarId === filter)
+  async function selectSort(mode: 'category' | 'agreement') {
+    setSortMode(mode)
+    if (mode !== 'agreement' || agreement || !supabase) return
+    setAgreementLoading(true)
+    const { data, error } = await supabase.from('results').select('answers')
+    setAgreementLoading(false)
+    if (error || !data) {
+      showToast('לא הצלחתי לטעון את התוצאות - נשארות במיון לפי קטגוריות', 'warn')
+      setSortMode('category')
+      return
+    }
+    setAgreement(aggregateAgreement(data))
+    setAgreementQuizzes(data.length)
+  }
+
+  // Category order first, always; the agreement sort layers on top of it,
+  // and statements nobody has answered yet sink to the end in their
+  // category order rather than scrambling.
+  const categoryOrdered = orderByCategory(
+    questions,
+    pillars.map((pillar) => pillar.id),
+  )
+  const sorted =
+    sortMode === 'agreement' && agreement
+      ? [...categoryOrdered].sort(
+          (a, b) => (agreement[b.id]?.avg ?? -1) - (agreement[a.id]?.avg ?? -1),
+        )
+      : categoryOrdered
+  const visibleQuestions = filter === 'all' ? sorted : sorted.filter((q) => q.pillarId === filter)
   const quotaSum = pillars.reduce((sum, pillar) => sum + pillar.quota, 0)
   const activeCount = (pillarId: PillarId) =>
     questions.filter((q) => q.pillarId === pillarId && q.active).length
@@ -608,6 +692,13 @@ export default function Admin() {
             )}
             {pillar?.short}
           </span>
+          {sortMode === 'agreement' && agreement && (
+            <span className="rounded-full border border-line px-2.5 py-0.5 tabular-nums text-muted">
+              {agreement[question.id]
+                ? `הסכמה ${agreement[question.id].avg}% · ${agreement[question.id].count} תשובות`
+                : 'עוד לא נענה'}
+            </span>
+          )}
           {!question.active && (
             <span className="rounded-full bg-red-600/10 px-2.5 py-0.5 font-medium text-red-600">
               כבויה
@@ -819,6 +910,21 @@ export default function Admin() {
                 >
                   היגד חדש
                 </button>
+              )}
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-muted">מיון:</span>
+              <FilterChip active={sortMode === 'category'} onClick={() => void selectSort('category')}>
+                לפי קטגוריות
+              </FilterChip>
+              <FilterChip active={sortMode === 'agreement'} onClick={() => void selectSort('agreement')}>
+                {agreementLoading ? 'טוען תוצאות...' : 'לפי הסכמת הקהל'}
+              </FilterChip>
+              {sortMode === 'agreement' && agreement && (
+                <span className="text-muted">
+                  מהמוסכם ביותר לפחות מוסכם · מבוסס על {agreementQuizzes} שאלונים שמולאו
+                </span>
               )}
             </div>
 
