@@ -50,7 +50,9 @@ AGPL-3.0 (`LICENSE`, and the `license` field in `package.json`).
   `quizConfig.ts` (quiz length 13, Lotem's hand-tuned mix, pin-flag
   threshold + URL), `types.ts`
 - `public/docs/full-platform.pdf` - the full 25-page party platform (May
-  2026). Both the source record for the "המצע המלא" statements AND a served
+  2026). `public/docs/education-platform.pdf` - the dedicated 7-page
+  education platform ("מצע חינוך - אל הדגל", added 2026-08-12), a source of
+  the education-revolution category. Both the source record for the "המצע המלא" statements AND a served
   site asset, so the admin's source links can deep-link into it
   (`...#page=N`). Page map: 1-2 intro/vision, 3-9 security, 10-13 education,
   14-19 governance and legal, 20-25 economy.

@@ -69,6 +69,7 @@ export const PILLARS: Pillar[] = [
     sources: [
       { label: 'החזון שלנו - מהפכת החינוך הציוני', url: 'https://www.elhadegel.co.il/about-us#principe-8' },
       { label: 'המצע המלא - מצע חינוך ( עמ׳ 10-13 )', url: 'https://lotem-e.github.io/el-hadegel-quiz/docs/full-platform.pdf#page=10' },
+      { label: 'מצע החינוך המלא ( 7 עמ׳ )', url: 'https://lotem-e.github.io/el-hadegel-quiz/docs/education-platform.pdf' },
     ],
   },
   {

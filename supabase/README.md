@@ -18,6 +18,7 @@ against the live project.
 | `migration-11-publish-plumbing.sql` | `build_snapshot()` split out, plus the self-publishing envelope for future migrations |
 | `migration-12-zionist-unity-rename.sql` | ממשלה ציונית רחבה - the zionist-unity name, reworded |
 | `migration-13-pin-threshold-80.sql` | Pin-flag threshold 90 -> 80 |
+| `migration-14-education-platform-source.sql` | The dedicated education platform PDF joins the education sources |
 
 ## Writing the next one
 

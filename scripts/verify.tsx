@@ -198,6 +198,7 @@ check('platform label shortens', shortSourceLabel('המצע המלא - מצע ב
 check('vision label shortens', shortSourceLabel('החזון שלנו - כלכלה ציונית') === 'החזון · כלכלה ציונית')
 check('the law label shortens', shortSourceLabel('הצעת חוק יסוד: שירות חובה למען המדינה ( נוסח מלא )') === 'נוסח החוק המלא')
 check('an unknown label is untouched', shortSourceLabel('מקור חדש לגמרי') === 'מקור חדש לגמרי')
+check('the education platform label stays chip-length', shortSourceLabel('מצע החינוך המלא ( 7 עמ׳ )') === 'מצע החינוך המלא')
 
 // the middle band: Lotem's wording, and its own contact label
 const midAnswers: Answer[] = questions.map((q, i) => ({

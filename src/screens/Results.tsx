@@ -79,12 +79,14 @@ function tier(percent: number): { headline: Phrase; body: Phrase; contactLabel: 
 export function shortSourceLabel(label: string): string {
   const pages = label.match(/עמ׳ [\d-]+/)
   if (label.startsWith('המצע המלא') && pages) return `המצע · ${pages[0]}`
+  if (label.startsWith('מצע החינוך')) return 'מצע החינוך המלא'
   if (label.startsWith('החזון שלנו - ')) return `החזון · ${label.slice('החזון שלנו - '.length)}`
   if (label.startsWith('הצעת חוק יסוד')) return 'נוסח החוק המלא'
   return label
 }
 
-const isPlatformSource = (label: string) => label.startsWith('המצע המלא')
+const isPlatformSource = (label: string) =>
+  label.startsWith('המצע המלא') || label.startsWith('מצע החינוך')
 
 export default function Results({ answers, onRestart }: ResultsProps) {
   const { g } = useGender()
